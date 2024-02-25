@@ -1,6 +1,6 @@
 # 😆 关于ONNX的一些概念
 
-ONNX 可以看作是为数学函数打造的编程语言。它定义了所有关于机器学习推理时所需要的必要操作。线性回归可以用以下方式表示：
+ONNX 可以看作是一门为数学函数打造的编程语言。它定义了所有关于机器学习推理时所需要的必要操作。线性回归可以用以下方式表示：
 
 ```python
 def onnx_linear_regressor(X):
@@ -10,9 +10,9 @@ def onnx_linear_regressor(X):
 
 这个例子与开发人员在 Python 中编写的表达式非常相似。因此，使用 ONNX 实现的机器学习模型通常被引用为 ONNX 图(ONNX Graph)。
 
-<figure><img src="../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
 
-ONNX 旨在提供一种通用语言，任何机器学习框架都可以用它来描述自己的模型。使得生产中部署机器学习模型变得更容易。ONNX解释器（或**runtime**）可以在部署环境中专门针对某一任务进行部署和优化。有了 ONNX，我们就有可能建立一个独特的流程，将模型部署到生产环境中，并且独立于各种机器学习框架。_ONNX_实现了一个 python runtime，可用于评估 ONNX 模型和 ONNX 操作。它旨在阐明 ONNX 的语义，帮助理解和调试 ONNX 工具和转换器。它不用于实际生产，所以性能也不是目标（参见[onnx.reference](https://onnx.ai/onnx/api/reference.html#l-reference-implementation)）。
+ONNX 旨在提供一种通用语言，任何机器学习框架都可以用它来描述自己的模型。使得生产中部署机器学习模型变得更容易。ONNX解释器（或**runtime**）可以在部署环境中专门针对某一任务进行部署和优化。有了 ONNX，我们就有可能建立一个独特的流程，将模型部署到生产环境中，并且独立于各种机器学习框架。ONNX实现了一个 python runtime，可用于评估 ONNX 模型和 ONNX 操作。它旨在阐明 ONNX 的语义，帮助理解和调试 ONNX 工具和转换器。它不用于实际生产，所以性能也不是目标。
 
 ### <mark style="color:red;">Input, Output, Node, Initializer, Attributes</mark>
 
@@ -28,7 +28,7 @@ y = onnx.Add(r, c)
 
 这段代码实现了一个函数`f(x, a, c)-> y = x @ a + c，` _x_、_a_、_c_是**inputs**，_y_是**outputs**。_r_ 是中间结果。_MatMul_ 和 _Add_ 是**nodes**。它们也有**inputs**和**outputs**。**node**是 ONNX Operator 中的一种类型，即运算符之一。此图是线性回归部分中的示例构建的。
 
-图还可以有**initializer**。当输入（如线性回归系数）永不改变时，最有效的方法是将其转化为一个常量存储在图中。
+**graph**还可以有**initializer**。当输入（如线性回归系数）永不改变时，最有效的方法是将其转化为一个常量存储在图中。
 
 ```
 Input: float[M,K] x
@@ -39,43 +39,43 @@ xa = onnx.MatMul(x, a)
 xac = onnx.Add(xa, c)
 ```
 
-从外观上看，该图表如下图所示：右侧描述了运算符_Add_，其中第二个输入被定义为初始化器。该图是通过以下代码获得的 。
+如下图所示：右侧描述了运算符_Add_，其中第二个输入被定义为**initializer**。
 
+<figure><img src="../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
 
+**attribute** 是运算符的固定参数。运算符[Gemm](https://onnx.ai/onnx/operators/onnx\_\_Gemm.html#l-onnx-doc-gemm)有四个属性：_alpha_、_beta_、_transA_、_transB_。除非使用ONNX runtime的API进行修改，否则一旦加载了 ONNX graph，这些值就不能更改，并在模型预测中保持不变。
 
-**属性**是运算符的固定参数。运算符[Gemm](https://onnx.ai/onnx/operators/onnx\_\_Gemm.html#l-onnx-doc-gemm)有四个属性：_alpha_、_beta_、_transA_、_transB_。除非运行时通过其应用程序接口允许，否则一旦加载了 ONNX 图形，这些值就不能更改，并在所有预测中保持不变。
+### <mark style="color:red;">使用protobuf进行序列化</mark>
 
-### 使用[ protobuf#](broken-reference)进行序列化
+将机器学习模型部署到生产环境中通常需要将训练模型的整个生态系统复制下来，大多数情况下需要使用_docker_。 一旦模型转换为 ONNX，生产环境只需要runtime来执行计算图。该runtime可以用任何适合生产应用的语言开发，如 C、java、python、javascript、C#、Webassembly、ARM......
 
-将机器学习模型部署到生产环境中通常需要复制用于训练模型的整个生态系统，大多数情况下需要使用_docker_。 一旦模型转换为 ONNX，生产环境只需要一个运行时来执行用 ONNX 运算符定义的图形。该运行时可以用任何适合生产应用的语言开发，如 C、java、python、javascript、C#、Webassembly、ARM......
+但要做到这一点，就需要保存 ONNX graph。ONNX 使用 protobuf 将计算图序列化为单个块。其目的是尽可能优化模型大小。
 
-ONNX 使用_protobuf_将图形序列化为单个块（参见[解析和序列化](https://developers.google.com/protocol-buffers/docs/pythontutorial#parsing-and-serialization)）。其目的是尽可能优化模型大小。
+### <mark style="color:red;">元数据</mark>
 
-### [元](broken-reference)数据\#
+机器学习模型一直在不断更新。所以跟踪模型的版本、模型的作者以及模型的训练方式就显得非常重要。ONNX 提供了在模型中存储额外数据的方式。
 
-机器学习模型会不断更新。跟踪模型的版本、模型的作者以及模型的训练方式非常重要。ONNX 提供了在模型中存储额外数据的可能性。
+*   **doc\_string**: Human-readable documentation for this model.
 
-*   **doc\_string**：该模型的人可读文档。
+    Markdown is allowed.
+*   **domain**: A reverse-DNS name to indicate the model namespace or domain,
 
-    允许 Markdown。
-*   **域**：反向 DNS 名称，用于指示模型命名空间或域、
+    for example, ‘org.onnx’
+*   **metadata\_props**: Named metadata as dictionary `map<string,string>`,
 
-    例如，"org.onnx
-*   **元数据道具**：以字典形式命名的元数据`map<string,string>、`
+    `(values, keys)` should be distinct.
+*   **model\_author**: A comma-separated list of names,
 
-    `(值、 键）`应该是不同的。
-*   **模型的作者**：以逗号分隔的姓名列表、
+    The personal name of the author(s) of the model, and/or their organizations.
+*   **model\_license**: The well-known name or URL of the license
 
-    范本作者和/或其组织的个人姓名。
-*   **model\_license**：许可证的知名名称或 URL
+    under which the model is made available.
+* **model\_version**: The version of the model itself, encoded in an integer.
+* **producer\_name**: The name of the tool used to generate the model.
+* **producer\_version**: The version of the generating tool.
+*   **training\_info**: An optional extension that contains
 
-    提供模型的依据。
-* **model\_version**：模型本身的版本，以整数编码。
-* **producer\_name**：用于生成模型的工具名称。
-* **producer\_version**：生成工具的版本。
-*   **培训信息**：可选扩展名，包含
-
-    培训信息（见[TrainingInfoProto）](https://onnx.ai/onnx/api/classes.html#l-traininginfoproto)
+    information for training (see [TrainingInfoProto](https://onnx.ai/onnx/api/classes.html#l-traininginfoproto))
 
 ### 可用运算符[和域](broken-reference)列表\#
 
