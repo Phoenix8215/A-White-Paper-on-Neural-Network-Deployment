@@ -1,6 +1,6 @@
 # 😆 关于ONNX的一些概念
 
-ONNX 可以看作是一门为数学函数打造的编程语言。它定义了所有关于机器学习推理时所需要的必要操作。线性回归可以用以下方式表示：
+ONNX 可以看作是一门为数学函数打造的编程语言。它定义了关于机器学习推理时所需要的必要操作。线性回归可以用以下方式表示：
 
 ```python
 def onnx_linear_regressor(X):
@@ -8,7 +8,7 @@ def onnx_linear_regressor(X):
     return onnx.Add(onnx.MatMul(X, coefficients), bias)
 ```
 
-这个例子与在 Python 中编写代码非常相似。因此，使用 ONNX 实现的机器学习模型通常被誉为 ONNX 图(ONNX Graph)。
+这个例子与在 Python 中编写代码非常相似。因此，使用 ONNX 实现的机器学习模型通常被誉为 ONNX 计算图(ONNX Graph)。
 
 <figure><img src="../../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
 
