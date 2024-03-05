@@ -1,6 +1,6 @@
-# 😆 关于ONNX的一些概念
+# 😆 ONNX中的一些概念
 
-ONNX 可以看作是一门为数学函数打造的编程语言。它定义了关于机器学习推理时所需要的必要操作。线性回归可以用以下方式表示：
+ONNX 可以看作是一门为数学函数打造的编程语言。它定义了关于机器学习推理时所需要的必要操作。例如线性回归可以用以下方式表示：
 
 ```python
 def onnx_linear_regressor(X):
@@ -12,7 +12,7 @@ def onnx_linear_regressor(X):
 
 <figure><img src="../../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
 
-ONNX 旨在提供一种通用语言，任何机器学习框架都可以用它来描述自己的模型。使得生产中部署机器学习模型变得更容易。ONNX解释器（或**runtime**）可以在部署环境中专门针对某一任务进行部署和优化。有了 ONNX，我们就可以建立一个独特的流程，将模型部署到生产环境中，并且独立于各种机器学习框架。ONNX实现了一个 python runtime，可用于评估 ONNX 模型和 ONNX 操作。它旨在阐明 ONNX 的语义，帮助理解和调试 ONNX 工具和转换器。它不用于实际生产，性能也不是最终目标。
+ONNX 旨在提供一种通用语言，任何机器学习框架都可以用它来描述自己的模型。使得生产中部署机器学习模型变得更容易。ONNX解释器（或**runtime**）可以在部署环境中专门针对某一任务进行部署和优化。有了 ONNX，我们就可以建立一个独特的流程，将模型部署到生产环境中，并且独立于各种机器学习框架。ONNX实现了一个 python runtime，可用于评估 ONNX 模型和 ONNX 操作。
 
 ### <mark style="color:red;">Input, Output, Node, Initializer, Attributes</mark>
 
@@ -43,7 +43,7 @@ xac = onnx.Add(xa, c)
 
 <figure><img src="../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
 
-**attribute** 是运算符的固定参数。比如：运算符[Gemm](https://onnx.ai/onnx/operators/onnx\_\_Gemm.html#l-onnx-doc-gemm)有四个属性：_alpha_、_beta_、_transA_、_transB_。除非使用ONNX runtime的API进行修改，否则一旦加载了 ONNX graph，这些值就不能更改，并在模型预测阶段保持不变。
+**attribute** 是运算符的固定参数。比如：运算符[Gemm](https://onnx.ai/onnx/operators/onnx\_\_Gemm.html#l-onnx-doc-gemm)有四个属性：_alpha_、_beta_、_transA_、_transB_。除非使用ONNX API进行修改，否则一旦加载了 ONNX graph，这些值就不能更改，在模型预测阶段保持不变。
 
 ### <mark style="color:red;">使用protobuf进行序列化</mark>
 
@@ -79,11 +79,11 @@ xac = onnx.Add(xa, c)
 
 ### <mark style="color:red;">ONNX算子和域</mark>
 
-主要列表在此说明：[ONNX算子列表](https://onnx.ai/onnx/operators/index.html#l-onnx-operators)。它融合了标准矩阵运算符（Add、Sub、MatMul、Transpose、Greater、IsNaN、Shape、Reshape...）、归约（ReduceSum、ReduceMin...）、图像变换（Conv、MaxPool...）、深度神经网络层（RNN、DropOut...）、激活函数（Relu、Softmax...）。 **ONNX 并不实现所有的机器学习相关的算子，否则列表将是无限的。**
+主要列表在此说明：[ONNX算子列表](https://onnx.ai/onnx/operators/index.html#l-onnx-operators)。它融合了标准矩阵运算符（Add、Sub、MatMul、Transpose、Greater、IsNaN、Shape、Reshape...）、归约（ReduceSum、ReduceMin...）、图像变换（Conv、MaxPool...）、深度神经网络层（RNN、DropOut...）、激活函数（Relu、Softmax...）。 <mark style="background-color:blue;">**ONNX 并不实现所有的机器学习相关的算子，否则列表将是无限的。**</mark>
 
 运算符的主列表由一个域**ai.onnx** 标识。 一个**域**可定义为一组算子的集合。 主列表中缺少在标准机器学习中非常流行的基于树的模型，这些模型属于另一个域[**ai.onnx.ml**](http://ai.onnx.ml/)，它包括基于树的模型（TreeEnsemble Regressor, ...）、预处理（OneHotEncoder, LabelEncoder, ...）、SVM 模型（SVMRegressor, ...）和输入器（Imputer）。
 
-ONNX 只定义了这两个域。但 onnx 库支持任何自定义域和运算符。
+ONNX 只定义了这两个域。但 ONNX 支持任何自定义域和运算符。
 
 ### <mark style="color:red;">支持的类型</mark>
 
@@ -93,7 +93,7 @@ ONNX 专门为张量的数值计算做了相关优化。**张量**是一个多�
 * a shape: an array with all dimensions, this array can be empty, a dimension can be null
 * a contiguous array: it represents all the values
 
-该定义不包括stride，也不能根据已有张量定义新张量。ONNX 张量是一个密集型数据。
+该定义不包括_strides_，也不能根据已有张量定义新张量。ONNX 张量是一个密集型数据。
 
 #### <mark style="color:red;">元素类型</mark>
 

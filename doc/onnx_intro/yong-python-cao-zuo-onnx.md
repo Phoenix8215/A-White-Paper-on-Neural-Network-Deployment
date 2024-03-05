@@ -1,15 +1,15 @@
 # 😍 用python操作ONNX
 
-接下来的章节将重点介绍使用_onnx_提供的[Python API](https://onnx.ai/onnx/api/index.html#l-python-onnx-api)构建 ONNX 图形的主要功能。
+接下来的章节将重点介绍如何使用_onnx_提供的[Python API](https://onnx.ai/onnx/api/index.html#l-python-onnx-api)构建 ONNX 计算图。
 
-### 一个简单的例子：线性[回归](broken-reference)\#
+### 一个简单的例子：线性回归
 
-线性回归是机器学习中最简单的模型，其表达式如下.我们可以将其视为三个变量的函数 分解为`y = Add(MatMul(X, A), B`)。这就是我们需要用 ONNX 运算符表示的内容。首先是用[ONNX](https://onnx.ai/onnx/operators/index.html#l-onnx-operators) 运算符实现函数。 ONNX 是强类型的。必须为函数的输入和输出定义形状和类型。也就是说，在[make 函数](https://onnx.ai/onnx/api/helper.html#l-onnx-make-function)中，我们需要四个函数来构建图形：
+线性回归是机器学习中最简单的模型，其表达式如下.我们可以将其视为三个变量的函数 分解为`y = Add(MatMul(X, A), B`)。这就是我们需要用 ONNX 运算符表示的内容。首先是用[ONNX](https://onnx.ai/onnx/operators/index.html#l-onnx-operators) 运算符实现函数。 ONNX 是强类型的。必须为函数的输入和输出定义形状和类型。也就是说，在[make 函数](https://onnx.ai/onnx/api/helper.html#l-onnx-make-function)中，我们需要四个函数来构建计算图：
 
 * `make_tensor_value_info`：声明变量（输入或输出）的形状和类型
-* `make_node`：创建一个由操作（操作符类型）、输入和输出定义的节点
-* `make_graph`：利用前两个函数创建的对象创建 ONNX 图形的函数
-* `make_model`：合并图形和附加元数据的最后一个函数
+* `make_node`：创建一个由操作符类型(算子名称)、输入和输出定义的节点
+* `make_graph`：利用前两个函数创建的对象创建 ONNX 计算图
+* `make_model`：合并计算图和额外的元数据
 
 在创建过程中，我们需要为图中每个节点的输入和输出命名。图的输入和输出由 onnx 对象定义，字符串用于指代中间结果。看起来就是这样。
 
