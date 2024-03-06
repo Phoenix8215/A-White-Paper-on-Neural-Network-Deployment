@@ -11,9 +11,9 @@
 * `make_graph`：利用前两个函数创建的对象创建 ONNX 计算图
 * `make_model`：合并计算图和额外的元数据
 
-在创建过程中，我们需要为图中每个节点的输入和输出命名。图的输入和输出由 onnx 对象定义，字符串用于指代中间结果。看起来就是这样。
+在创建过程中，我们需要为图中每个节点的输入和输出命名。计算图的输入和输出由 onnx 对象定义，字符串用于指代中间结果。
 
-```
+```python
 # imports
 
 from onnx import TensorProto
@@ -139,11 +139,11 @@ opset_import {
 }
 ```
 
+<figure><img src="../../.gitbook/assets/dot_linreg.png" alt=""><figcaption></figcaption></figure>
 
+shape定义为\[None, None]表示该对象是一个两维张量，没有任何形状信息。 通过查看图中每个对象的字段，也可以检查 ONNX 计算图。
 
-空形状`（无`）表示任何形状，定义为`[无， 无]`的形状表示该对象是一个两维张量，没有任何进一步的精度。 通过查看图中每个对象的字段，也可以检查 ONNX 图。
-
-```
+```python
 from onnx import TensorProto
 from onnx.helper import (
     make_model, make_node, make_graph,
@@ -268,9 +268,9 @@ name='' type='MatMul' input=['X', 'A'] output=['XA']
 name='' type='Add' input=['XA', 'B'] output=['Y']
 ```
 
-张量类型是整数（= 1）。辅助函数[`onnx.helper.tensor_dtype_too_np_dtype()`](https://onnx.ai/onnx/api/helper.html#onnx.helper.tensor\_dtype\_to\_np\_dtype)会给出与 numpy 对应的类型。
+张量类型是整数（= 1）。函数[`onnx.helper.tensor_dtype_to_np_dtype()`](https://onnx.ai/onnx/api/helper.html#onnx.helper.tensor\_dtype\_to\_np\_dtype)会给出与 numpy 对应的数据类型。
 
-```
+```python
 from onnx import TensorProto
 from onnx.helper import tensor_dtype_to_np_dtype, tensor_dtype_to_string
 
@@ -282,15 +282,15 @@ print(f"The converted numpy dtype for {tensor_dtype_to_string(TensorProto.FLOAT)
 The converted numpy dtype for TensorProto.FLOAT is float32.
 ```
 
-### [序列化](broken-reference)\#
+### 序列化
 
-ONNX 建立在 protobuf 的基础之上。它为描述机器学习模型添加了必要的定义，大多数情况下，ONNX 是用来序列化或反序列化模型的。第二部分介绍了数据的序列化和反序列化，如张量、稀疏张量......
+ONNX 建立在 protobuf 的基础之上。它为描述机器学习模型添加了必要的定义，大多数情况下，ONNX 是用来序列化或反序列化模型的。第二部分将介绍数据的序列化和反序列化，如张量、稀疏张量......
 
-#### 型号[序列化](broken-reference)\#
+#### 模型序列化
 
-ONNX 基于 protobuf。它最大限度地减少了在磁盘上保存图形所需的空间。onnx 中的每个对象（参见[Protos](https://onnx.ai/onnx/api/classes.html#l-onnx-classes)）都可以通过`SerializeToString` 方法序列化。整个模型都是如此。
+ONNX 基于 protobuf。它最大限度地减少了在磁盘上保存图形所需的空间。onnx 中的每个对象（参见[Protos](https://onnx.ai/onnx/api/classes.html#l-onnx-classes)）都可以通过`SerializeToString` 方法序列化。
 
-```
+```python
 from onnx import TensorProto
 from onnx.helper import (
     make_model, make_node, make_graph,
@@ -394,9 +394,9 @@ opset_import {
 }
 ```
 
-图形可通过函数`加载`恢复：
+ONNX计算图可通过函数`load`恢复：
 
-```
+```python
 from onnx import load
 
 with open("linear_regression.onnx", "rb") as f:
@@ -482,13 +482,13 @@ opset_import {
 }
 ```
 
-看起来完全一样。任何模型都可以用这种方式序列化，除非它们的大小超过 2 Gb。接下来的章节将介绍如何克服这一限制。
+任何模型都可以用这种方式序列化，除非它们的大小超过 2 Gb。接下来的章节将介绍如何克服模型大小这一限制。
 
-#### 数据[序列化](broken-reference)\#
+#### 张量序列化
 
 张量的序列化过程通常如下：
 
-```
+```python
 import numpy
 from onnx.numpy_helper import from_array
 
@@ -513,7 +513,7 @@ with open("saved_tensor.pb", "wb") as f:
 
 还有反序列化：
 
-```
+```python
 from onnx import TensorProto
 from onnx.numpy_helper import to_array
 
@@ -535,9 +535,9 @@ print(numpy_tensor)
 [0. 1. 4. 5. 3.]
 ```
 
-同样的模式可用于但不限于[TensorProto](https://onnx.ai/onnx/api/classes.html#l-tensorproto)：
+数据类型不限于[TensorProto](https://onnx.ai/onnx/api/classes.html#l-tensorproto)：
 
-```
+```python
 import onnx
 import pprint
 pprint.pprint([p for p in dir(onnx)
@@ -565,9 +565,9 @@ pprint.pprint([p for p in dir(onnx)
  'ValueInfoProto']
 ```
 
-使用函数_load\_tensor\_from\_string_可以简化这段代码（请参阅加[载 Proto](https://onnx.ai/onnx/api/serialization.html#l-onnx-load-data)）。
+使用函数_load\_tensor\_from\_string_可以简化这段代码（请参阅[加载 Proto](https://onnx.ai/onnx/api/serialization.html#l-onnx-load-data)）。
 
-```
+```python
 from onnx import load_tensor_from_string
 
 with open("saved_tensor.pb", "rb") as f:
@@ -580,15 +580,14 @@ print(type(proto))
 <class 'onnx.onnx_ml_pb2.TensorProto'>
 ```
 
-### 初始化器，[默认值](broken-reference)\#
+### Initializer，默认值
 
-之前的模型假定线性回归的系数也是模型的输入。这不是很方便。为了遵循 onnx 语义，它们应该作为常量或**初始化器**成为模型本身的一部分。下一个示例修改了上一个示例，将输入`A`和`B`变为初始化器。软件包实现了两个函数，可以将 numpy 转换为 onnx，也可以反过来转换（参见[数组](https://onnx.ai/onnx/api/numpy\_helper.html#l-numpy-helper-onnx-array)）。
+之前的模型假定线性回归的系数也是模型的输入。这不是很方便。为了遵循 onnx 语义，它们应该作为常量或**initializer**成为模型本身的一部分。这个示例修改了上一个示例，将输入`A`和`B`变为initializer。以下两个函数，可以将 numpy 转换为 onnx，也可以反过来转换（参见[数组](https://onnx.ai/onnx/api/numpy\_helper.html#l-numpy-helper-onnx-array)）。
 
 * `onnx.numpy_helper.to_array`：从 onnx 转换到 numpy
 * `onnx.numpy_helper.from_array`: 从 numpy 转换到 onnx
 
-```
-import numpy
+<pre class="language-python" data-full-width="false"><code class="lang-python">import numpy
 from onnx import numpy_helper, TensorProto
 from onnx.helper import (
     make_model, make_node, make_graph,
@@ -597,8 +596,8 @@ from onnx.checker import check_model
 
 # initializers
 value = numpy.array([0.5, -0.6], dtype=numpy.float32)
-A = numpy_helper.from_array(value, name='A')
-
+<strong>A = numpy_helper.from_array(value, name='A')
+</strong>
 value = numpy.array([0.4], dtype=numpy.float32)
 C = numpy_helper.from_array(value, name='C')
 
@@ -612,7 +611,7 @@ onnx_model = make_model(graph)
 check_model(onnx_model)
 
 print(onnx_model)
-```
+</code></pre>
 
 ```
 ir_version: 10
@@ -676,7 +675,7 @@ opset_import {
 
 
 
-同样，也可以通过 onnx 结构来查看初始化器的外观。
+同样，也可以通过 onnx API来查看initializers。
 
 ```
 import numpy
