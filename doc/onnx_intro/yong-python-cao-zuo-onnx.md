@@ -673,11 +673,11 @@ opset_import {
 }
 ```
 
-
+<figure><img src="../../.gitbook/assets/dot_linreg2.png" alt=""><figcaption></figcaption></figure>
 
 同样，也可以通过 onnx API来查看initializers。
 
-```
+```python
 import numpy
 from onnx import numpy_helper, TensorProto
 from onnx.helper import (
@@ -719,13 +719,11 @@ name: "C"
 raw_data: "\315\314\314>"
 ```
 
-类型定义为整数，含义相同。 在第二个示例中，只剩下一个输入端。 输入端`A`和`B`被删除。它们可以保留。在这种情况下，它们是可选的：每个与输入值同名的 initiliazer 都被视为默认值。如果没有输入值，它就会取代输入值。
+### Attributes
 
-### [属性](broken-reference)\#
+有些算子需要属性，如[`Transpose`](https://onnx.ai/onnx/operators/onnx\_\_Transpose.html#l-onnx-doc-transpose)算子。 让我们为表达式`y = Add(MatMul(X, Transpose(A))+ B`)创建一个ONNX计算图。Transpose 需要一个定义坐标轴排列的属性：`perm=[1, 0]`。它在函数`make_node` 中作为命名属性添加进去。
 
-有些运算符需要属性，如[反转](https://onnx.ai/onnx/operators/onnx\_\_Transpose.html#l-onnx-doc-transpose)运算符。 让我们为表达式绘制图表 或`y = Add(MatMul(X, Transpose(A))+ B`)。Transpose 需要一个定义坐标轴排列的属性：`perm=[1, 0]`。它在函数`make_node` 中作为命名属性添加。
-
-```
+```python
 from onnx import TensorProto
 from onnx.helper import (
     make_model, make_node, make_graph,
@@ -842,11 +840,11 @@ opset_import {
 }
 ```
 
+<figure><img src="../../.gitbook/assets/dot_att-1.png" alt=""><figcaption></figcaption></figure>
 
+_make_函数的整个列表如下，具体使用方法在[make 函数](https://onnx.ai/onnx/api/helper.html#l-onnx-make-function)中有介绍。
 
-_make_函数的整个列表如下。其中许多函数将在[make 函数](https://onnx.ai/onnx/api/helper.html#l-onnx-make-function)一节中介绍。
-
-```
+```python
 import onnx
 import pprint
 pprint.pprint([k for k in dir(onnx.helper)
@@ -881,11 +879,11 @@ pprint.pprint([k for k in dir(onnx.helper)
  'make_value_info']
 ```
 
-### Opset 和[元](broken-reference)数据\#
+### Opset 和元数据
 
-让我们加载之前创建的 ONNX 文件，看看它有哪些元数据。
+让我们加载之前创建好的 ONNX 文件，看看它有哪些元数据。
 
-```
+```python
 from onnx import load
 
 with open("linear_regression.onnx", "rb") as f:
@@ -912,9 +910,9 @@ producer_version
 training_info []
 ```
 
-其中大部分是空的，因为在创建 ONNX 图形时没有填充。其中两个有数值：
+其中大部分是空的，因为在创建 ONNX 计算图时没有填充，其中只有两个有数值的变量：
 
-```
+```python
 from onnx import load
 
 with open("linear_regression.onnx", "rb") as f:
@@ -930,9 +928,9 @@ ir_version: 10
 opset domain='' version=21
 ```
 
-`IR`定义了 ONNX 语言的版本。 Opset 定义了所用运算符的版本。 在没有任何精确度的情况下，ONNX 使用安装包中的最新版本。 也可以使用另一个版本。
+`IR`定义了 ONNX 语言的版本。 Opset 定义了所用算子的版本。 ONNX 默认使用最新的版本。 也可以使用另一个版本。
 
-```
+```python
 from onnx import load
 
 with open("linear_regression.onnx", "rb") as f:
@@ -951,11 +949,11 @@ for opset in onnx_model.opset_import:
 opset domain='' version=14
 ```
 
-只要所有操作符都按照 ONNX 规定的方式定义，就可以使用任何操作集。操作符_Reshape_的第 5 版将形状定义为输入，而不是第 1 版中的属性。操作集说明了在描述图形时所遵循的规范。
+_算子Reshape_的第 5 版将形状定义为输入，但是在第 1 版中将属性定义为输入。opset说明了在描述计算图时所遵循的规范。
 
-其他元数据可用于存储任何信息，如有关模型生成方式的信息、用版本号区分模型的方法等。
+元数据可用于存储任何信息，如有关模型生成方式的信息、用版本号区分不同的模型等。
 
-```
+```python
 from onnx import load, helper
 
 with open("linear_regression.onnx", "rb") as f:
@@ -1061,752 +1059,9 @@ metadata_props {
 }
 ```
 
-字段`training_info`可用于存储其他图表。 请参见[training\_tool\_test.py](https://github.com/onnx/onnx/blob/main/onnx/test/training\_tool\_test.py)，了解其工作原理。
+字段`training_info`可用于存储其他计算图。 参见[training\_tool\_test.py](https://github.com/onnx/onnx/blob/main/onnx/test/training\_tool\_test.py)，了解其工作原理。
 
-### 子图谱：测试和[循环](broken-reference)\#
-
-它们通常被归为一类，称为_控制流_。 通常最好避免使用它们，因为它们的效率不高，而矩阵操作的速度和优化程度要高得多。
-
-#### 如果[#](broken-reference)
-
-测试可以使用操作符[If](https://onnx.ai/onnx/operators/onnx\_\_If.html#l-onnx-doc-if) 来实现，它根据一个布尔值执行一个子图或另一个子图。这种方法并不常用，因为函数通常需要批量比较多个结果。 下面的示例根据符号计算矩阵中所有浮点数的和，返回 1 或-1。
-
-```
-import numpy
-import onnx
-from onnx.helper import (
-    make_node, make_graph, make_model, make_tensor_value_info)
-from onnx.numpy_helper import from_array
-from onnx.checker import check_model
-from onnxruntime import InferenceSession
-
-# initializers
-value = numpy.array([0], dtype=numpy.float32)
-zero = from_array(value, name='zero')
-
-# Same as before, X is the input, Y is the output.
-X = make_tensor_value_info('X', onnx.TensorProto.FLOAT, [None, None])
-Y = make_tensor_value_info('Y', onnx.TensorProto.FLOAT, [None])
-
-# The node building the condition. The first one
-# sum over all axes.
-rsum = make_node('ReduceSum', ['X'], ['rsum'])
-# The second compares the result to 0.
-cond = make_node('Greater', ['rsum', 'zero'], ['cond'])
-
-# Builds the graph is the condition is True.
-# Input for then
-then_out = make_tensor_value_info(
-    'then_out', onnx.TensorProto.FLOAT, None)
-# The constant to return.
-then_cst = from_array(numpy.array([1]).astype(numpy.float32))
-
-# The only node.
-then_const_node = make_node(
-    'Constant', inputs=[],
-    outputs=['then_out'],
-    value=then_cst, name='cst1')
-
-# And the graph wrapping these elements.
-then_body = make_graph(
-    [then_const_node], 'then_body', [], [then_out])
-
-# Same process for the else branch.
-else_out = make_tensor_value_info(
-    'else_out', onnx.TensorProto.FLOAT, [5])
-else_cst = from_array(numpy.array([-1]).astype(numpy.float32))
-
-else_const_node = make_node(
-    'Constant', inputs=[],
-    outputs=['else_out'],
-    value=else_cst, name='cst2')
-
-else_body = make_graph(
-    [else_const_node], 'else_body',
-    [], [else_out])
-
-# Finally the node If taking both graphs as attributes.
-if_node = onnx.helper.make_node(
-    'If', ['cond'], ['Y'],
-    then_branch=then_body,
-    else_branch=else_body)
-
-# The final graph.
-graph = make_graph([rsum, cond, if_node], 'if', [X], [Y], [zero])
-onnx_model = make_model(graph)
-check_model(onnx_model)
-
-# Let's freeze the opset.
-del onnx_model.opset_import[:]
-opset = onnx_model.opset_import.add()
-opset.domain = ''
-opset.version = 15
-onnx_model.ir_version = 8
-
-# Save.
-with open("onnx_if_sign.onnx", "wb") as f:
-    f.write(onnx_model.SerializeToString())
-
-# Let's see the output.
-sess = InferenceSession(onnx_model.SerializeToString(),
-                        providers=["CPUExecutionProvider"])
-
-x = numpy.ones((3, 2), dtype=numpy.float32)
-res = sess.run(None, {'X': x})
-
-# It works.
-print("result", res)
-print()
-
-# Some display.
-print(onnx_model)
-```
-
-```
-result [array([1.], dtype=float32)]
-
-ir_version: 8
-graph {
-  node {
-    input: "X"
-    output: "rsum"
-    op_type: "ReduceSum"
-  }
-  node {
-    input: "rsum"
-    input: "zero"
-    output: "cond"
-    op_type: "Greater"
-  }
-  node {
-    input: "cond"
-    output: "Y"
-    op_type: "If"
-    attribute {
-      name: "else_branch"
-      g {
-        node {
-          output: "else_out"
-          name: "cst2"
-          op_type: "Constant"
-          attribute {
-            name: "value"
-            t {
-              dims: 1
-              data_type: 1
-              raw_data: "\000\000\200\277"
-            }
-            type: TENSOR
-          }
-        }
-        name: "else_body"
-        output {
-          name: "else_out"
-          type {
-            tensor_type {
-              elem_type: 1
-              shape {
-                dim {
-                  dim_value: 5
-                }
-              }
-            }
-          }
-        }
-      }
-      type: GRAPH
-    }
-    attribute {
-      name: "then_branch"
-      g {
-        node {
-          output: "then_out"
-          name: "cst1"
-          op_type: "Constant"
-          attribute {
-            name: "value"
-            t {
-              dims: 1
-              data_type: 1
-              raw_data: "\000\000\200?"
-            }
-            type: TENSOR
-          }
-        }
-        name: "then_body"
-        output {
-          name: "then_out"
-          type {
-            tensor_type {
-              elem_type: 1
-            }
-          }
-        }
-      }
-      type: GRAPH
-    }
-  }
-  name: "if"
-  initializer {
-    dims: 1
-    data_type: 1
-    name: "zero"
-    raw_data: "\000\000\000\000"
-  }
-  input {
-    name: "X"
-    type {
-      tensor_type {
-        elem_type: 1
-        shape {
-          dim {
-          }
-          dim {
-          }
-        }
-      }
-    }
-  }
-  output {
-    name: "Y"
-    type {
-      tensor_type {
-        elem_type: 1
-        shape {
-          dim {
-          }
-        }
-      }
-    }
-  }
-}
-opset_import {
-  domain: ""
-  version: 15
-}
-```
-
-有了下面的图片，整个过程就更直观了。
-
-
-
-else 和 then 分支都非常简单，甚至可以用_Where_节点代替_If_节点，这样速度会更快。当两个分支都比较大，跳过其中一个分支会更有效时，情况就变得有趣了。
-
-#### [扫描](broken-reference)\#
-
-在阅读说明时，[Scan](https://onnx.ai/onnx/operators/onnx\_\_Scan.html#l-onnx-doc-scan)似乎相当复杂。 循环张量的一个维度并将结果存储在预先分配的张量中是非常有用的。
-
-下面的示例为回归问题实现了经典的近邻计算。第一步是计算输入特征_X_和训练集_W_ 之间的成对距离： .接下来的运算符[TopK](https://onnx.ai/onnx/operators/onnx\_\_TopK.html#l-onnx-doc-topk)可以提取_k 个_最近的邻居。
-
-```
-import numpy
-from onnx import numpy_helper, TensorProto
-from onnx.helper import (
-    make_model, make_node, set_model_props, make_tensor, make_graph,
-    make_tensor_value_info)
-from onnx.checker import check_model
-
-# subgraph
-initializers = []
-nodes = []
-inputs = []
-outputs = []
-
-value = make_tensor_value_info('next_in', 1, [None, 4])
-inputs.append(value)
-value = make_tensor_value_info('next', 1, [None])
-inputs.append(value)
-
-value = make_tensor_value_info('next_out', 1, [None, None])
-outputs.append(value)
-value = make_tensor_value_info('scan_out', 1, [None])
-outputs.append(value)
-
-node = make_node(
-    'Identity', ['next_in'], ['next_out'],
-    name='cdistd_17_Identity', domain='')
-nodes.append(node)
-
-node = make_node(
-    'Sub', ['next_in', 'next'], ['cdistdf_17_C0'],
-    name='cdistdf_17_Sub', domain='')
-nodes.append(node)
-
-node = make_node(
-    'ReduceSumSquare', ['cdistdf_17_C0'], ['cdistdf_17_reduced0'],
-    name='cdistdf_17_ReduceSumSquare', axes=[1], keepdims=0, domain='')
-nodes.append(node)
-
-node = make_node(
-    'Identity', ['cdistdf_17_reduced0'],
-    ['scan_out'], name='cdistdf_17_Identity', domain='')
-nodes.append(node)
-
-graph = make_graph(nodes, 'OnnxIdentity',
-                   inputs, outputs, initializers)
-
-# main graph
-
-initializers = []
-nodes = []
-inputs = []
-outputs = []
-
-opsets = {'': 15, 'ai.onnx.ml': 15}
-target_opset = 15  # subgraphs
-
-# initializers
-list_value = [23.29599822460675, -120.86516699239603, -144.70495899914215, -260.08772982740413,
-              154.65272105889147, -122.23295157108991, 247.45232560871727, -182.83789715805776,
-              -132.92727431421793, 147.48710175784703, 88.27761768038069, -14.87785569894749,
-              111.71487894705504, 301.0518319089629, -29.64235742280055, -113.78493504731911,
-              -204.41218591022718, 112.26561056133608, 66.04032954135549,
-              -229.5428380626701, -33.549262642481615, -140.95737409864623, -87.8145187836131,
-              -90.61397011283958, 57.185488100413366, 56.864151796743855, 77.09054590340892,
-              -187.72501631246712, -42.779503579806025, -21.642642730674076, -44.58517761667535,
-              78.56025104939847, -23.92423223842056, 234.9166231927213, -73.73512816431007,
-              -10.150864499514297, -70.37105466673813, 65.5755688281476, 108.68676290979731, -78.36748960443065]
-value = numpy.array(list_value, dtype=numpy.float64).reshape((2, 20))
-tensor = numpy_helper.from_array(
-    value, name='knny_ArrayFeatureExtractorcst')
-initializers.append(tensor)
-
-list_value = [1.1394007205963135, -0.6848101019859314, -1.234825849533081, 0.4023416340351105,
-              0.17742614448070526, 0.46278226375579834, -0.4017809331417084, -1.630198359489441,
-              -0.5096521973609924, 0.7774903774261475, -0.4380742907524109, -1.2527953386306763,
-              -1.0485529899597168, 1.950775384902954, -1.420017957687378, -1.7062702178955078,
-              1.8675580024719238, -0.15135720372200012, -0.9772778749465942, 0.9500884413719177,
-              -2.5529897212982178, -0.7421650290489197, 0.653618574142456, 0.8644362092018127,
-              1.5327792167663574, 0.37816253304481506, 1.4693588018417358, 0.154947429895401,
-              -0.6724604368209839, -1.7262825965881348, -0.35955315828323364, -0.8131462931632996,
-              -0.8707971572875977, 0.056165341287851334, -0.5788496732711792, -0.3115525245666504,
-              1.2302906513214111, -0.302302747964859, 1.202379822731018, -0.38732680678367615,
-              2.269754648208618, -0.18718385696411133, -1.4543657302856445, 0.04575851559638977,
-              -0.9072983860969543, 0.12898291647434235, 0.05194539576768875, 0.7290905714035034,
-              1.4940791130065918, -0.8540957570075989, -0.2051582634449005, 0.3130677044391632,
-              1.764052391052246, 2.2408931255340576, 0.40015721321105957, 0.978738009929657,
-              0.06651721894741058, -0.3627411723136902, 0.30247190594673157, -0.6343221068382263,
-              -0.5108051300048828, 0.4283318817615509, -1.18063223361969, -0.02818222902715206,
-              -1.6138978004455566, 0.38690251111984253, -0.21274028718471527, -0.8954665660858154,
-              0.7610377073287964, 0.3336743414402008, 0.12167501449584961, 0.44386324286460876,
-              -0.10321885347366333, 1.4542734622955322, 0.4105985164642334, 0.14404356479644775,
-              -0.8877857327461243, 0.15634897351264954, -1.980796456336975, -0.34791216254234314]
-value = numpy.array(list_value, dtype=numpy.float32).reshape((20, 4))
-tensor = numpy_helper.from_array(value, name='Sc_Scancst')
-initializers.append(tensor)
-
-value = numpy.array([2], dtype=numpy.int64)
-tensor = numpy_helper.from_array(value, name='To_TopKcst')
-initializers.append(tensor)
-
-value = numpy.array([2, -1, 2], dtype=numpy.int64)
-tensor = numpy_helper.from_array(value, name='knny_Reshapecst')
-initializers.append(tensor)
-
-# inputs
-value = make_tensor_value_info('input', 1, [None, 4])
-inputs.append(value)
-
-# outputs
-value = make_tensor_value_info('variable', 1, [None, 2])
-outputs.append(value)
-
-# nodes
-
-node = make_node(
-    'Scan', ['input', 'Sc_Scancst'], ['UU032UU', 'UU033UU'],
-    name='Sc_Scan', body=graph, num_scan_inputs=1, domain='')
-nodes.append(node)
-
-node = make_node(
-    'Transpose', ['UU033UU'], ['Tr_transposed0'],
-    name='Tr_Transpose', perm=[1, 0], domain='')
-nodes.append(node)
-
-node = make_node(
-    'Sqrt', ['Tr_transposed0'], ['Sq_Y0'],
-    name='Sq_Sqrt', domain='')
-nodes.append(node)
-
-node = make_node(
-    'TopK', ['Sq_Y0', 'To_TopKcst'], ['To_Values0', 'To_Indices1'],
-    name='To_TopK', largest=0, sorted=1, domain='')
-nodes.append(node)
-
-node = make_node(
-    'Flatten', ['To_Indices1'], ['knny_output0'],
-    name='knny_Flatten', domain='')
-nodes.append(node)
-
-node = make_node(
-    'ArrayFeatureExtractor',
-    ['knny_ArrayFeatureExtractorcst', 'knny_output0'], ['knny_Z0'],
-    name='knny_ArrayFeatureExtractor', domain='ai.onnx.ml')
-nodes.append(node)
-
-node = make_node(
-    'Reshape', ['knny_Z0', 'knny_Reshapecst'], ['knny_reshaped0'],
-    name='knny_Reshape', allowzero=0, domain='')
-nodes.append(node)
-
-node = make_node(
-    'Transpose', ['knny_reshaped0'], ['knny_transposed0'],
-    name='knny_Transpose', perm=[1, 0, 2], domain='')
-nodes.append(node)
-
-node = make_node(
-    'Cast', ['knny_transposed0'], ['Ca_output0'],
-    name='Ca_Cast', to=TensorProto.FLOAT, domain='')
-nodes.append(node)
-
-node = make_node(
-    'ReduceMean', ['Ca_output0'], ['variable'],
-    name='Re_ReduceMean', axes=[2], keepdims=0, domain='')
-nodes.append(node)
-
-# graph
-graph = make_graph(nodes, 'KNN regressor', inputs, outputs, initializers)
-
-# model
-onnx_model = make_model(graph)
-onnx_model.ir_version = 8
-onnx_model.producer_name = 'skl2onnx'
-onnx_model.producer_version = ''
-onnx_model.domain = 'ai.onnx'
-onnx_model.model_version = 0
-onnx_model.doc_string = ''
-set_model_props(onnx_model, {})
-
-# opsets
-del onnx_model.opset_import[:]
-for dom, value in opsets.items():
-    op_set = onnx_model.opset_import.add()
-    op_set.domain = dom
-    op_set.version = value
-
-check_model(onnx_model)
-with open("knnr.onnx", "wb") as f:
-    f.write(onnx_model.SerializeToString())
-
-print(onnx_model)
-```
-
-```
-ir_version: 8
-producer_name: "skl2onnx"
-producer_version: ""
-domain: "ai.onnx"
-model_version: 0
-doc_string: ""
-graph {
-  node {
-    input: "input"
-    input: "Sc_Scancst"
-    output: "UU032UU"
-    output: "UU033UU"
-    name: "Sc_Scan"
-    op_type: "Scan"
-    attribute {
-      name: "body"
-      g {
-        node {
-          input: "next_in"
-          output: "next_out"
-          name: "cdistd_17_Identity"
-          op_type: "Identity"
-          domain: ""
-        }
-        node {
-          input: "next_in"
-          input: "next"
-          output: "cdistdf_17_C0"
-          name: "cdistdf_17_Sub"
-          op_type: "Sub"
-          domain: ""
-        }
-        node {
-          input: "cdistdf_17_C0"
-          output: "cdistdf_17_reduced0"
-          name: "cdistdf_17_ReduceSumSquare"
-          op_type: "ReduceSumSquare"
-          attribute {
-            name: "axes"
-            ints: 1
-            type: INTS
-          }
-          attribute {
-            name: "keepdims"
-            i: 0
-            type: INT
-          }
-          domain: ""
-        }
-        node {
-          input: "cdistdf_17_reduced0"
-          output: "scan_out"
-          name: "cdistdf_17_Identity"
-          op_type: "Identity"
-          domain: ""
-        }
-        name: "OnnxIdentity"
-        input {
-          name: "next_in"
-          type {
-            tensor_type {
-              elem_type: 1
-              shape {
-                dim {
-                }
-                dim {
-                  dim_value: 4
-                }
-              }
-            }
-          }
-        }
-        input {
-          name: "next"
-          type {
-            tensor_type {
-              elem_type: 1
-              shape {
-                dim {
-                }
-              }
-            }
-          }
-        }
-        output {
-          name: "next_out"
-          type {
-            tensor_type {
-              elem_type: 1
-              shape {
-                dim {
-                }
-                dim {
-                }
-              }
-            }
-          }
-        }
-        output {
-          name: "scan_out"
-          type {
-            tensor_type {
-              elem_type: 1
-              shape {
-                dim {
-                }
-              }
-            }
-          }
-        }
-      }
-      type: GRAPH
-    }
-    attribute {
-      name: "num_scan_inputs"
-      i: 1
-      type: INT
-    }
-    domain: ""
-  }
-  node {
-    input: "UU033UU"
-    output: "Tr_transposed0"
-    name: "Tr_Transpose"
-    op_type: "Transpose"
-    attribute {
-      name: "perm"
-      ints: 1
-      ints: 0
-      type: INTS
-    }
-    domain: ""
-  }
-  node {
-    input: "Tr_transposed0"
-    output: "Sq_Y0"
-    name: "Sq_Sqrt"
-    op_type: "Sqrt"
-    domain: ""
-  }
-  node {
-    input: "Sq_Y0"
-    input: "To_TopKcst"
-    output: "To_Values0"
-    output: "To_Indices1"
-    name: "To_TopK"
-    op_type: "TopK"
-    attribute {
-      name: "largest"
-      i: 0
-      type: INT
-    }
-    attribute {
-      name: "sorted"
-      i: 1
-      type: INT
-    }
-    domain: ""
-  }
-  node {
-    input: "To_Indices1"
-    output: "knny_output0"
-    name: "knny_Flatten"
-    op_type: "Flatten"
-    domain: ""
-  }
-  node {
-    input: "knny_ArrayFeatureExtractorcst"
-    input: "knny_output0"
-    output: "knny_Z0"
-    name: "knny_ArrayFeatureExtractor"
-    op_type: "ArrayFeatureExtractor"
-    domain: "ai.onnx.ml"
-  }
-  node {
-    input: "knny_Z0"
-    input: "knny_Reshapecst"
-    output: "knny_reshaped0"
-    name: "knny_Reshape"
-    op_type: "Reshape"
-    attribute {
-      name: "allowzero"
-      i: 0
-      type: INT
-    }
-    domain: ""
-  }
-  node {
-    input: "knny_reshaped0"
-    output: "knny_transposed0"
-    name: "knny_Transpose"
-    op_type: "Transpose"
-    attribute {
-      name: "perm"
-      ints: 1
-      ints: 0
-      ints: 2
-      type: INTS
-    }
-    domain: ""
-  }
-  node {
-    input: "knny_transposed0"
-    output: "Ca_output0"
-    name: "Ca_Cast"
-    op_type: "Cast"
-    attribute {
-      name: "to"
-      i: 1
-      type: INT
-    }
-    domain: ""
-  }
-  node {
-    input: "Ca_output0"
-    output: "variable"
-    name: "Re_ReduceMean"
-    op_type: "ReduceMean"
-    attribute {
-      name: "axes"
-      ints: 2
-      type: INTS
-    }
-    attribute {
-      name: "keepdims"
-      i: 0
-      type: INT
-    }
-    domain: ""
-  }
-  name: "KNN regressor"
-  initializer {
-    dims: 2
-    dims: 20
-    data_type: 11
-    name: "knny_ArrayFeatureExtractorcst"
-    raw_data: ",\\&\212\306K7@\333z`\345^7^\300\304\312,\006\217\026b\300Z9dWgAp\300.+F\027\343Tc@\203\330\264\255\350\216^\300\260\022\216sy\356n@\237h\263\r\320\332f\300\224\277.;\254\235`\300\336\370lV\226ob@\261\201\362|\304\021V@c,[Mv\301-\300\322\214\240\223\300\355[@)\036\262M\324\320r@nE;\211q\244=\300\021n5`<r\\\300\207\211\201\2400\215i\300H\232p\303\377\020\\@\317K[\302\224\202P@&\306\355\355^\261l\300\301/\377<N\306@\300#w\001\317\242\236a\300$fd\023!\364U\300\204\327LIK\247V\300J\211\366\022\276\227L@\262\345\254\206\234nL@f{\013\201\313ES@\234\343hU3wg\300\3370\367\305\306cE\300\336A\347;\204\2445\300f\374\242\031\347JF\300\325\2557\'\333\243S@\331\354\345{\232\3547\300\307o)\372T]m@#\005\000W\014oR\300\'\025\227\034>M$\300\310\252\022\\\277\227Q\300l_\243\036\326dP@\333kk\354\363+[@\223)\036\363\204\227S\300"
-  }
-  initializer {
-    dims: 20
-    dims: 4
-    data_type: 1
-    name: "Sc_Scancst"
-    raw_data: "\342\327\221?\267O/\277\306\016\236\277\271\377\315>3\2575>\314\361\354>;\266\315\276W\252\320\277\221x\002\277\234\tG?FK\340\276\231[\240\277\3746\206\277\002\263\371?&\303\265\277\020g\332\277$\014\357?b\375\032\276\342.z\277\3778s?/d#\300\207\376=\277\214S\'?\261K]?\0342\304?\205\236\301>\363\023\274?\212\252\036>^&,\277\324\366\334\277Z\027\270\276[*P\277\220\354^\277\241\rf=~/\024\277\320\203\237\276*z\235?m\307\232\276\225\347\231?\263O\306\276\251C\021@ \255?\276\250(\272\277Hm;=\265Dh\277\031\024\004>\262\304T=\256\245:?\374=\277?\005\246Z\277\002\025R\276iJ\240>x\314\341?\313j\017@h\341\314>\223\216z?.:\210=6\271\271\276\231\335\232>\357b\"\277 \304\002\277QN\333>\365\036\227\277k\336\346\2744\224\316\277\026\030\306>\227\330Y\276L=e\277^\323B?]\327\252>\3000\371=\013B\343>hd\323\275\242%\272?\3709\322>(\200\023>\355Ec\277\362\031 >\275\212\375\277\213!\262\276"
-  }
-  initializer {
-    dims: 1
-    data_type: 7
-    name: "To_TopKcst"
-    raw_data: "\002\000\000\000\000\000\000\000"
-  }
-  initializer {
-    dims: 3
-    data_type: 7
-    name: "knny_Reshapecst"
-    raw_data: "\002\000\000\000\000\000\000\000\377\377\377\377\377\377\377\377\002\000\000\000\000\000\000\000"
-  }
-  input {
-    name: "input"
-    type {
-      tensor_type {
-        elem_type: 1
-        shape {
-          dim {
-          }
-          dim {
-            dim_value: 4
-          }
-        }
-      }
-    }
-  }
-  output {
-    name: "variable"
-    type {
-      tensor_type {
-        elem_type: 1
-        shape {
-          dim {
-          }
-          dim {
-            dim_value: 2
-          }
-        }
-      }
-    }
-  }
-}
-opset_import {
-  domain: ""
-  version: 15
-}
-opset_import {
-  domain: "ai.onnx.ml"
-  version: 15
-}
-```
-
-从外观上看，就像下面这样：
-
-
-
-子图由操作符[扫描](https://onnx.ai/onnx/operators/onnx\_\_Scan.html#l-onnx-doc-scan)执行。在这种情况下，只有一个_扫描_输入，这意味着运算符只生成一个输出。
-
-```
-node = make_node(
-    'Scan', ['X1', 'X2'], ['Y1', 'Y2'],
-    name='Sc_Scan', body=graph, num_scan_inputs=1, domain='')
-```
-
-第一次迭代时，子图得到_X1_和_X2_ 的第一行。第一个输出在下一次迭代中取代_X1_，第二个输出存储在一个容器中，形成_Y2_。在第二次迭代中，子图的第二个输入是_X2_ 的第二行。 下面是一个简短的摘要。绿色为第一次迭代，蓝色为第二次迭代。
-
-
-
-### [功能](broken-reference)\#
+### <mark style="color:red;">Functions</mark>
 
 如前一章所述，如果存在函数的特定实现，函数可以用来缩短构建模型的代码，并为运行时更快地运行预测提供更多可能性。如果没有，运行时仍可使用基于现有运算符的默认实现。
 

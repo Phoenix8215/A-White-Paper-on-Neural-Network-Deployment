@@ -171,37 +171,6 @@ print(onnx.__version__, " opset=", onnx.defs.onnx_opset_version())
 
 ONNX计算图可能包含多个域的算子，例如`ai.onnx`和`ai.onnx.ml`。在这种情况下，计算图必须为每个域定义一个全局opset。该规则适用于同一个域中的所有算子。
 
-### <mark style="color:red;">子图、测试和循环</mark>
-
-ONNX 实现了测试和循环。它们都将另一个 ONNX 计算图作为属性。这些结构通常既慢又复杂，最好避免使用。
-
-#### <mark style="color:red;">If</mark>
-
-算子[If](https://onnx.ai/onnx/operators/onnx\_\_If.html#l-onnx-doc-if)根据条件评估执行两个图形中的一个。
-
-```python
-If(condition) then
-    execute this ONNX graph (`then_branch`)
-else
-    execute this ONNX graph (`else_branch`)
-```
-
-这两个图形可以使用图形中已经计算出的任何结果，并且必须产生数量完全相同的输出。 这些输出将是算子`If` 的输出。
-
-<figure><img src="../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
-
-#### <mark style="color:red;">Scan</mark>
-
-操作符[Scan](https://onnx.ai/onnx/operators/onnx\_\_Scan.html#l-onnx-doc-scan)实现了一个具有固定迭代次数的循环，它对输入的行（或其他维度）进行循环，并将输出沿同一维度串联起来。让我们来看一个示例$$M(i,j)=\|X_i-X_j\|^2$$： .
-
-<figure><img src="../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
-
-这个循环的效率很高，它假定输入和输出都是张量，并自动将每次迭代的输出串联成单一张量。
-
-#### <mark style="color:red;">Loop</mark>
-
-算子Loop实现了 for 循环和 while 循环。它可以执行固定数量的迭代和在不再满足条件时结束。 输出有两种不同的处理方式。第一种类似于循环Scan，输出的是沿着某一维度进行拼接的张量。第二种机制是将张量连接成张量序列。
-
 ### <mark style="color:red;">可扩展性</mark>
 
 ONNX 定义了一系列算子作为标准：[ONNX算子（ONNX Operators）](https://onnx.ai/onnx/operators/index.html#l-onnx-operators)。 不过，你也可以在此域或新的域中定义自己的算子。_onnxruntime_自定义了一些算子以改进推理。 每个节点都有**类型、名称、输入和输出以及属性**。只要在这些约束条件下描述了节点，就可以将节点添加到任何 ONNX 计算图中作为算子使用。
