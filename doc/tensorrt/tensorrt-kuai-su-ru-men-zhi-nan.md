@@ -132,13 +132,13 @@ trtexec --onnx=resnet50/model.onnx --saveEngine=resnet_engine.trt
 
 成功创建 TensorRT 引擎后，我们如何使用 TensorRT 运行它。
 
-TensorRT runtime有两种类型：一种是与 C++ 和 Python 绑定的独立runtime，另一种与 TensorFlow 的本地集成。在本节中，我们将调用独立runtime的简化封装器（ONNXClassifierWrapper）。我们将生成一批随机的 "假 "数据，并使用ONNXClassifierWrapper这个类在该批数据上运行推理。
+TensorRT runtime有两种类型：一种是与 C++ 和 Python 绑定的独立runtime，另一种与 TensorFlow 集成的 API。在本节中，我们将生成一批随机的 "假 "数据，并使用ONNXClassifierWrapper这个类在该批数据上运行推理。
 
 1.  设置ONNXClassifierWrapper
 
     ```python
     from onnx_helper import ONNXClassifierWrapper 
-    N_CLASSES = 1000 # 我们的 ResNet-50 在 1000 个类别的 ImageNet 任务上进行训练 
+    N_CLASSES = 1000 # Our ResNet-50 is trained on a 1000 class ImageNet task
     trt_model = ONNXClassifierWrapper("resnet_engine.trt", [BATCH_SIZE, N_CLASSES], target_dtype = PRECISION)
     ```
 2.  设置模型的输入
