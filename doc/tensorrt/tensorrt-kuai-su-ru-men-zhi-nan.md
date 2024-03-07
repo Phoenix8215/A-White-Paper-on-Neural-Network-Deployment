@@ -50,8 +50,8 @@ TensorRT runtime  API 可以实现最低的开销和最精细的控制，但 Ten
 
 在选择如何转换和部署模型时，有两个最重要的因素：
 
-1. 您选择的框架。
-2. 您首选的 TensorRT runtime。
+1. 模型所选用的框架。
+2. TensorRT runtime。
 
 下面的流程图涵盖了本指南中涉及的不同工作流程。该流程图将帮助您根据这两个因素选择合适的路径。
 
@@ -72,14 +72,13 @@ TensorRT 根据文件类型不同提供了两种不同的文件转换方式：
 * TF-TRT 使用 TensorFlow 保存好的模型文件。
 * ONNX path要求模型保存在 ONNX 中。
 
-在本例中，我们使用的是 ONNX，因此需要一个 ONNX 模型。
+在本例中，我们使用的是 ONNX。
 
 使用wget从 [ONNX model zoo](https://github.com/onnx/models) 下载预训练的 ResNet-50 模型并解压缩
 
-```sh
-wget https://download.onnxruntime.ai/onnx/models/resnet50.tar.gz 
-tar xzf resnet50.tar.gz
-```
+<pre class="language-sh"><code class="lang-sh"><strong>wget https://download.onnxruntime.ai/onnx/models/resnet50.tar.gz 
+</strong>tar xzf resnet50.tar.gz
+</code></pre>
 
 这将解压缩一个预训练的 ResNet-50.onnx文件到resnet50/model.onnx 路径下。
 
@@ -142,7 +141,7 @@ TensorRT runtime有两种类型：一种是与 C++ 和 Python 绑定的独立run
     N_CLASSES = 1000 # 我们的 ResNet-50 在 1000 个类别的 ImageNet 任务上进行训练 
     trt_model = ONNXClassifierWrapper("resnet_engine.trt", [BATCH_SIZE, N_CLASSES], target_dtype = PRECISION)
     ```
-2.  设置模型输入
+2.  设置模型的输入
 
     ```
     BATCH_SIZE=32 
@@ -168,7 +167,7 @@ TensorRT 包含一个带有 C++ 和 Python 绑定的独立运行时，与使用 
 
 1. 导出ONNX模型，并使用trtexec生成TensorRT引擎
 2. 使用TensorRT C++ API进行运行时的推理
-3. 使用TensorRT C++ API进行运行时的推理
+3. 使用TensorRT Python API进行运行时的推理
 
 #### 导出ONNX模型，并使用trtexec生成TensorRT引擎
 
@@ -178,11 +177,175 @@ TensorRT 包含一个带有 C++ 和 Python 绑定的独立运行时，与使用 
     git clone https://github.com/NVIDIA/TensorRT.git 
     cd TensorRT/quickstart
     ```
-2.  将[预先训练好的 FCN-ResNet-101](https://pytorch.org/hub/pytorch\_vision\_fcn\_resnet101/)模型从torch.hub转换到 ONNX。
+2. 将[预先训练好的 FCN-ResNet-101](https://pytorch.org/hub/pytorch\_vision\_fcn\_resnet101/)模型转换为 ONNX。以下是相关的测试图片
 
+<figure><img src="../../.gitbook/assets/图片 (9).png" alt=""><figcaption></figcaption></figure>
 
+a. 启动容器。
 
+```bash
+$ docker run --rm -it -gpus all -p 8888:8888 -v `pwd`:/workspace -w /workspace/SemanticSegmentation nvcr.io/nvidia/pytorch:20.12-py3 bash
+```
 
+b.运行导出脚本，将预训练模型转换为 ONNX。
+
+```bash
+$ python export.py
+```
+
+{% hint style="info" %}
+注：FCN-ResNet-101 有一个维度为\[batch, 3, height, width]的输入和一个维度为\[batch, 21, height, weight]的输出，其中包含对应于 21 个类别标签预测的概率值。在将模型导出到 ONNX 时，我们在输出端附加了一个argmax层，以生成每个像素概率最高的类别标签。
+{% endhint %}
+
+{% code title="export.py" %}
+```python
+import torch
+import torch.nn as nn
+
+output_onnx="fcn-resnet101.onnx"
+
+# FC-ResNet101 pretrained model from torch-hub extended with argmax layer
+class FCN_ResNet101(nn.Module):
+    def __init__(self):
+        super(FCN_ResNet101, self).__init__()
+        self.model = torch.hub.load('pytorch/vision:v0.6.0', 'fcn_resnet101', pretrained=True)
+
+    def forward(self, inputs):
+        x = self.model(inputs)['out']
+        x = x.argmax(1, keepdims=True)
+        return x
+
+model = FCN_ResNet101()
+model.eval()
+
+# Generate input tensor with random values
+input_tensor = torch.rand(4, 3, 224, 224)
+
+# Export torch model to ONNX
+print("Exporting ONNX model {}".format(output_onnx))
+torch.onnx.export(model, input_tensor, output_onnx,
+    opset_version=12,
+    do_constant_folding=True,
+    input_names=["input"],
+    output_names=["output"],
+    dynamic_axes={"input": {0: "batch", 2: "height", 3: "width"},
+                  "output": {0: "batch", 2: "height", 3: "width"}},
+    verbose=True)
+```
+{% endcode %}
+
+3. 使用[trtexec](https://github.com/NVIDIA/TensorRT/tree/main/samples/trtexec)工具从 ONNX 构建 TensorRT 引擎。
+
+trtexec可以从 ONNX 模型生成 TensorRT 引擎，然后使用 TensorRT 运行时 API 进行部署。它利用[TensorRT ONNX 解析器](https://github.com/onnx/onnx-tensorrt)将 ONNX 模型加载到 TensorRT 网络图中，并利用 TensorRT 生成器[API](https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/index.html#build\_engine\_c)(Builder API)生成优化引擎。构建引擎非常耗时，通常需要离线运行。
+
+```bash
+trtexec --onnx=fcn-resnet101.onnx --fp16 --workspace=64 --minShapes=input:1x3x256x256 --optShapes=input:1x3x1026x1282 --maxShapes=input:1x3x1440x2560 --buildOnly --saveEngine=fcn-resnet101.engine
+```
+
+执行成功后生成一个引擎文件。
+
+{% hint style="info" %}
+–buildOnly ： 跳过推理性能测量（默认是禁用）
+{% endhint %}
+
+4. 可选择使用trtexec 生成随机值验证生成的引擎。
+
+```bash
+trtexec --shapes=input:1x3x1026x1282 --loadEngine=fcn-resnet101.engine
+```
+
+其中，--shapes为用于推理的动态形状输入设置输入大小。
+
+如果成功，您应该会看到类似下面的内容
+
+```bash
+&&&& PASSED TensorRT.trtexec # trtexec --shapes=input:1x3x1026x1282 --loadEngine=fcn-resnet101.engine
+```
+
+#### 用 C++ 运行引擎
+
+1.  在容器中编译并运行
+
+    ```bash
+    $ make
+    $ ./bin/segmentation_tutorial
+    ```
+
+以下步骤展示了如何进行[反序列化](https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/index.html#perform\_inference\_c)(Plan)然后推理。
+
+1.  从文件反序列化 TensorRT 引擎。文件内容被读入缓冲区，并在内存中进行反序列化。
+
+    ```cpp
+    std::vector<char> engineData(fsize); 
+    engineFile.read(engineData.data(), fsize); 
+    std::unique_ptr<nvinfer1::IRuntime> runtime{nvinfer1::createInferRuntime(sample::gLogger.getTRTLogger())}; 
+    std::unique_ptr<nvinfer1::ICudaEngine> mEngine(runtime->deserializeCudaEngine(engineData.data(), fsize, nullptr));
+    ```
+2.  TensorRT 执行上下文包含了一些执行状态(例如在推理过程中所需要的激活层的张量值),由于建立分割模型时启用了动态batchsize，因此必须指定输入的维度才能执行推理。可以通过查询网络输出维度来确定输出缓冲区的相应大小。
+
+    ```cpp
+    auto input_idx = mEngine->getBindingIndex("input");
+    assert(mEngine->getBindingDataType(input_idx) == nvinfer1::DataType::kFLOAT);
+    auto input_dims = nvinfer1::Dims4{1, 3 /* channels */, height, width};
+    context->setBindingDimensions(input_idx, input_dims);
+    auto input_size = util::getMemorySize(input_dims, sizeof(float));
+    auto output_idx = mEngine->getBindingIndex("output");
+    assert(mEngine->getBindingDataType(output_idx) == nvinfer1::DataType::kINT32);
+    auto output_dims = context->getBindingDimensions(output_idx);
+    auto output_size = util::getMemorySize(output_dims, sizeof(int32_t));
+    ```
+
+    > 注意：网络 I/O 的绑定索引可按名称查询。
+3.  在准备推理时，会为所有输入和输出数据分配 CUDA 设备内存，image data is processed and copied into input memory, and a list of engine bindings is generated.
+
+    对于语义分割，输入图像数据的处理方法是拟合到\[0, 1]范围内，并使用均值 \[0.485, 0.456, 0.406]和stddeviation\[0.229, 0.224, 0.225] 进行归一化。请参阅[此处](https://github.com/pytorch/vision/blob/main/docs/source/models.rst) torchvision模型的预处理要求。该操作由类RGBImageReader 抽象出来。
+
+    ```
+    void* input_mem{nullptr}; cudaMalloc(&input_mem, input_size); void* output_mem{nullptr}; cudaMalloc(&output_mem, output_size); const std::vector<float> mean{0.485f, 0.456f, 0.406f}; const std::vector<float> stddev{0.229f, 0.224f, 0.225f}; auto input_image{util::RGBImageReader(input_filename, input_dims, mean, stddev)}; input_image.read(); auto input_buffer = input_image.process(); cudaMemcpyAsync(input_mem, input_buffer.get(), input_size, cudaMemcpyHostToDevice, stream)；
+    ```
+4.  推理执行是通过上下文的executeV2或enqueueV2方法启动的。执行完成后，我们会将结果拷贝回主机缓冲区，并释放所有设备内存分配。
+
+    ```cpp
+    void* input_mem{nullptr};
+    cudaMalloc(&input_mem, input_size);
+    void* output_mem{nullptr};
+    cudaMalloc(&output_mem, output_size); 
+    const std::vector<float> mean{0.485f, 0.456f, 0.406f};
+    const std::vector<float> stddev{0.229f, 0.224f, 0.225f};
+    auto input_image{util::RGBImageReader(input_filename, input_dims, mean, stddev)};
+    input_image.read();
+    auto input_buffer = input_image.process();
+    cudaMemcpyAsync(input_mem, input_buffer.get(), input_size, cudaMemcpyHostToDevice, stream);
+    ```
+5.  对预测结果进行可视化
+
+    ```
+    const int num_classes{21};
+    const std::vector<int> palette{(0x1 << 25) - 1, (0x1 << 15) - 1, (0x1 << 21) - 1};
+    auto output_image{util::ArgmaxImageWriter(output_filename, output_dims, palette, num_classes)};
+    output_image.process(output_buffer.get());
+    output_image.write();
+    ```
+
+    测试图像的预期输出如下：
+
+<figure><img src="../../.gitbook/assets/图片 (6).png" alt=""><figcaption></figcaption></figure>
+
+#### 在 Python 中运行引擎
+
+1.  安装所需的 Python 包
+
+    ```bash
+    $ pip install pycuda
+    ```
+2.  启动 Jupyter&#x20;
+
+    ```bash
+    $ jupyter notebook --port=8888 --no-browser --ip=0.0.0.0 --allow-root
+    ```
+3. 打开[tutorial-runtime.ipynb](https://github.com/NVIDIA/TensorRT/blob/main/quickstart/SemanticSegmentation/tutorial-runtime.ipynb)笔记本并按其步骤操作。
+
+TensorRT Python runtime API 与 C++ runtime API一一映射。
 
 
 
