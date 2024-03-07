@@ -2,7 +2,7 @@
 
 ### TensorRT 生态系统
 
-TensorRT 是一个庞大而灵活的项目。它可以处理各种转换和部署工作流程，哪种工作流程最适合您取决于您的具体用例和问题设置。
+TensorRT 是一个庞大而灵活的项目。它可以处理各种转换和部署工作流程，哪种工作流程最合适取决于具体用例和问题设置。
 
 #### TensorRT 基本工作流程
 
@@ -25,9 +25,9 @@ TensorRT 生态系统分为两个部分：
 
 对于 TensorFlow 模型的转换，TensorFlow 集成（TF-TRT）提供了模型转换和高级runtime API，并能在 TensorRT 不支持特定算子时返回到 TensorFlow 中去实现运行。
 
-使用 ONNX 进行转换一种性能更高的模型部署方式。TensorRT 支持使用 TensorRT API 或trtexec从 ONNX 文件中进行自动转换。使用ONNX 转换意味着模型中的所有操作都必须得到 TensorRT 的支持（或者必须为不支持的操作提供自定义插件）。ONNX 转换的结果是一个单一的 TensorRT 引擎，比使用 TF-TRT 的开销更少。
+使用 ONNX 进行转换是一种性能更高的模型部署方式。TensorRT 支持使用 TensorRT API 或trtexec从 ONNX 文件中进行自动转换。使用ONNX 转换意味着模型中的所有操作都必须有 TensorRT 的支实现（或者必须为不支持的操作提供自定义插件）。ONNX 转换的结果是一个单一的 TensorRT 引擎，比使用 TF-TRT 的开销更少。
 
-为了尽可能提高性能和可定制性，您还可以使用 TensorRT 网络定义 API 手动构建 TensorRT 引擎。这意味着只使用 TensorRT 操作来构建与目标模型完全相同的网络。用 TensorRT 创建网络后，只需导出模型的权重，然后将权重加载到网络中即可。
+为了尽可能提高性能和可定制性，还可以使用 TensorRT 网络定义 API 手动构建 TensorRT 引擎。用 TensorRT 创建网络，只需导出模型的权重，然后将权重加载到网络中即可。
 
 * [使用 C++ API 从零开始创建网络定义](https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/index.html#create\_network\_c)
 * [使用 Python API 从零开始创建网络定义](https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/#create\_network\_python)
@@ -40,11 +40,11 @@ TensorRT 生态系统分为两个部分：
 * 使用独立的 TensorRT runtime API
 * 使用英伟达 Triton 推理服务器
 
-TF-TRT 转换的结果是一个插入了 TensorRT 操作的 TensorFlow 图。这意味着您可以像使用其他 TensorFlow 模型一样使用 Python 来运行 TF-TRT 模型。
+TF-TRT 转换模型的结果是一个插入了 TensorRT 操作的 TensorFlow 图。这意味着您可以像使用其他 TensorFlow 模型一样使用 Python 来运行 TF-TRT 模型。
 
 TensorRT runtime  API 可以实现最低的开销和最精细的控制，但 TensorRT 本身不支持的算子必须以插件形式实现（[此处](https://github.com/NVIDIA/TensorRT/tree/main/plugin)提供了一个预编写插件库）。
 
-最后，英伟达™ Triton推理服务器是一款开源推理服务软件，可帮助团队在任何基于GPU或CPU的基础设施（云、数据中心或边缘）上部署来自任何框架（TensorFlow、TensorRT、PyTorch、ONNX Runtime或自定义框架）、本地存储或谷歌云平台或AWS S3的人工智能模型。它是一个灵活的项目，具有一些独特的功能，例如异构模型和同一模型多个副本的并发模型执行（多个模型副本可进一步减少延迟）以及负载平衡和模型分析。 如果您必须通过 HTTP 提供模型，例如在云推理解决方案中，它是一个不错的选择。您可以[在这里](https://developer.nvidia.com/nvidia-triton-inference-server)找到英伟达™ Triton 推理服务器主页，[在这里找到](https://github.com/triton-inference-server/server/blob/r22.01/README.md#documentation)相关文档。
+最后，英伟达™ Triton推理服务器是一款开源推理服务软件，可帮助团队在任何基于GPU或CPU的基础设施（云、数据中心或边缘）上部署来自任何框架（TensorFlow、TensorRT、PyTorch、ONNX Runtime或自定义框架）、本地存储或谷歌云平台或AWS S3的人工智能模型。它是一个灵活的项目，具有一些独特的功能，例如异构模型和同一模型多个副本的并发执行（多个模型副本可进一步减少延迟）以及负载平衡和模型分析。 如果必须通过 HTTP 协议提供模型，例如在云推理解决方案中，它是一个不错的选择。可以[在这里](https://developer.nvidia.com/nvidia-triton-inference-server)找到英伟达™ Triton 推理服务器主页，[在这里找到](https://github.com/triton-inference-server/server/blob/r22.01/README.md#documentation)相关文档。
 
 #### 选择正确的工作流程
 
@@ -70,9 +70,9 @@ TensorRT runtime  API 可以实现最低的开销和最精细的控制，但 Ten
 TensorRT 根据文件类型不同提供了两种不同的文件转换方式：
 
 * TF-TRT 使用 TensorFlow 保存好的模型文件。
-* ONNX path要求模型保存在 ONNX 中。
+* ONNXparser 要求模型保存在 ONNX 中。
 
-在本例中，我们使用的是 ONNX。
+在本例中，我们使用的是 ONNX 模型文件。
 
 使用wget从 [ONNX model zoo](https://github.com/onnx/models) 下载预训练的 ResNet-50 模型并解压缩
 
@@ -84,9 +84,9 @@ TensorRT 根据文件类型不同提供了两种不同的文件转换方式：
 
 #### batchsize的选择
 
-batchsize会对模型执行的优化产生很大影响。一般来说，在推理时，当我们想优先考虑延迟时，我们会选择较小的batchsize，而当我们想优先考虑吞吐量时，我们会选择较大的batchsize。较大的batchsize需要更长的处理时间，但可以减少每个样本的平均处理时间。
+batchsize会对模型的优化将产生很大影响。一般来说，在推理时，当我们想优先考虑延迟时，我们会选择较小的batchsize，而当我们想优先考虑吞吐量时，我们会选择较大的batchsize。较大的batchsize需要更长的处理时间，但可以减少每个样本的平均处理时间。
 
-如果在运行前不知道需要多大的batchsize，TensorRT 可以动态处理batchsize大小。也就是说，固定的batchsize会让 TensorRT 进行额外的优化。在本示例工作流中，我们使用的固定batchsize为 64。
+如果在运行前不知道需要多大的batchsize，TensorRT 可以动态处理batchsize大小。也就是说，固定的batchsize会让 TensorRT 进行额外的优化(a fixed batch size allows TensorRT to make additional optimizations.)。在本示例中，我们使用的固定batchsize为 64。
 
 ```
 BATCH_SIZE=64
@@ -105,7 +105,7 @@ PRECISION = np.float32
 
 #### 转换模型
 
-ONNX 转换是 TensorRT 自动转换方式中最通用、性能最好的路径之一。它适用于 TensorFlow、PyTorch 和许多其他框架。
+ONNX 转换为 TensorRT 引擎是最通用、性能最好的方式之一。它适用于 TensorFlow、PyTorch 和许多其他框架。
 
 有几种工具可以帮助你将 ONNX 模型转换为 TensorRT 引擎。一种常见的方法是使用trtexec，它是 TensorRT 附带的一个命令行工具，可以将 ONNX 模型转换为 TensorRT 引擎并对其进行剖析。
 
@@ -132,7 +132,7 @@ trtexec --onnx=resnet50/model.onnx --saveEngine=resnet_engine.trt
 
 成功创建 TensorRT 引擎后，我们如何使用 TensorRT 运行它。
 
-TensorRT runtime有两种类型：一种是与 C++ 和 Python 绑定的独立runtime，另一种与 TensorFlow 的本地集成。在本节中，我们将调用独立runtime的简化封装器（ONNXClassifierWrapper）。我们将生成一批随机的 "假 "数据，并使用ONNXClassifierWrapper在该批数据上运行推理。
+TensorRT runtime有两种类型：一种是与 C++ 和 Python 绑定的独立runtime，另一种与 TensorFlow 的本地集成。在本节中，我们将调用独立runtime的简化封装器（ONNXClassifierWrapper）。我们将生成一批随机的 "假 "数据，并使用ONNXClassifierWrapper这个类在该批数据上运行推理。
 
 1.  设置ONNXClassifierWrapper
 
@@ -147,13 +147,13 @@ TensorRT runtime有两种类型：一种是与 C++ 和 Python 绑定的独立run
     BATCH_SIZE=32 
     dummy_input_batch = np.zeros((BATCH_SIZE, 224, 224, 3), dtype = PRECISION)
     ```
-3.  向我们的引擎输入一批数据，然后得到预测结果。
+3.  向引擎输入一批数据，然后得到预测结果。
 
     ```
     predictions = trt_model.predict(dummy_input_batch)
     ```
 
-请注意，在运行第一个batch之前，包装器不会加载和初始化引擎，因此该batch处理通常需要比较长的一段时间。
+请注意，在运行第一个batch之前，ONNXClassifierWrapper不会加载和初始化引擎，因此该batch处理通常需要比较长的一段时间。
 
 ### 使用 TensorRT runtime API
 
