@@ -63,7 +63,7 @@ check_model(onnx_model)
 print(onnx_model)
 ```
 
-```
+```sh
 ir_version: 10
 graph {
   node {
@@ -196,7 +196,7 @@ for node in onnx_model.graph.node:
         node.name, node.op_type, node.input, node.output))
 ```
 
-```
+```sh
 ** inputs **
 [name: "X"
 type {
@@ -338,7 +338,7 @@ with open("linear_regression.onnx", "wb") as f:
 print(onnx_model)
 ```
 
-```
+```sh
 ir_version: 10
 graph {
   node {
@@ -426,7 +426,7 @@ with open("linear_regression.onnx", "rb") as f:
 print(onnx_model)
 ```
 
-```
+```sh
 ir_version: 10
 graph {
   node {
@@ -525,7 +525,7 @@ with open("saved_tensor.pb", "wb") as f:
     f.write(serialized_tensor)
 ```
 
-```
+```sh
 <class 'numpy.ndarray'>
 <class 'onnx.onnx_ml_pb2.TensorProto'>
 <class 'bytes'>
@@ -549,7 +549,7 @@ numpy_tensor = to_array(onnx_tensor)
 print(numpy_tensor)
 ```
 
-```
+```sh
 <class 'bytes'>
 <class 'onnx.onnx_ml_pb2.TensorProto'>
 [0. 1. 4. 5. 3.]
@@ -564,7 +564,7 @@ pprint.pprint([p for p in dir(onnx)
                if p.endswith('Proto') and p[0] != '_'])
 ```
 
-```
+```sh
 ['AttributeProto',
  'FunctionProto',
  'GraphProto',
@@ -596,7 +596,7 @@ proto = load_tensor_from_string(serialized)
 print(type(proto))
 ```
 
-```
+```sh
 <class 'onnx.onnx_ml_pb2.TensorProto'>
 ```
 
@@ -633,7 +633,7 @@ check_model(onnx_model)
 print(onnx_model)
 </code></pre>
 
-```
+```sh
 ir_version: 10
 graph {
   node {
@@ -726,7 +726,7 @@ for init in onnx_model.graph.initializer:
     print(init)
 ```
 
-```
+```sh
 ** initializer **
 dims: 2
 data_type: 1
@@ -773,7 +773,7 @@ check_model(onnx_model)
 print(onnx_model)
 ```
 
-```
+```sh
 ir_version: 10
 graph {
   node {
@@ -871,7 +871,7 @@ pprint.pprint([k for k in dir(onnx.helper)
                if k.startswith('make')])
 ```
 
-```
+```sh
 ['make_attribute',
  'make_attribute_ref',
  'make_empty_tensor_value_info',
@@ -916,7 +916,7 @@ for field in ['doc_string', 'domain', 'functions',
     print(field, getattr(onnx_model, field))
 ```
 
-```
+```sh
 doc_string 
 domain 
 functions []
@@ -943,7 +943,7 @@ for opset in onnx_model.opset_import:
     print("opset domain=%r version=%r" % (opset.domain, opset.version))
 ```
 
-```
+```sh
 ir_version: 10
 opset domain='' version=21
 ```
@@ -965,13 +965,13 @@ for opset in onnx_model.opset_import:
     print("opset domain=%r version=%r" % (opset.domain, opset.version))
 ```
 
-```
+```sh
 opset domain='' version=14
 ```
 
-_算子Reshape_的第 5 版将形状定义为输入，但是在第 1 版中将属性定义为输入。opset定义了在描述计算图时所遵循的规范。
+算子_Reshape_的第 5 版将形状定义为输入，但是在第 1 版中却将属性定义为输入。opset定义了在描述计算图时所遵循的规范。
 
-元数据可用于存储任何信息，如有关模型生成方式的信息、用版本号区分不同的模型等。
+元数据可用于存储任何信息，如有关模型生成方式的信息、也可以用版本号区分不同的模型等。
 
 ```python
 from onnx import load, helper
@@ -991,7 +991,7 @@ helper.set_model_props(onnx_model, data)
 print(onnx_model)
 ```
 
-```
+```sh
 ir_version: 10
 producer_name: "something"
 producer_version: "some other thing"
@@ -1089,7 +1089,7 @@ metadata_props {
 
 这是一种简单的情况，函数的每个输入都是执行时已知的动态对象。
 
-```
+```python
 import numpy
 from onnx import numpy_helper, TensorProto
 from onnx.helper import (
@@ -1137,7 +1137,7 @@ check_model(onnx_model)
 print(onnx_model)
 ```
 
-```
+```sh
 ir_version: 10
 graph {
   node {
@@ -1247,11 +1247,11 @@ functions {
 }
 ```
 
-#### 带有[属性](broken-reference)的函数\#
+#### 带有属性(attribute)的函数
 
 下面的函数与前面的函数相同，只是将一个输入变量_B_ 转换成了一个名为_bias_ 的参数。 代码几乎相同，只是 bias 现在是一个常量。 在函数定义中，创建了一个节点_Constant_，用于将参数作为结果插入。它通过`ref_attr_name` 属性与参数相连。
 
-```
+```python
 import numpy
 from onnx import numpy_helper, TensorProto, AttributeProto
 from onnx.helper import (
@@ -1313,7 +1313,7 @@ check_model(onnx_model)
 print(onnx_model)
 ```
 
-```
+```sh
 ir_version: 10
 graph {
   node {
@@ -1427,11 +1427,11 @@ functions {
 }
 ```
 
-### [解析](broken-reference)\#
+### 解析(Parsing)
 
-onnx 模块提供了一种定义图表的更快方法，而且更易于阅读。如果图形是在单个函数中构建的，那么使用起来就很容易，但如果图形是由机器学习管道中的每个部分转换而成的多个不同函数构建的，那么就不那么容易了。
+onnx 模块提供了一种定义计算图更快的方法，而且更易于阅读。如果计算图是在单个函数中构建的，那么使用起来就很容易。
 
-```
+```python
 import onnx.parser
 from onnx.checker import check_model
 
@@ -1451,7 +1451,7 @@ check_model(onnx_model)
 print(onnx_model)
 ```
 
-```
+```sh
 ir_version: 8
 graph {
 node {
@@ -1531,13 +1531,13 @@ version: 15
 }
 ```
 
-这种方法用于创建小型模型，但很少用于转换图书馆。
+这种方法常用于创建小型模型。
 
-### 检查器和形状[推理](broken-reference)\#
+### 检查器和形状推理(Checker and Shape Inference)
 
-onnx 提供了一个检查模型是否有效的函数。 只要能检测到不一致，它就会检查输入类型或形状。 下面的示例添加了两个不同类型的矩阵，这是不允许的。
+onnx 提供了一个检查模型是否有效的函数。 该函数会检查输入变量的类型和维度是否一致。 下面的示例添加了两个不同类型的矩阵，这是不允许的。
 
-```
+```python
 import onnx.parser
 import onnx.checker
 
@@ -1558,15 +1558,15 @@ except Exception as e:
     print(e)
 ```
 
-```
+```sh
 b'[ParseError at position (line: 6 column: 44)]\nError context:     agraph (float[I,4] X, float[4,2] A, int[4] B) => (float[I] Y) {\nExpected character ) not found.'
 ```
 
-`check_model`会由于这种不一致而引发错误。 对于主域或 ML 域中定义的所有运算符都有效，而对于任何规范中未定义的自定义运算符，则保持沉默。
+`check_model`会由于这种类型不一致而引发错误。 但是对于没有指定域的自定义算子来说，`check_model`不会检查数据的类型和形状。
 
-形状推理的目的只有一个：估计中间结果的形状和类型。 如果知道，运行时就可以事先估计内存消耗，优化计算。它可以融合某些运算符，可以就地进行计算......
+<mark style="color:red;">形状推理的目的只有一个：估计中间结果的形状和类型。 运行时就可以事先估计内存消耗，优化计算。它可以融合某些运算符，可以就地进行计算......</mark>
 
-```
+```python
 import onnx.parser
 from onnx import helper, shape_inference
 
@@ -1586,7 +1586,7 @@ inferred_model = shape_inference.infer_shapes(onnx_model)
 print(inferred_model)
 ```
 
-```
+```sh
 ir_version: 8
 graph {
   node {
@@ -1685,17 +1685,17 @@ opset_import {
 }
 ```
 
-有一个新属性`value_info`，用于存储推断出的形状。`dim_param`中的字母`I` `： "I "`可以看作一个变量。这取决于输入，但函数能够判断出哪些中间结果将共享相同的维度。 形状推理并非一直有效。例如，重塑操作符。形状推理只有在形状恒定的情况下才会起作用。 如果形状不恒定，则无法轻松推理出形状，除非下面的节点期望得到特定的形状。
+有一个新属性`value_info`，用于存储推断出的形状。`dim_param`中的字母`I` ： `"I"`可以看作一个变量。这取决于输入，但函数能够判断出哪些中间结果将共享相同的维度。 形状推理并非一直有效。例如，`reshape`算子。形状推理只有在形状恒定的情况下才会起作用。 如果形状不恒定，则无法轻松推理出形状，除非下面的节点期望得到特定的形状。
 
-### 评估和运行[时间](broken-reference)\#
+### Evaluation and Runtime
 
-ONNX 标准允许框架以 ONNX 格式导出训练有素的模型，并允许使用任何支持_ONNX_格式的后端进行推理。它可用于多种平台，并针对快速推理进行了优化。_onnx_实现了一个 Python 运行时，有助于理解模型。 它不打算用于生产，性能也不是它的目标。
+ONNX 标准允许框架以 ONNX 格式导出模型，并允许使用任何支持_ONNX_格式的后端进行推理。它可用于多种平台，并针对快速推理进行了优化。_ONNX_ 实现了一个 Python runtime，有助于理解模型。 它不打算用于实际生产中，性能也不是它的目标。
 
-#### 线性[回归](broken-reference)评估\#
+#### 评估线性回归模型
 
 完整的 API 描述请参见[onnx.reference](https://onnx.ai/onnx/api/reference.html#l-reference-implementation)。 它接收一个模型（一个_ModelProto_、一个文件名......）。 方法`run`返回字典中指定的一组输入的输出。
 
-```
+```python
 import numpy
 from onnx import numpy_helper, TensorProto
 from onnx.helper import (
@@ -1724,18 +1724,18 @@ feeds = {'X': x, 'A': a, 'B': b}
 print(sess.run(None, feeds))
 ```
 
-```
+```sh
 [array([[-1.5184462 ],
        [-1.0666499 ],
        [-0.77610564],
        [-2.116381  ]], dtype=float32)]
 ```
 
-#### [节点](broken-reference)评估\#
+#### 评估节点
 
-评估器还可以评估一个简单的节点，以检查运算符在特定输入时的表现。
+评估器还可以评估一个简单的节点，以检查算子在特定输入时的表现。
 
-```
+```python
 import numpy
 from onnx import numpy_helper, TensorProto
 from onnx.helper import make_node
@@ -1752,7 +1752,7 @@ feeds = {'X': x}
 print(sess.run(None, feeds))
 ```
 
-```
+```sh
 [array([[1., 0.],
        [0., 1.],
        [0., 0.],
@@ -1761,11 +1761,9 @@ print(sess.run(None, feeds))
 
 类似的代码也适用于_GraphProto_或_FunctionProto_。
 
-#### 评估步骤[#](broken-reference)
+#### Evaluation Step by Step参数`verbose`会显示中间结果信息。
 
-转换库采用用机器学习框架_（pytorch_、_scikit-learn_......）训练的现有模型，并将模型转换为 ONNX 图形。复杂的模型通常无法一蹴而就，查看中间结果可能有助于找到转换错误的部分。参数`verbose`会显示中间结果信息。
-
-```
+```python
 import numpy
 from onnx import numpy_helper, TensorProto
 from onnx.helper import (
@@ -1798,7 +1796,7 @@ for verbose in [1, 2, 3, 4]:
     print(sess.run(None, feeds))
 ```
 
-```
+```sh
 ------ verbose=1
 
 [array([[-1.5585198 ],
@@ -1844,11 +1842,15 @@ Add(XA, B) -> Y
        [ 0.08234122]], dtype=float32)]
 ```
 
-#### 评估自定义[节点](broken-reference)\#
+#### 评估自定义的节点
 
-下面的示例仍然实现了线性回归，但在_A_ 中加入了身份矩阵： .
+下面的示例仍然实现了线性回归，但在矩阵_A_ 中加入了单位矩阵
 
-```
+$$
+Y = X(A+I)+B
+$$
+
+```python
 import numpy
 from onnx import numpy_helper, TensorProto
 from onnx.helper import (
@@ -1881,7 +1883,7 @@ feeds = {'X': x, 'A': a, 'B': b}
 print(sess.run(None, feeds))
 ```
 
-```
+```sh
 EyeLike(A) -> Eye
 Add(A, Eye) -> A1
 MatMul(X, A1) -> XA1
@@ -1892,9 +1894,9 @@ Add(XA1, B) -> Y
        [ 2.164718  ,  0.11840849]], dtype=float32)]
 ```
 
-如果将运算符_EyeLike_和_Add_合并为_AddEyeLike_，效率会更高。下一个示例将这两个运算符替换为`"优化 "`域中的一个运算符。
+如果将运算符_EyeLike_和_Add_合并为_AddEyeLike_，效率会更高。下一个示例将这两个运算符替换为`"optimized"`域中的一个运算符。
 
-```
+```python
 import numpy
 from onnx import numpy_helper, TensorProto
 from onnx.helper import (
@@ -1922,9 +1924,9 @@ with open("linear_regression_improved.onnx", "wb") as f:
     f.write(onnx_model.SerializeToString())
 ```
 
-我们需要评估这个模型是否等同于第一个模型，这就需要对这个特定节点进行实现。
+我们需要评估这个模型是否等同于第一个模型，这就需要对`AddEyeLike`这个特定节点进行实现。
 
-```
+```python
 import numpy
 from onnx.reference import ReferenceEvaluator
 from onnx.reference.op_run import OpRun
@@ -1962,7 +1964,7 @@ print(y1)
 print(f"difference: {numpy.abs(y0 - y1).max()}")
 ```
 
-```
+```sh
 AddEyeLike(A) -> A1
 MatMul(X, A1) -> XA1
 Add(XA1, B) -> Y
@@ -1983,7 +1985,7 @@ difference: 0.0
 
 预测结果是一样的。让我们在一个足够大的矩阵上比较一下性能，看看是否有显著差异。
 
-```
+```python
 import timeit
 import numpy
 from onnx.reference import ReferenceEvaluator
@@ -2018,13 +2020,13 @@ print(f"time with EyeLike+Add: {timeit.timeit(lambda: sess0.run(None, feeds), nu
 print(f"time with AddEyeLike: {timeit.timeit(lambda: sess1.run(None, feeds), number=1000)}")
 ```
 
-```
+```sh
 difference: 0.0
 time with EyeLike+Add: 0.07655519099995445
 time with AddEyeLike: 0.06604622999998355
 ```
 
-在这种情况下，似乎值得添加一个优化节点。 这种优化通常被称为_融合_。 两个连续的运算符被融合为两个运算符的优化版本。 制作通常依赖于_onnxruntime_，但由于优化使用的是基本的矩阵运算，因此在任何其他运行时都会带来相同的性能提升。
+在这种情况下，似乎值得添加一个优化节点。 这种优化通常被称为_融合_。 两个连续的算子被融合，成为一个经过优化后的算子。&#x20;
 
 ### 实施[细节](broken-reference)\#
 
