@@ -12,31 +12,31 @@ ONNX Model hub 在 ONNX 1.11.0 之后可用。
 
 在本节中，我们将演示一些基本功能。
 
-```
+```python
 from onnx import hub
 ```
 
 #### Downloading a model by name:
 
-The `load` function will default to searching the model zoo for the latest model with a matching name, download this model to a local cache, and load the model into a `ModelProto` object for use with the ONNX runtime.
+加载函数将默认在模型库中搜索名称匹配的最新模型，将该模型下载到本地缓存中，并将模型加载到 `ModelProto` 对象中，供 `ONNX runtime`使用。
 
-```
+```python
 model = hub.load("resnet50")
 ```
 
 #### Downloading from custom repositories:
 
-Any repository with the proper structure can be a ONNX model hub. To download from other hubs, or to specify a particular branch or commit on the main model hub one can provide the `repo` parameter:
+可以提供 repo 参数从指定的ONNX hub中下载：
 
-```
+```python
 model = hub.load("resnet50", repo="onnx/models:771185265efbdc049fb223bd68ab1aeb1aecde76")
 ```
 
 #### Listing and inspecting Models:
 
-The model hub provides APIs for querying the model zoo to learn more about available models. This does not download the models, but rather just returns information about models matching the given arguments
+也提供了用于查询Model Zoo的 API，以了解更多有关可用模型的信息。这不会下载模型，而只是返回与给定参数相匹配的模型信息
 
-```
+```python
 # List all models in the onnx/models:main repo
 all_models = hub.list_models()
 
@@ -47,15 +47,15 @@ mnist_models = hub.list_models(model="mnist")
 vision_models = hub.list_models(tags=["vision"])
 ```
 
-One can also inspect the metadata of a model prior to download with the `get_model_info` function:
+我们还可以使用 `get_model_info` 函数在下载前检查模型的元数据：
 
-```
+```python
 print(hub.get_model_info(model="mnist", opset=8))
 ```
 
 This will print something like:
 
-```
+```sh
 ModelInfo(
     model=MNIST,
     opset=8,
@@ -75,49 +75,43 @@ ModelInfo(
 
 ### Local Caching
 
-The ONNX Model hub locally caches downloaded models in a configurable location so that subsequent calls to `hub.load` do not require network connection.
+ONNX hub会将下载的模型缓存到一个可配置的本地位置，以便后续调用 hub.load 时无需连接网络。
 
 #### Default cache location
 
-The hub client looks for the following default cache locations in this order:
+hub客户端按以下顺序查找默认缓存位置：
 
-1. `$ONNX_HOME/hub` if the `ONNX_HOME` environment variable is defined
-2. `$XDG_CACHE_HOME/hub` if the `XDG_CACHE_HOME` environment variable is defined
-3. `~/.cache/onnx/hub` where `~` is the user home directory
+1. `$ONNX_HOME/hub` 如果环境变量 `ONNX_HOME` 被定义
+2. `$XDG_CACHE_HOME/hub` 如果环境变量 `XDG_CACHE_HOME` 被定义
+3. `~/.cache/onnx/hub` 其中`~` 是用户的家目录
 
 #### Setting the cache location
 
-To manually set the cache location use:
+使用如下方法手动设置缓存位置:
 
-```
+```python
 hub.set_dir("my/cache/directory")
 ```
 
-Additionally one can inspect the cache location with:
+此外，还可以通过以下方式检查缓存位置：
 
-```
+```python
 print(hub.get_dir())
 ```
 
 #### Additional cache details
 
-To clear the model cache one can simply delete the cache directory using a python utility like `shutil` or `os`. Furthermore one can choose to override the cached model using the `force_reload` option:
+要清除模型缓存，只需使用 `shutil` 或 `os` 等 `python` 工具删除缓存目录即可。此外，还可以使用 `force_reload` 选项覆盖缓存模型：
 
-```
+```python
 model = hub.load("resnet50", force_reload=True)
 ```
 
-We include this flag for completeness but note that models in the cache are disambiguated with sha256 hashes so the force\_reload flag is not necessary for normal use. Finally we note that the model cache directory structure will mirror the directory structure specified by the `model_path` field of the manifest, but with file names disambiguated with model SHA256 Hashes.
-
-This way, the model cache is human readable, can disambiguate between multiple versions of models, and can re-use cached models across different hubs if they have the same name and hash.
-
 ### Architecture
 
-![ONNX Hub Architecture](https://onnx.ai/onnx/repo-docs/repo-docs/images/onnx\_hub\_arch.svg)
+ONNX hub由客户端和服务器两个主要部分组成。客户端代码目前包含在 onnx 软件包中，可以在 github 仓库（如 ONNX Model Zoo 中的仓库）中以托管 ONNX\_HUB\_MANIFEST.json 的形式指向服务器。该清单文件是一个 JSON 文档，其中列出了所有模型及其元数据，其设计与编程语言无关。下面是一个格式良好的模型清单条目示例：
 
-The ONNX Hub consists of two main components, the client and the server. The client code currently is included in the `onnx` package and can be pointed at a server in the form of a hosted `ONNX_HUB_MANIFEST.json` within a github repository such as [the one in the ONNX Model Zoo](https://github.com/onnx/models/blob/main/ONNX\_HUB\_MANIFEST.json). This manifest file is a JSON document which lists all models and their metadata and is designed to be programming language agnostic. An example of a well formed model manifest entry is as follows:
-
-```
+```json
 {
  "model": "BERT-Squad",
  "model_path": "text/machine_comprehension/bert-squad/model/bertsquad-8.onnx",
@@ -177,35 +171,11 @@ The ONNX Hub consists of two main components, the client and the server. The cli
 
 These important fields are:
 
-* `model`: The name of the model used for querying
-* `model_path`: The relative path of the model stored in Git LFS.
-* `onnx_version`: The ONNX version of the model
-* `opset_version`: The version of the opset. The client downloads the latest opset if left unspecified.
-* `metadata/model_sha`: Optional model sha specification for increased download security
-* `metadata/tags`: Optional high level tags to help users find models by a given type
+* `model`: 用于查询的模型名称
+* `model_path`: 存储在 Git LFS 中的模型的相对路径。
+* `onnx_version`: ONNX 模型的版本
+* `opset_version`: opset 的版本。如果未指定，客户端将下载最新的 opset。
+* `metadata/model_sha`: Optional 模型sha校验码，提高下载安全性
+* `metadata/tags`: Optional 帮助用户按特定类型查找模型
 
-All other fields in the `metadata` field are optional for the client but provide important details for users.
-
-### Adding to the ONNX Model Hub
-
-#### Contributing an official model
-
-The simplest way to add a model to the official `onnx/models` version model hub is to follow [these guidelines](https://github.com/onnx/models/blob/main/contribute.md) to contribute your model. Once contributed, ensure that your model has a markdown table in its `README.md` ([Example](https://github.com/onnx/models/tree/main/validated/vision/classification/mobilenet)). The model hub manifest generator will pull information from these markdown tables. To run the generator:
-
-```
-git clone https://github.com/onnx/models.git
-git lfs pull --include="*" --exclude=""
-cd models/workflow_scripts
-python generate_onnx_hub_manifest.py
-```
-
-Once a new manifest is generated add, submit it in a pull request to `onnx/models`
-
-#### Hosting your own ONNX Model Hub
-
-To host your own model hub, add an `ONNX_HUB_MANIFEST.json` to the top level of your github repository ([Example](https://github.com/onnx/models/blob/main/ONNX\_HUB\_MANIFEST.json)). At a minimum your manifest entries should include the fields mentioned in the [Architecture Section](https://onnx.ai/onnx/repo-docs/Hub.html#Architecture) of this document. Once committed, check that you can download models using the “Downloading from custom repositories” section of this doc.
-
-### Raise issue if any
-
-* For ONNX model problem or SHA mismatch issue, please raise issue in \[Model Zoo]/([https://github.com/onnx/models/issues](https://github.com/onnx/models/issues)).
-* Other questions/issues regarding the usage of ONNX Model Hub, please raise issue in [this repo](https://github.com/onnx/onnx/issues).
+`metadata`中的所有其他字段对客户端来说都是可选的，但却能为用户提供重要的详细信息。
