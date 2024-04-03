@@ -7,5 +7,7 @@
   * [😍 用python操作ONNX](doc/onnx\_intro/yong-python-cao-zuo-onnx.md)
 * [😍 ONNX repo中的文档](doc/onnx-repo-zhong-de-wen-dang/README.md)
   * [ONNX中的广播](doc/onnx-repo-zhong-de-wen-dang/onnx-zhong-de-guang-bo.md)
+  * [外部数据](doc/onnx-repo-zhong-de-wen-dang/wai-bu-shu-ju.md)
+  * [ONNX Model hub](doc/onnx-repo-zhong-de-wen-dang/onnx-model-hub.md)
 * [🐶 TensorRT](doc/tensorrt/README.md)
   * [🐱 TensorRT快速入门指南](doc/tensorrt/tensorrt-kuai-su-ru-men-zhi-nan.md)
