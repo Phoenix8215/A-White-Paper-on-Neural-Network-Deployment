@@ -2028,21 +2028,17 @@ time with AddEyeLike: 0.06604622999998355
 
 在这种情况下，似乎值得添加一个优化节点。 这种优化通常被称为_融合_。 两个连续的算子被融合，成为一个经过优化后的算子。&#x20;
 
-### 实施[细节](broken-reference)\#
+### Implementation details
 
-#### Python 和[ C++#](broken-reference)
+#### Attributes and inputs
 
-onnx 依靠 protobuf 来定义其类型，你会认为 python 对象只是内部结构上 C 指针的一个封装。因此，接收`ModelProto` 类型 python 对象的函数应该可以访问内部数据。但事实并非如此。根据[Protobuf 4 的修改](https://developers.google.com/protocol-buffers/docs/news/2022-05-06)，这在第 4 版之后就不再可能了，因此更安全的做法是将模型序列化为字节，然后将其交给 C 函数，然后再反序列化。 像`check_model`或`shape_inference`这样的函数都是先调用`SerializeToString`然后`ParseFromString`，然后再用 C 代码检查模型。
+两者之间有明显的区别。输入是动态的，每次执行都可能发生变化。属性永远不会改变，优化器据此可以改进计算图。 因此，不可能将输入转化为属性。 而_Constant_是唯一能将属性转化为输入的算子。
 
-#### 属性和[输入](broken-reference)\#
+#### Shape or no shape
 
-两者之间有明显的区别。输入是动态的，每次执行都可能发生变化。属性永远不会改变，优化器可以改进执行图，假设它永远不会改变。 因此，不可能将输入转化为属性。 而运算符_Constant_是唯一能将属性转化为输入的运算符。
+在处理具有可变维度的深度学习模型时，如何在ONNX格式中有效地表示和处理这些模型，以便它们可以在不同的深度学习框架中使用，这是一个具有挑战性的问题。
 
-#### 形状或无[形状](broken-reference)\#
-
-如果我们需要为每个维度创建一个有效的图形呢？ 这种情况仍然令人费解。
-
-```
+```python
 import numpy
 from onnx import numpy_helper, TensorProto, FunctionProto
 from onnx.helper import (
@@ -2115,7 +2111,7 @@ print(res)
 print("----------- end")
 ```
 
-```
+```bash
 ----------- case 1: 2D x 2D -> 2D
 [array([[ 0.45804122,  0.4898213 ],
        [ 0.0373224 , -0.00160027]], dtype=float32)]
