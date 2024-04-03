@@ -9,7 +9,7 @@
 * `make_tensor_value_info`：声明变量（输入或输出）的形状和类型
 * `make_node`：创建一个由操作符类型(算子名称)、输入和输出定义的节点
 * `make_graph`：利用前两个函数创建的对象创建 ONNX 计算图
-* `make_model`：合并计算图和额外的元数据
+* `make_model`：将计算图和额外的元数据进行合并
 
 在创建过程中，我们需要为图中每个节点的输入和输出命名。计算图的输入和输出由 onnx 对象定义，字符串用于指代中间结果。
 
@@ -281,6 +281,26 @@ print(f"The converted numpy dtype for {tensor_dtype_to_string(TensorProto.FLOAT)
 ```
 The converted numpy dtype for TensorProto.FLOAT is float32.
 ```
+
+{% hint style="info" %}
+`%r`同样用于格式化字符串，但它表示将一个值转换为它的“原始”字符串表示形式。这意味着，它会保留字符串中的所有特殊字符，包括空格和换行符等，而不会尝试对它们进行任何转换或解释。这对于调试或者需要保留原始格式的字符串非常有用。
+
+例如：
+
+```python
+message = "Hello,\nWorld!"
+formatted_message = "The message is: %r" % message
+print(formatted_message)
+```
+
+输出将会是：
+
+```
+The message is: Hello,\nWorld!
+```
+
+在这个例子中，`%r`保留了`message`字符串中的换行符，而不是将其转换为空格或忽略。
+{% endhint %}
 
 ### 序列化
 
@@ -565,7 +585,7 @@ pprint.pprint([p for p in dir(onnx)
  'ValueInfoProto']
 ```
 
-使用函数_load\_tensor\_from\_string_可以简化这段代码（请参阅[加载 Proto](https://onnx.ai/onnx/api/serialization.html#l-onnx-load-data)）。
+使用函数_load\_tensor\_from\_string_可以简化这段代码。
 
 ```python
 from onnx import load_tensor_from_string
@@ -721,7 +741,7 @@ raw_data: "\315\314\314>"
 
 ### Attributes
 
-有些算子需要属性，如[`Transpose`](https://onnx.ai/onnx/operators/onnx\_\_Transpose.html#l-onnx-doc-transpose)算子。 让我们为表达式`y = Add(MatMul(X, Transpose(A))+ B`)创建一个ONNX计算图。Transpose 需要一个定义坐标轴排列的属性：`perm=[1, 0]`。它在函数`make_node` 中作为命名属性添加进去。
+有些算子需要属性，如[`Transpose`](https://onnx.ai/onnx/operators/onnx\_\_Transpose.html#l-onnx-doc-transpose)算子。 让我们为表达式`y = Add(MatMul(X, Transpose(A))+ B`)创建一个ONNX计算图。Transpose 需要一个定义了坐标轴排列顺序的属性：`perm=[1, 0]`。它在函数`make_node` 中作为命名属性添加进去。
 
 ```python
 from onnx import TensorProto
@@ -949,7 +969,7 @@ for opset in onnx_model.opset_import:
 opset domain='' version=14
 ```
 
-_算子Reshape_的第 5 版将形状定义为输入，但是在第 1 版中将属性定义为输入。opset说明了在描述计算图时所遵循的规范。
+_算子Reshape_的第 5 版将形状定义为输入，但是在第 1 版中将属性定义为输入。opset定义了在描述计算图时所遵循的规范。
 
 元数据可用于存储任何信息，如有关模型生成方式的信息、用版本号区分不同的模型等。
 
