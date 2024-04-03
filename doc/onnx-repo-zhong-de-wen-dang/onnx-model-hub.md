@@ -6,13 +6,11 @@ ONNX Model Hub 是一种简单快捷的方法，可让您从 ONNX Model Zoo 开�
 
 ### Install
 
-The ONNX Model hub is available after ONNX 1.11.0.
+ONNX Model hub 在 ONNX 1.11.0 之后可用。
 
 ### Basic usage
 
-The ONNX Model Hub is capable of downloading, listing, and querying trained models from any git repository, and defaults to the official [ONNX Model Zoo](https://github.com/onnx/models). In this section we demonstrate some of the basic functionality.
-
-First please import the hub using:
+在本节中，我们将演示一些基本功能。
 
 ```
 from onnx import hub
