@@ -16,3 +16,4 @@
 * [TensorRT开发者文档](doc/tensorrt-kai-fa-zhe-wen-dang/README.md)
   * [文档简介](doc/tensorrt-kai-fa-zhe-wen-dang/wen-dang-jian-jie.md)
   * [TensorRT的功能](doc/tensorrt-kai-fa-zhe-wen-dang/tensorrt-de-gong-neng.md)
+  * [TensorRT的C++接口解析](doc/tensorrt-kai-fa-zhe-wen-dang/tensorrt-de-c++-jie-kou-jie-xi.md)
