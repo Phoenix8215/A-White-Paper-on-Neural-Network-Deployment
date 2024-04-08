@@ -62,23 +62,56 @@ TensorRT 附带一个插件库，其中许多插件和一些附加插件的源�
 
 ## Types and Precision
 
+### Supported Types
+
 TensorRT 支持 FP32、FP16、BF16、FP8、INT4、INT8、INT32、INT64、UINT8 和 BOOL 数据类型。有关层 I/O 数据类型规范，请参阅 [TensorRT 算子文档](https://docs.nvidia.com/deeplearning/tensorrt/operators/docs/)。
 
-* FP32、FP16、BF16：未量化浮点类型 - INT8：低精度整数类型 ￼ ◦ 隐式量化 ￼ ■ 解释为量化整数。INT8 类型的张量必须有相关的比例因子（通过校准或 setDynamicRange API）。从 INT8 类型转换到 INT8 类型需要显式 Q/DQ 层。◦ INT4 权重需要通过每个字节打包两个元素的方式进行序列化。FP8：低精度浮点类型 ￼ ◦ 8 位浮点类型，1 位符号、4 位指数、3 位尾数 ◦ 与 FP8 类型之间的转换需要显式 Q/DQ 层。 ◦ UINT8 的网络级输入必须使用 CastLayer 从 UINT8 转换为 FP32 或 FP16，然后才能用于其他操作。 ◦ UINT8 的网络级输出必须由明确插入网络的 CastLayer 生成（仅支持从 FP32/FP16 转换为 UINT8）。 不支持 UINT8 量化。
+* FP32、FP16、BF16：未量化浮点类型&#x20;
+* INT8：低精度整数类型&#x20;
+  * 隐式量化
+    * INT8 类型的张量必须有相关的比例因子（通过校准或 `setDynamicRange` API）。
+  * 显示量化
+    * 从 INT8 类型转换到 INT8 类型需要显式 Q/DQ 层。
+  * INT4：用于压缩权重的低精度整数类型
+    * INT4 用于仅权重量化。计算前需要去量化。
+    * INT4 类型之间的转换需要一个明确的 Q/DQ 层。
+    * INT4 权重应通过每个字节打包两个元素的方式进行序列化。有关更多信息，请参阅[量化权重](https://docs.nvidia.com/deeplearning/tensorrt/archives/tensorrt-1000-ea/developer-guide/index.html#qat-weights)部分。
+  * FP8：低精度浮点类型
+    * 8 位浮点类型，1 位符号，4 位指数，3 位尾数
+    * 与 FP8 类型之间的转换需要一个明确的 Q/DQ 层。
+  * UINT8：无符号整数输入/输出类型
+    * 只能作为网络 I/O 类型使用的数据类型。
+    * 在其他操作中使用数据之前，必须使用 `CastLayer` 将 UINT8 类型的输入转换为 FP32 或 FP16类型。
+    * UINT8 的网络级输出必须由明确插入网络的 `CastLayer` 生成（仅支持从 FP32/FP16 到 UINT8 的转换）。
+    * 不支持 UINT8 量化。
+    * `ConstantLayer` 不支持将 UINT8 作为输出类型。
+  * BOOL
 
+### Strong Typing vs Weak Typing
 
+向 TensorRT 提供网络时，需要指定是强类型还是弱类型，默认为弱类型。
 
-请参阅[降低精度](https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/index.html#reduced-precision)部分。
+<mark style="color:red;">对于强类型网络，TensorRT 的优化器将根据网络输入类型和运算符规范静态推断中间张量的类型，这与框架中的类型推断语义相匹配。然后，优化器将严格遵守这些类型。更多信息，请参阅强</mark>[<mark style="color:red;">类型网络</mark>](https://docs.nvidia.com/deeplearning/tensorrt/archives/tensorrt-1000-ea/developer-guide/index.html#strongly-typed-networks)<mark style="color:red;">。</mark>
+
+对于弱类型网络，如果可以提高性能，TensorRT 的优化器可以用不同精度的张量来替代。在这种模式下，TensorRT 默认将所有浮点运算设置为 FP32，但有两种方法可以配置不同的精度：
+
+* 为了在模型级别控制精度，BuilderFlag 选项（[C++](https://docs.nvidia.com/deeplearning/tensorrt/api/c\_api/namespacenvinfer1.html#abdc74c40fe7a0c3d05d2caeccfbc29c1)、[Python](https://docs.nvidia.com/deeplearning/tensorrt/api/python\_api/infer/Core/BuilderConfig.html#tensorrt.BuilderFlag)）可以让 TensorRT 在搜索最快的实现同时选择较低精度的实现（因为较低精度通常更快）。
+
+例如，只需设置一个标志，就能轻松指示 TensorRT 对整个模型使用 FP16 计算。对于输入动态范围约为 1 的正则化模型，这通常会显著提高速度，而精度的变化可以忽略不计。
+
+* 为了实现更精细的控制，即由于部分网络对数值敏感或需要较高的动态范围，某层必须以更高的精度运行，可以为该层指定算术精度。
+
+更多详情，请参阅 [弱类型网络中的精度降低](https://docs.nvidia.com/deeplearning/tensorrt/archives/tensorrt-1000-ea/developer-guide/index.html#reduced-precision)。
 
 ## Quantization
 
-TensorRT 支持量化浮点，其中浮点值被线性压缩并四舍五入为 8 位整数。这显着提高了算术吞吐量，同时降低了存储要求和内存带宽。在量化浮点张量时，TensorRT 需要知道它的动态范围——即表示什么范围的值很重要——量化时会截断超出该范围的值。
+TensorRT 支持量化浮点，其中浮点值被线性压缩并四舍五入为 8 位整数。这显着提高了算术吞吐量，同时降低了存储要求和内存带宽。<mark style="color:red;">在量化浮点张量时，TensorRT 需要知道它的动态范围——即表示什么范围的值很重要——量化时会截断超出该范围的值。</mark>
 
 动态范围信息可由构建器根据代表性输入数据计算（这称为校准--`calibration`）。或者，您可以在框架中执行量化感知训练，并将模型与必要的动态范围信息一起导入到 TensorRT。
 
 请参阅[使用 INT8](https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/index.html#working-with-int8)章节。
 
-## 2.6. Tensors and Data Formats
+## Tensors and Data Formats
 
 在定义网络时，TensorRT 假设张量由多维 C 样式数组表示。每一层对其输入都有特定的解释：例如，2D 卷积将假定其输入的最后三个维度是 CHW 格式 - 不可以使用 WHC 格式。有关每个层如何解释其输入，请参阅[TensorRT 网络层](https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/index.html#layers)一章。
 
@@ -86,7 +119,7 @@ TensorRT 支持量化浮点，其中浮点值被线性压缩并四舍五入为 8
 
 请参阅[I/O 格式](https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/index.html#reformat-free-network-tensors)部分
 
-## 2.7. Dynamic Shapes
+## Dynamic Shapes
 
 <mark style="color:red;">默认情况下，TensorRT 根据定义时的输入形状（批量大小、图像大小等）优化模型。但是，可以将构建器配置为允许在运行时调整输入维度。为了启用此功能，您可以在构建器配置中指定一个或多个</mark><mark style="color:red;">`OptimizationProfile`</mark> <mark style="color:red;"></mark><mark style="color:red;">（</mark> [<mark style="color:red;">C++</mark>](https://docs.nvidia.com/deeplearning/tensorrt/api/c\_api/classnvinfer1\_1\_1\_i\_optimization\_profile.html) <mark style="color:red;">、</mark> [<mark style="color:red;">Python</mark>](https://docs.nvidia.com/deeplearning/tensorrt/api/python\_api/infer/Core/OptimizationProfile.html?highlight=optimizationprofile) <mark style="color:red;">）实例，其中包含每个输入的最小和最大形状，以及该范围内的优化点。</mark>
 
@@ -94,19 +127,23 @@ TensorRT 支持量化浮点，其中浮点值被线性压缩并四舍五入为 8
 
 请参阅[使用动态形状](https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/index.html#work\_dynamic\_shapes)一章。
 
-## 2.8. DLA
+## DLA
 
 TensorRT 支持 NVIDIA 的深度学习加速器 (Deep Learning Accelerator)，这是许多 NVIDIA SoC 上的专用推理处理器，支持 TensorRT 层的子集。 TensorRT 允许您在 DLA 上执行部分网络，而在 GPU 上执行其余部分；对于可以在任一设备上执行的层，您可以在构建器配置中逐层选择目标设备。
 
 请参阅使用 [DLA](https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/index.html#refitting-engine-c)章节。
 
-## 2.9. Updating Weights
+## Updating Weights
 
 在构建引擎时，您可以指定它更新其权重。如果您经常在不更改结构的情况下更新模型的权重，例如在强化学习中或在保留相同结构的同时重新训练模型时，这将很有用。权重更新是通过`Refitter` ( [C++ ](https://docs.nvidia.com/deeplearning/tensorrt/api/c\_api/classnvinfer1\_1\_1\_i\_refitter.html), [Python](https://docs.nvidia.com/deeplearning/tensorrt/api/python\_api/infer/Core/Refitter.html) ) 接口执行的。
 
 请参阅[Refitting An Engine](https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/index.html#refitting-engine-c) 部分。
 
-## 2.10. trtexec
+## Streaming Weights
+
+TensorRT 可以配置为在网络执行过程中将网络权重从主机内存流式传输到设备内存，而不是在引擎加载时将其放置在设备内存中。这使得权重大于 GPU 可用内存的模型也能运行，但可能会大大增加延迟。权重流在构建时使用（`BuilderFlag::kWEIGHT_STREAMING`）和运行时使用（`ICudaEngine::setWeightStreamingBudget`）都是可选功能。
+
+## trtexec
 
 示例目录中包含一个名为`trtexec`的命令行包装工具。 `trtexec`是一种无需开发自己的应用程序即可快速使用 TensorRT 的工具。 trtexec工具有三个主要用途：
 
@@ -116,7 +153,7 @@ TensorRT 支持 NVIDIA 的深度学习加速器 (Deep Learning Accelerator)，�
 
 请参阅[trtexec](https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/index.html#trtexec)部分。
 
-## 2.11. Polygraphy
+## Polygraphy
 
 Polygraphy 是一个工具包，旨在帮助在 TensorRT 和其他框架中运行和调试深度学习模型。它包括一个Python API和一个使用此 API 构建的命令行界面 (CLI) 。
 
