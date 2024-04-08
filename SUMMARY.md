@@ -20,3 +20,5 @@
   * [TensorRT的Python接口解析](doc/tensorrt-kai-fa-zhe-wen-dang/tensorrt-de-python-jie-kou-jie-xi.md)
   * [TensorRT如何工作](doc/tensorrt-kai-fa-zhe-wen-dang/tensorrt-ru-he-gong-zuo.md)
   * [TensorRT 进阶用法](doc/tensorrt-kai-fa-zhe-wen-dang/tensorrt-jin-jie-yong-fa.md)
+* [杂文不杂](doc/za-wen-bu-za/README.md)
+  * [模型部署的几大误区](doc/za-wen-bu-za/mo-xing-bu-shu-de-ji-da-wu-qu.md)
