@@ -13,3 +13,6 @@
   * [概述](doc/onnx-repo-zhong-de-wen-dang/gai-shu.md)
 * [🐶 TensorRT](doc/tensorrt/README.md)
   * [🐱 TensorRT快速入门指南](doc/tensorrt/tensorrt-kuai-su-ru-men-zhi-nan.md)
+* [TensorRT开发者文档](doc/tensorrt-kai-fa-zhe-wen-dang/README.md)
+  * [文档简介](doc/tensorrt-kai-fa-zhe-wen-dang/wen-dang-jian-jie.md)
+  * [TensorRT的功能](doc/tensorrt-kai-fa-zhe-wen-dang/tensorrt-de-gong-neng.md)
