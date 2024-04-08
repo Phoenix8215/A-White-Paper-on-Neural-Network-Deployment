@@ -73,9 +73,9 @@ CUDA lazy loading 是一项 CUDA 功能，可显著降低 TensorRT 的 GPU 和�
 
 #### L2 Persistent Cache Management
 
-英伟达™（NVIDIA®）安培（Ampere）及更高版本的架构支持二级缓存持久性，该功能允许在选择要驱逐的行时优先保留二级缓存行。TensorRT 可以利用这一功能将激活保留在缓存中，从而减少 DRAM 流量和功耗。
+英伟达™（NVIDIA®）Ampere 及更高版本的架构支持二级缓存持久性，该功能允许在选择要驱逐的行时优先保留二级缓存行。TensorRT 可以利用这一功能将激活保留在缓存中，从而减少 DRAM 流量和功耗。
 
-缓存分配按执行上下文进行，使用上下文的 setPersistentCacheLimit 方法启用。所有上下文（以及使用此功能的其他组件）中的持久缓存总量不应超过 cudaDeviceProp::persingL2CacheMaxSize。更多信息，请参阅《英伟达 CUDA 最佳实践指南》。
+缓存分配按执行上下文进行，使用上下文的 `setPersistentCacheLimit` 方法启用。所有上下文（以及使用此功能的其他组件）中的持久缓存总量不应超过 `cudaDeviceProp::persingL2CacheMaxSize`。更多信息，请参阅[《英伟达 CUDA 最佳实践指南》](https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html)。
 
 ## Threading
 
@@ -88,6 +88,8 @@ CUDA lazy loading 是一项 CUDA 功能，可显著降低 TensorRT 的 GPU 和�
 
 在不同线程中使用多个构建器没有线程安全问题；但是，构建器使用时序来确定所提供参数的最快内核，并且使用具有相同 GPU 的多个构建器将扰乱时序和 TensorRT 构建最佳引擎的能力。使用多线程用不同的 GPU 构建不存在此类问题。
 
+##
+
 ## Determinism
 
 TensorRT `builder` 根据使用时间来找到最快的内核来实现给定的运算符。时序内核会受到噪声的影响——GPU 上运行的其他工作、GPU 时钟速度的波动等。时序噪声意味着在构建器的连续运行中，可能不会选择相同的实现。
@@ -95,3 +97,21 @@ TensorRT `builder` 根据使用时间来找到最快的内核来实现给定的�
 `AlgorithmSelector` ( [C++](https://docs.nvidia.com/deeplearning/tensorrt/api/c\_api/classnvinfer1\_1\_1\_i\_algorithm\_selector.html) , [Python](https://docs.nvidia.com/deeplearning/tensorrt/api/python\_api/infer/AlgorithmSelector/pyAlgorithmSelector.html) )接口允许您强制构建器为给定层选择特定实现。您可以使用它来确保构建器一定选择相同的内核。有关更多信息，请参阅[算法选择和可重现构建](https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/index.html#algorithm-select)部分。
 
 <mark style="color:red;">一旦构建了引擎，它就是确定性的：在相同的运行时环境中提供相同的输入将产生相同的输出。</mark>
+
+## <mark style="color:red;">Runtime Options</mark>
+
+TensorRT 提供多个运行时库，以满足各种使用情况。运行 TensorRT 引擎的 C++ 应用程序应链接到以下动态库中的一个：
+
+* _默认_运行时为主库（libnvinfer.so/.dll）。
+* _精简_运行时库（libnvinfer\_lean.so/.dll）比默认库小得多，只包含运行版本兼容引擎所需的代码。它有一些限制，主要是不能重新适配或序列化引擎。
+* _调度_运行时（libnvinfer\_dispatch.so/.dll）是一个小型临时库，可以加载_精简_运行时，并对其进行重定向调用。_调度_运行时能加载旧版本的_精简_运行时，并对builder进行适当的配置，<mark style="color:red;">可用于兼容较新版本的 TensorRT 和较旧版本的plan文件。</mark>使用_调度_运行时与手动加载_精简_运行时几乎相同，但它会检查所加载的_精简_运行时是否实现了应用程序接口，并执行一些参数映射，以尽可能支持应用程序接口的更改。
+
+_精简_运行时包含的运算符实现比_默认_运行时少。由于 TensorRT 会在构建时选择运算符，因此需要指定_精简_运行时构建的引擎。与_默认_运行时构建的引擎相比，它可能会稍慢一些。
+
+_精简_运行时包含_调度_运行时的所有功能，_默认_运行时包含_精简_运行时的所有功能。
+
+TensorRT 提供了与上述每个库相对应的 Python 包：
+
+* tensorrt
+* tensorrt\_lean
+* tensorrt\_dispatch
