@@ -40,7 +40,7 @@ IBuilder* builder = createInferBuilder(logger);
 
 创建构建器后，优化模型的第一步是创建网络定义：
 
-```C++
+```cpp
 uint32_t flag = 1U <<static_cast<uint32_t>
     (NetworkDefinitionCreationFlag::kEXPLICIT_BATCH); 
 
@@ -92,6 +92,12 @@ IBuilderConfig* config = builder->createBuilderConfig();
 config->setMemoryPoolLimit(MemoryPoolType::kWORKSPACE, 1U << 20);
 ```
 
+另一个重要的考虑因素是 CUDA 后端实现的最大共享内存分配。在 TensorRT 需要与其他应用程序共存的情况下，例如 TensorRT 和 DirectX 同时使用 GPU 时，这种分配就变得至关重要。
+
+```cpp
+config->setMemoryPoolLimit(MemoryPoolType::kTACTIC_SHARED_MEMORY, 48 << 10);
+```
+
 一旦指定了配置，就可以构建引擎。
 
 ```cpp
@@ -100,7 +106,7 @@ IHostMemory*  serializedModel = builder->buildSerializedNetwork(*network, *confi
 
 由于序列化引擎包含权重的必要拷贝，因此不再需要解析器、网络定义、构建器配置和构建器，可以安全地删除：
 
-```C++
+```cpp
 delete parser;
 delete network;
 delete config;
@@ -109,50 +115,56 @@ delete builder;
 
 然后可以将引擎保存到磁盘，并且可以删除保存它序列化数据的缓冲区。
 
-```C++
+```cpp
 delete serializedModel
 ```
 
-#### 注意：序列化引擎不能跨平台或 TensorRT 版本移植。引擎特定于它们构建的确切 GPU 模型。
+#### 注意：序列化引擎不能跨平台或 TensorRT 版本移植。
 
-## 3.2. Deserializing a Plan
+## Deserializing a Plan
 
 假设您之前已经序列化了一个优化模型并希望执行推理，您将需要创建一个运行时接口的实例。与构建器一样，运行时需要一个记录器(logger)实例：
 
-```C++
+```cpp
 IRuntime* runtime = createInferRuntime(logger);
 ```
 
 假设您已将模型从缓冲区中读取，然后可以对其进行反序列化以获得引擎：
 
-```C++
+```cpp
 ICudaEngine* engine = 
   runtime->deserializeCudaEngine(modelData, modelSize);
 ```
 
-## 3.3. Performing Inference
+## Performing Inference
 
 引擎包含优化后的模型，但要执行推理，我们需要管理中间激活的额外状态。这是通过`ExecutionContext`接口完成的：
 
-```C++
+```cpp
 IExecutionContext *context = engine->createExecutionContext();
 ```
 
 <mark style="color:red;">一个引擎可以有多个执行上下文，允许一组权重用于多个重叠的推理任务。 （一个例外是使用动态形状时，每个优化配置文件只能有一个执行上下文。）</mark>
 
-要执行推理，您必须为输入和输出传递 `TensorRT` 缓冲区，`TensorRT` 要求你通过调用 `setTensorAddress` 来指定这些缓冲区，`setTensorAddress` 接收张量名称和缓冲区地址。您可以使用提供的输入和输出张量名称查询引擎，以找到数组中的正确位置：：
+要执行推理，您必须为输入和输出传递 `TensorRT` 缓冲区，`TensorRT` 要求你通过调用 `setTensorAddress` 来指定这些缓冲区，`setTensorAddress` 接收张量名称和缓冲区地址。您可以使用提供的输入和输出张量名称查询引擎，以找到在数组中位置：：
 
-```C++
-icontext->setTensorAddress(INPUT_NAME, inputBuffer);
+```cpp
+context->setTensorAddress(INPUT_NAME, inputBuffer);
 context->setTensorAddress(OUTPUT_NAME, outputBuffer);
 ```
 
-然后，您可以调用 TensorRT 的 `enqueueV3` 方法以使用CUDA 流异步启动推理：
+如果使用动态形状创建引擎，则还必须指定输入形状：
 
-```C++
+```cpp
+context->setInputShape(INPUT_NAME, inputDims);
+```
+
+然后，您可以调用 TensorRT 的 `enqueueV3` 方法以使用CUDA 流启动异步推理：
+
+```cpp
 context->enqueueV3(buffers, stream, nullptr);
 ```
 
-网络是否以异步方式执行取决于网络的结构和特性。例如，数据相关形状、DLA 使用、循环和同步插件等，都可能导致同步行为。在内核前后使用 `cudaMemcpyAsync()` 来排队数据传输是很常见的做法，这样可以将数据从 GPU 转移到其他地方（如果还没有的话）。
+网络是否以异步方式执行取决于网络的结构和特性。例如，数据相关形状、DLA 使用、循环和同步插件等，都可能导致同步行为。在内核前后使用 `cudaMemcpyAsync()` 来进行数据传输是很常见的做法，这样可以将数据从 GPU 转移到其他地方。
 
-要确定内核（ `cudaMemcpyAsyn()`）何时完成，可使用标准的 CUDA 同步机制，如事件或在流上等待。
+要确定内核（使用 `cudaMemcpyAsyn()`的时候)何时完成，可使用标准的 CUDA 同步机制，如事件或在流上等待。
