@@ -23,3 +23,4 @@
 * [杂文不杂](doc/za-wen-bu-za/README.md)
   * [模型部署的几大误区](doc/za-wen-bu-za/mo-xing-bu-shu-de-ji-da-wu-qu.md)
   * [手算Ampere架构各个精度的Throughout](doc/za-wen-bu-za/shou-suan-ampere-jia-gou-ge-ge-jing-du-de-throughout.md)
+  * [Tensor Core VS CUDA Core](doc/za-wen-bu-za/tensor-core-vs-cuda-core.md)
