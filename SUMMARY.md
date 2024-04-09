@@ -1,6 +1,6 @@
 # Table of contents
 
-## 😁 ONNX文档中文版 <a href="#doc" id="doc"></a>
+## 😁 The songs of Deployment <a href="#doc" id="doc"></a>
 
 * [😄 ONNX简介](README.md)
   * [😆 ONNX中的一些概念](doc/onnx\_intro/onnxconcepts.md)
@@ -24,3 +24,7 @@
   * [模型部署的几大误区](doc/za-wen-bu-za/mo-xing-bu-shu-de-ji-da-wu-qu.md)
   * [手算Ampere架构各个精度的Throughout](doc/za-wen-bu-za/shou-suan-ampere-jia-gou-ge-ge-jing-du-de-throughout.md)
   * [Tensor Core VS CUDA Core](doc/za-wen-bu-za/tensor-core-vs-cuda-core.md)
+  * [pnnx计算图结构剖析](doc/za-wen-bu-za/pnnx-ji-suan-tu-jie-gou-pou-xi.md)
+  * [C++11智能指针](doc/za-wen-bu-za/c++11-zhi-neng-zhi-zhen.md)
+  * [C++11右值引用和移动语义](doc/za-wen-bu-za/c++11-you-zhi-yin-yong-he-yi-dong-yu-yi.md)
+  * [C++11多线程](doc/za-wen-bu-za/c++11-duo-xian-cheng.md)
