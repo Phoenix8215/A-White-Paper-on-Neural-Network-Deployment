@@ -16,7 +16,7 @@
 
 <figure><img src="../../.gitbook/assets/p13.png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../.gitbook/assets/图片.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (11).png" alt=""><figcaption></figcaption></figure>
 
 * Per-tensor量化&#x20;
   * &#x20;优点：低延迟: 一个tensor共享同一个量化参数&#x20;
@@ -51,30 +51,4 @@ e.g.
 ```
 
 目前的TensorRT已经默认对于Activation values选用Per-tensor，Weights选用 Per-channel，这是他们做了多次实验所得出的结果。很多其他平台的SDK可能不会 提供一些默认的量化策略，这时我们需要谨慎选择，尽快找到掉点的原因。
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

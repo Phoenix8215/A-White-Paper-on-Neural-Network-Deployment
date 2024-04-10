@@ -27,13 +27,13 @@ DNN模型的大小，几乎在以每年10倍的FLOPs在增长
 
 所以一般来说我们会对conv或者linear这些计算密集型算子进行量化
 
-<figure><img src="../../.gitbook/assets/图片 (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 量化会出现什么问题
 
 fp32某个区间内的数值等于量化后int8上的一个点
 
-<figure><img src="../../.gitbook/assets/图片 (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../.gitbook/assets/图片 (23).png" alt=""><figcaption></figcaption></figure>
 

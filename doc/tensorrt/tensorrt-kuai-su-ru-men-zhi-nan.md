@@ -6,7 +6,7 @@ TensorRT 是一个庞大而灵活的项目。它可以处理各种转换和部�
 
 #### TensorRT 基本工作流程
 
-<figure><img src="../../.gitbook/assets/图片 (8).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (8) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### 转换和部署选项
 
@@ -15,7 +15,7 @@ TensorRT 生态系统分为两个部分：
 1. 用户可通过各种途径将其模型转换为已经优化好的 TensorRT 引擎。
 2. 用户在部署已经优化后的 TensorRT 引擎时，可将 TensorRT 作为推理 runtime。
 
-<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 使用 TensorRT 转换模型有三个主要选项：
 
@@ -55,7 +55,7 @@ TensorRT runtime  API 可以实现最低的开销和最精细的控制，但 Ten
 
 下面的流程图涵盖了本指南中涉及的不同工作流程。该流程图将帮助您根据这两个因素选择合适的路径。
 
-<figure><img src="../../.gitbook/assets/图片 (2) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (2) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 使用 ONNX 的部署示例
 
@@ -63,7 +63,7 @@ TensorRT runtime  API 可以实现最低的开销和最精细的控制，但 Ten
 
 在本例中，我们将使用 ONNX 格式转换一个预训练的 ResNet-50 模型；ONNX 是一种与框架无关的模型格式，可从大多数主流框架（包括 TensorFlow 和 PyTorch）导出。有关 ONNX 格式的更多信息，请[点击此处](https://github.com/onnx/onnx/blob/main/docs/IR.md)。
 
-<figure><img src="../../.gitbook/assets/图片 (5) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (5) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### 导出模型
 
@@ -179,7 +179,7 @@ TensorRT 包含一个带有 C++ 和 Python 绑定的独立运行时，与使用 
     ```
 2. 将[预先训练好的 FCN-ResNet-101](https://pytorch.org/hub/pytorch\_vision\_fcn\_resnet101/)模型转换为 ONNX。以下是相关的测试图片
 
-<figure><img src="../../.gitbook/assets/图片 (9).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (9) (1).png" alt=""><figcaption></figcaption></figure>
 
 a. 启动容器。
 
@@ -329,7 +329,7 @@ trtexec --shapes=input:1x3x1026x1282 --loadEngine=fcn-resnet101.engine
 
     测试图像的预期输出如下：
 
-<figure><img src="../../.gitbook/assets/图片 (6) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (6) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### 在 Python 中运行引擎
 
