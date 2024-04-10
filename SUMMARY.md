@@ -25,6 +25,8 @@
   * [动态量化范围](doc/mo-xing-liang-hua-he-jian-zhi/dong-tai-liang-hua-fan-wei.md)
   * [量化粒度](doc/mo-xing-liang-hua-he-jian-zhi/liang-hua-li-du.md)
   * [校准](doc/mo-xing-liang-hua-he-jian-zhi/xiao-zhun.md)
+  * [Post-Training Quantization](doc/mo-xing-liang-hua-he-jian-zhi/post-training-quantization.md)
+  * [Quantization-Aware Training](doc/mo-xing-liang-hua-he-jian-zhi/quantization-aware-training.md)
 * [杂文不杂](doc/za-wen-bu-za/README.md)
   * [模型部署的几大误区](doc/za-wen-bu-za/mo-xing-bu-shu-de-ji-da-wu-qu.md)
   * [手算Ampere架构各个精度的Throughout](doc/za-wen-bu-za/shou-suan-ampere-jia-gou-ge-ge-jing-du-de-throughout.md)
