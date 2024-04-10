@@ -189,7 +189,34 @@ $$
 R_{i}=(Q_{i}-z)*scale
 $$
 
+* 对称映射，非对称映射
+
+<figure><img src="../../.gitbook/assets/图片 (30).png" alt=""><figcaption></figcaption></figure>
+
+如上图，对称映射的 Z 始终为 0， 即原数值的 0 量化后仍然是 0，量化前后的数值都是以 0 为中点对称分布，但实际上有些数值的分布并不是左右对称的，比如 ReLU 激活后都是大于 0，这样会导致量化后 q 的范围只用到了一半，而非对称映射则解决了这个问题。
+
+非对称映射的 min、max 独立统计，Z 的值根据 r 的分布不同而不同，这样可以使 q 的范围被充分利用。
+
+我们来看一个实际的例子：量化 FP32 \[-1.8, -1.0, 0, 0.5] 到 INT8 \[0, 255] (非对称)：
+
+1. rmin = -1.8，rmax = 0.5， bitWidth = 8
+2. S = (rmax – rmin)/(qmax – qmin) = (0.5 – (-1.8)) / (255 – 0) = 0.009019607843
+3. Z = qmin – rmin/S = 255 – (-1.8)/S = 199.56521739 ≈ 200
+4. 量化结果：q = round(\[-1.8, -1.0, 0, 0.5] / S + Z) = \[0, 89, 200, 255]
+
+反量化：
+
+1. r’ = S \* (\[0, 89, 200, 255] – Z) = \[-1.80392157, -1.00117647, 0, 0.49607843]
+
+可以看到：反量化后数值对比原始数值存在一定误差。
+
+
+
+
+
 ### Reference
 
 * [https://www.lesswrong.com/posts/vnvGhfikBbrjZHMuD/predicting-gpu-performance](https://www.lesswrong.com/posts/vnvGhfikBbrjZHMuD/predicting-gpu-performance)
 * [https://arxiv.org/abs/2202.05924](https://arxiv.org/abs/2202.05924)
+* [https://robot9.me/ai-model-quantization-principles-practice/](https://robot9.me/ai-model-quantization-principles-practice/)
+* [https://www.researchgate.net/publication/357408276\_A\_Case\_Study\_of\_Quantizing\_Convolutional\_Neural\_Networks\_for\_Fast\_Disease\_Diagnosis\_on\_Portable\_Medical\_Devices?\_tp=eyJjb250ZXh0Ijp7InBhZ2UiOiJfZGlyZWN0In19](https://www.researchgate.net/publication/357408276\_A\_Case\_Study\_of\_Quantizing\_Convolutional\_Neural\_Networks\_for\_Fast\_Disease\_Diagnosis\_on\_Portable\_Medical\_Devices?\_tp=eyJjb250ZXh0Ijp7InBhZ2UiOiJfZGlyZWN0In19)
