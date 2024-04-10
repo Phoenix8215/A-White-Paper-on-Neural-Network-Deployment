@@ -37,13 +37,13 @@ Tensor Core基础能力在于，一个时钟周期内可以完成一个64 floati
 
 其次，Tensor Core也能堆叠，V100上面就堆了640个。而且Tensor Core经过了几次升级，其操作的精度更加丰富了：
 
-<figure><img src="../../.gitbook/assets/图片 (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### More examples
 
 <figure><img src="../../.gitbook/assets/图片 (3).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../.gitbook/assets/图片 (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../.gitbook/assets/图片 (2) (1).png" alt=""><figcaption></figcaption></figure>
 
