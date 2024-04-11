@@ -37,7 +37,7 @@ quant_x, scale = tensor_quant.tensor_quant(x, x.abs().max())
 
 `QuantDescriptor` 定义了张量的量化方式。还有一些预定义的 `QuantDescriptor`，例如 `QUANT_DESC_8BIT_PER_TENSOR` 和 `QUANT_DESC_8BIT_CONV2D_WEIGHT_PER_CHANNEL`。
 
-`TensorQuantizer` 是专门用来量化张量的一个模块，量化方式由 `QuantDescriptor` 定义。from pytorch\_quantization.tensor\_quant import QuantDescriptor
+`TensorQuantizer` 是专门用来量化张量的一个模块，量化方式由 `QuantDescriptor` 定义。`from pytorch_quantization.tensor_quant import QuantDescriptor`
 
 ```python
 from pytorch_quantization.tensor_quant import QuantDescriptor
@@ -98,7 +98,7 @@ quant_x = quantizer(x)
 
 #### Quantized module
 
-该模块有两种主要类型：Conv 和 Linear。这两种模块都可以替代 torch.nn 版本，并对权重和激活进行量化。除了原始模块的参数外，这两种模块都需要 quant\_desc\_input 和 quant\_desc\_weight。
+该模块有两种主要类型：Conv 和 Linear。这两种模块都可以替代 torch.nn 版本，并对权重和激活值进行量化。除了原始模块的参数外，这两种模块都需要 quant\_desc\_input 和 quant\_desc\_weight。
 
 ```python
 from torch import nn
