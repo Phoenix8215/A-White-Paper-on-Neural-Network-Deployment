@@ -49,9 +49,9 @@ trtexec在选择参数进行fp16或者int8指定的时候，使用的就是PTQ�
 
 我们在做量化后，我们无法指定将量化后的conv或者gemm放在Tensor core还是在CUDA core上计算。 这些是TensorRT在帮我们选择核函数的时候自动完成的。那么我们如何查看我们是否在用Tensor core呢？ 我们一般有这么几个办法&#x20;
 
-* 使用dlprof&#x20;
-* 使用nsight system
-* 使用trtexec
+* 使用`dlprof`&#x20;
+* 使用`nsight system`
+* 使用`trtexec`
 
 ### DLProf&#x20;
 
@@ -69,13 +69,13 @@ DLProf (Deep learning Profiler)工具可以把模型在GPU上的执行情况以T
 
 * &#x20;h884 = HMMA = FP16 TensorCore&#x20;
 * i8816 = IMMA = INT8 TensorCore&#x20;
-* &#x20;hcudnn = FP16 normal CUDA kernel (without TensorCore)&#x20;
-* &#x20;icudnn = INT8 normal CUDA kernel (without TensorCore)&#x20;
-* scudnn = FP32 normal CUDA kernel (without TensorCore)
+* &#x20;hcudnn = FP16 normal CUDA kernel (`without TensorCore)`&#x20;
+* &#x20;icudnn = INT8 normal CUDA kernel (`without TensorCore`)&#x20;
+* scudnn = FP32 normal CUDA kernel (`without TensorCore`)
 
-> HMMA: Half-precision matrix multiply and accumulate&#x20;
+> `HMMA: Half-precision matrix multiply and accumulate`&#x20;
 >
-> IMMA: Int-precision matrix multiply and accumulate&#x20;
+> `IMMA: Int-precision matrix multiply and accumulate`&#x20;
 
 
 

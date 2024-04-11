@@ -37,7 +37,7 @@ quant_x, scale = tensor_quant.tensor_quant(x, x.abs().max())
 
 `QuantDescriptor` 定义了张量的量化方式。还有一些预定义的 `QuantDescriptor`，例如 `QUANT_DESC_8BIT_PER_TENSOR` 和 `QUANT_DESC_8BIT_CONV2D_WEIGHT_PER_CHANNEL`。
 
-`TensorQuantizer` 是专门用来量化张量的一个模块，量化方式由 `QuantDescriptor` 定义。`from pytorch_quantization.tensor_quant import QuantDescriptor`
+<mark style="color:red;">`TensorQuantizer`</mark> <mark style="color:red;"></mark><mark style="color:red;">是专门用来量化张量的一个模块，量化方式由</mark> <mark style="color:red;"></mark><mark style="color:red;">`QuantDescriptor`</mark> <mark style="color:red;"></mark><mark style="color:red;">定义。</mark>
 
 ```python
 from pytorch_quantization.tensor_quant import QuantDescriptor
@@ -98,7 +98,7 @@ quant_x = quantizer(x)
 
 #### Quantized module
 
-该模块有两种主要类型：Conv 和 Linear。这两种模块都可以替代 torch.nn 版本，并对权重和激活值进行量化。除了原始模块的参数外，这两种模块都需要 quant\_desc\_input 和 quant\_desc\_weight。
+该模块有两种主要类型：Conv 和 Linear。这两种模块都可以替代 `torch.nn` 版本，并对权重和激活值进行量化。除了原始模块的参数外，这两种模块都需要 `quant_desc_input` 和 `quant_desc_weight`。
 
 ```python
 from torch import nn
@@ -137,10 +137,10 @@ QUANT_DESC_8BIT_CONVTRANSPOSE3D_WEIGHT_PER_CHANNEL = QuantDescriptor(num_bits=8,
 
 ### Post training quantization
 
-只需调用 `quant_modules.initialize()`，即可对模型进行训练后量化(PTQ)。
+只需调用 `quant_modules.initialize()`，即可对模型进行训练后量化(`PTQ`)。
 
 ```python
-fimport torch
+import torch
 import torchvision
 from pytorch_quantization import tensor_quant, quant_modules
 from pytorch_quantization import nn as quant_nn
@@ -158,8 +158,8 @@ torch.onnx.export(model, inputs, 'quant_resnet18.onnx', opset_version=13)
 上述示例代码通过指定 `quant_nn.TensorQuantizer.use_fb_fake_quant` 来将 `resnet18` 模型中的所有节点替换为 QDQ 算子，并导出为 ONNX 格式的模型文件，实现了模型的量化。值得注意的是：
 
 * `quant_modules.initialize()` 函数会把 `PyTorch-Quantization` 库中所有的量化算子按照数据类型、位宽等特性进行分类，并将其保存在全局变量 `_DEFAULT_QUANT_MAP` 中&#x20;
-* 导出的带有 QDQ 节点的 ONNX 模型中，对于输入 `input` 的整个 `tensor` 是共用一个 `scale`，而对于权重 `weight` 则是每个 `channel` 共用一个 `scale`&#x20;
-* 导出的带有 QDQ 节点的 ONNX 模型中，`x_zero_point` 是之前提到的偏移量，其值为0，因为整个量化过程是对称量化，其偏移量 Z 为0
+* <mark style="color:red;">导出的带有 QDQ 节点的 ONNX 模型中，对于输入</mark> <mark style="color:red;"></mark><mark style="color:red;">`input`</mark><mark style="color:red;">的整个</mark> <mark style="color:red;"></mark><mark style="color:red;">`tensor`</mark><mark style="color:red;">是共用一个</mark> <mark style="color:red;"></mark><mark style="color:red;">`scale`</mark><mark style="color:red;">，而对于权重</mark> <mark style="color:red;"></mark><mark style="color:red;">`weight`</mark><mark style="color:red;">则是每个</mark> <mark style="color:red;"></mark><mark style="color:red;">`channel`</mark><mark style="color:red;">共用一个</mark> <mark style="color:red;"></mark><mark style="color:red;">`scale`</mark>
+* <mark style="color:red;">导出的带有 QDQ 节点的 ONNX 模型中，</mark><mark style="color:red;">`x_zero_point`</mark><mark style="color:red;">是之前提到的偏移量，其值为0，因为整个量化过程是对称量化，其偏移量 Z 为0</mark>
 
 #### Calibration
 
@@ -203,7 +203,7 @@ model.cuda()
 
 ### Quantization Aware Training
 
-`Quantization Aware Training` 基于直通估计（STE）导数近似。它有时被称为 "量化感知训练"。我们不使用这个名称，因为它并不反映下面的假设。如果说有什么不同的话，那就是由于采用了 STE 近似方法，所以训练 "不感知 "量化。
+`Quantization Aware Training` 基于直通估计（STE）导数近似。它有时被称为 "量化感知训练"。我们不使用这个名称，因为它并不反映下面的假设。由于采用了 STE 近似方法，所以训练 "不感知 "量化。
 
 校准完成后，量化感知训练只需选择一个训练计划，然后继续训练校准后的模型。通常，它不需要微调很长时间。我们通常使用原始训练计划的 10% 左右，从初始训练学习率的 1% 开始，使用余弦退火学习率计划，按照余弦周期的一半递减，直到初始微调学习率的 1% （初始训练学习率的 0.01%）。
 
@@ -216,7 +216,7 @@ model.cuda()
 
 ### Export to ONNX
 
-导出到 ONNX 的目的是部署到 TensorRT，而不是 ONNX 运行时。因此，我们只将假量化模型导出为 TensorRT 可以接受的形式。假量化将分解为一对 `QuantizeLinear/DequantizeLinear` ONNX 操作。TensorRT 将获取生成的 ONNX 图，并以最优化的方式在 int8 中执行。
+导出到 ONNX 的目的是部署到 TensorRT，而不是 ONNX runtime。因此，我们只将假量化模型导出为 TensorRT 可以接受的形式。假量化将分解为一对 `QuantizeLinear/DequantizeLinear` ONNX 操作。TensorRT 将获取生成的 ONNX 图，并以最优化的方式在 int8 中执行。
 
 {% hint style="info" %}
 目前，我们只支持导出 int8 和 fp8 假量化模块。此外，量化模块在导出到 ONNX 之前需要进行校准。
@@ -283,7 +283,7 @@ from pytorch_quantization import quant_modules
 quant_modules.initialize()
 ```
 
-这将适用于每个模块的所有实例。如果不希望对所有模块进行量化，则应手动替换已量化的模块。也可以使用 `quant_nn.TensorQuantizer` 将独立的量化器添加到模型中。
+这将适用于每个模块的所有实例。如果不希望对所有模块进行量化，则应手动替换已量化的模块。也可以使用 `quant_nn.TensorQuantizer` 将量化器添加到模型中。
 
 {% hint style="info" %}
 `Monkey-patching` 是一种编程术语，指的是在运行时动态修改或扩展现有的代码，通常是在不修改原始源代码的情况下实现。这种技术允许开发者在程序运行过程中修改类、函数、方法或模块的行为，以满足特定的需求或修复 `bug`。
@@ -370,7 +370,7 @@ data_loader_test = torch.utils.data.DataLoader(
      compute_amax(model, method="percentile", percentile=99.99)
 ```
 
-校准完成后，量化器将设置一个最大值（`amax`），表示量化空间中可表示的绝对最大输入值。默认情况下，权重`scale`为`per channel`的，而激活函数的`scale`为每个张量。我们可以通过打印每个 `TensorQuantizer` 模块来查看 `amax`。
+校准完成后，量化器将设置一个最大值（`amax`），表示量化空间中可表示的绝对值最大的输入。默认情况下，权重`scale`为`per channel`的，而激活函数的`scale`为`per tensor`的。我们可以通过打印每个 `TensorQuantizer` 模块来查看 `amax`。
 
 ```
 conv1._input_quantizer                  : TensorQuantizer(8bit fake per-tensor amax=2.6400 calibrator=MaxCalibrator(track_amax=False) quant)
@@ -397,9 +397,9 @@ top-1 的准确率为 76.1%，接近预训练模型 76.2% 的准确率。
 
 **Use different calibration**
 
-We can try different calibrations without recollecting the histograms, and see which one gets the best accuracy.
+我们可以尝试不同的校准方式，而无需重新收集直方图，看看哪种校准方式能获得最佳精度。
 
-```
+```python
 with torch.no_grad():
     compute_amax(model, method="percentile", percentile=99.9)
     evaluate(model, criterion, data_loader_test, device="cuda", print_freq=20)
@@ -411,13 +411,13 @@ with torch.no_grad():
         evaluate(model, criterion, data_loader_test, device="cuda", print_freq=20)
 ```
 
-MSE and entropy should both get over 76%. 99.9% clips too many values for resnet50 and will get slightly lower accuracy.
+MSE 和熵校准模型准确率均超过 76%。对于 resnet50 而言，99.9%分位数过滤的数值过多，准确率会稍低。
 
 #### Quantization Aware Training
 
-Optionally, we can fine-tune the calibrated model to improve accuracy further.
+我们还可以选择对校准模型进行微调，以进一步提高精度。
 
-```
+```python
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=0.0001)
 lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.1)
@@ -429,15 +429,15 @@ train_one_epoch(model, criterion, optimizer, data_loader, "cuda", 0, 100)
 torch.save(model.state_dict(), "/tmp/quant_resnet50-finetuned.pth")
 ```
 
-After one epoch of fine-tuning, we can achieve over 76.4% top-1 accuracy. Fine-tuning for more epochs with learning rate annealing can improve accuracy further. For example, fine-tuning for 15 epochs with cosine annealing starting with a learning rate of 0.001 can get over 76.7%. It should be noted that the same fine-tuning schedule will improve the accuracy of the unquantized model as well.
+经过一个epoch的微调，我们可以获得超过76.4%的top-1准确率。利用余弦退火算法衰减学习率对更多的epoch进行微调，可以进一步提高准确率。例如，从学习率为 0.001 开始，使用余弦退火对 15 个 epoch 进行微调，可以获得 76.7% 以上的准确率。值得注意的是，同样的微调策略也能提高未量化模型的准确率。
 
 **Further optimization**
 
-For efficient inference on TensorRT, we need know more details about the runtime optimization. TensorRT supports fusion of quantizing convolution and residual add. The new fused operator has two inputs. Let us call them conv-input and residual-input. Here the fused operator’s output precision must match the residual input precision. When there is another quantizing node after the fused operator, we can insert a pair of quantizing/dequantizing nodes between the residual-input and the Elementwise-Addition node, so that quantizing node after the Convolution node is fused with the Convolution node, and the Convolution node is completely quantized with INT8 input and output. We cannot use automatic monkey-patching to apply this optimization and we need to manually insert the quantizing/dequantizing nodes.
+为了在 TensorRT 上实现高效推理，我们需要了解运行时优化的更多细节。TensorRT 支持量化卷积和残差加法的融合。新的融合算子有两个输入。我们称它们为卷积输入和残差输入。在这里，融合算子的输出精度必须与残差输入精度相匹配。如果在融合算子之后还有另一个量化节点，我们可以在残差输入和元素相加节点之间插入一对QDQ节点，这样卷积节点之后的量化节点就会与卷积节点融合，卷积节点就会完全量化为 INT8 输入和输出。我们不能使用 "猴子补丁 "来自动应用这种优化，而需要手动插入QDQ节点。
 
-First create a copy of resnet.py from [https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py](https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py), modify the constructor, add explicit bool flag ‘quantize’
+首先从 https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py 创建 resnet.py 的副本，修改构造函数，显式添加 bool 类型的量化标志
 
-```
+```python
 def resnet50(pretrained: bool = False, progress: bool = True, quantize: bool = False, **kwargs: Any) -> ResNet:
     return _resnet('resnet50', Bottleneck, [3, 4, 6, 3], pretrained, progress, quantize, **kwargs)
 def _resnet(arch: str, block: Type[Union[BasicBlock, Bottleneck]], layers: List[int], pretrained: bool, progress: bool,
@@ -458,9 +458,9 @@ class ResNet(nn.Module):
         self._quantize = quantize
 ```
 
-When this `self._quantize` flag is set to `True`, we need replace all the `nn.Conv2d` with `quant_nn.QuantConv2d`.
+当 `self._quantize` 标志设置为 `True` 时， `quant_nn.QuantConv2d` 将替换所有 `nn.Conv2d`。
 
-```
+```python
 def conv3x3(in_planes: int,
             out_planes: int,
             stride: int = 1,
@@ -494,9 +494,9 @@ def conv3x3(in_planes: int,
           return nn.Conv2d(in_planes, out_planes, kernel_size=1, stride=stride, bias=False)
 ```
 
-The residual conv add can be find both in both `BasicBlock` and `Bottleneck`. We need first declare quantization node in the `__init__` function.
+在 `BasicBlock` 和 `Bottleneck` 中都可以找到残差 conv add。我们首先需要在 `__init__` 函数中声明量化节点。
 
-```
+```python
 def __init__(self,
              inplanes: int,
              planes: int,
@@ -513,9 +513,9 @@ def __init__(self,
         self.residual_quantizer = quant_nn.TensorQuantizer(quant_nn.QuantConv2d.default_quant_desc_input)
 ```
 
-Finally we need patch the `forward` function in both `BasicBlock` and `Bottleneck`, inserting extra quantization/dequantization nodes here.
+最后，我们需要对 `BasicBlock` 和 `Bottleneck` 中的`forward`函数进行修改，在此处插入额外的QDQ节点。
 
-```
+```python
 def forward(self, x: Tensor) -> Tensor:
     # other code...
     if self._quantize:
@@ -527,41 +527,41 @@ def forward(self, x: Tensor) -> Tensor:
     return out
 ```
 
-The final resnet code with residual quantized can be found in [https://github.com/NVIDIA/TensorRT/blob/master/tools/pytorch-quantization/examples/torchvision/models/classification/resnet.py](https://github.com/NVIDIA/TensorRT/blob/master/tools/pytorch-quantization/examples/torchvision/models/classification/resnet.py)
+量化后的最终 resnet 代码见 [https://github.com/NVIDIA/TensorRT/blob/master/tools/pytorch-quantization/examples/torchvision/models/classification/resnet.py](https://github.com/NVIDIA/TensorRT/blob/master/tools/pytorch-quantization/examples/torchvision/models/classification/resnet.py)
 
 ### Creating Custom Quantized Modules
 
-There are several quantized modules provided by the quantization tool as follows:
+提供了以下几个量化模块：
 
 * QuantConv1d, QuantConv2d, QuantConv3d, QuantConvTranspose1d, QuantConvTranspose2d, QuantConvTranspose3d
 * QuantLinear
 * QuantAvgPool1d, QuantAvgPool2d, QuantAvgPool3d, QuantMaxPool1d, QuantMaxPool2d, QuantMaxPool3d
 
-To quantize a module, we need to quantize the input and weights if present. Following are 3 major use-cases:
+要量化一个模块，我们需要量化输入和权重。以下是 3 种主要用例：
 
-1. Create quantized wrapper for modules that have only inputs
-2. Create quantized wrapper for modules that have inputs as well as weights.
-3. Directly add the `TensorQuantizer` module to the inputs of an operation in the model graph.
+1. 为只有输入的模块创建量化包装器
+2. 为具有输入和权重的模块创建量化包装器。
+3. 直接将 `TensorQuantizer` 模块添加到模型中某个算子的输入端。
 
-The first two methods are very useful if it’s needed to automatically replace the original modules (nodes in the graph) with their quantized versions. The third method could be useful when it’s required to manually add the quantization to the model graph at very specific places (more manual, more control).
+如果需要用量化版本自动替换原始模块（图中的节点），前两种方法非常有用。如果需要在非常特定的位置手动将量化添加到模型中，第三种方法可能会非常有用（更多手动操作，更多控制）。
 
-Let’s see each use-case with examples below.
+下面我们通过示例来了解每种用例。
 
 #### Quantizing Modules With Only Inputs
 
-A suitable example would be quantizing the `pooling` module variants.
+一个合适的例子是量化 `pooling` 模块.
 
-Essentially, we need to provide a wrapper function that takes the original module and adds the `TensorQuantizer` module around it so that the input is first quantized and then fed into the original module.
+我们需要提供一个函数，它以原始模块为输入，并在其周围添加 `TensorQuantizer` 模块，以便对其输入进行量化，然后再将结果输入到原始模块。
 
-* Create the wrapper by subclassing the original module (`pooling.MaxPool2d`) along with the utilities module (`_utils.QuantInputMixin`).
+* 通过`pooling.MaxPool2d`和`_utils.QuantInputMixin`来创建封装器。
 
-```
+```python
 class QuantMaxPool2d(pooling.MaxPool2d, _utils.QuantInputMixin):
 ```
 
-* The `__init__.py` function would call the original module’s init function and provide it with the corresponding arguments. There would be just one additional argument using `**kwargs` which contains the quantization configuration information. The `QuantInputMixin` utility contains the method `pop_quant_desc_in_kwargs` which extracts this configuration information from the input or returns a default if that input is `None`. Finally the `init_quantizer` method is called that initializes the `TensorQuantizer` module which would quantize the inputs.
+* `__init__.py` 函数将调用原始模块的 `init`函数，并提供相应的参数。只有一个使用 `**kwargs` 的附加参数包含量化配置信息。`QuantInputMixin` 工具包含 `pop_quant_desc_in_kwargs` 方法，该方法可从输入中提取量化配置信息，如果输入为空，则返回默认值。最后调用 `init_quantizer` 方法，初始化 `TensorQuantizer` 模块，该模块会将输入值进行量化。
 
-```
+```python
 def __init__(self, kernel_size, stride=None, padding=0, dilation=1,
              return_indices=False, ceil_mode=False, **kwargs):
     super(QuantMaxPool2d, self).__init__(kernel_size, stride, padding, dilation,
@@ -570,31 +570,32 @@ def __init__(self, kernel_size, stride=None, padding=0, dilation=1,
     self.init_quantizer(quant_desc_input)
 ```
 
-* After the initialization, the `forward` function needs to be defined in our wrapper module that would actually quantize the inputs using the `_input_quantizer` that was initialized in the `__init__` function forwarding the inputs to the base module using `super` call.
+* 初始化完成后，我们需要在封装模块中定义`forward`函数，该函数将使用 `_input_quantizer` 对输入进行量化，而 `_input_quantizer` 已在 `__init__` 函数中初始化，并使用`super`函数将输入转发到基类中。
 
-```
+```python
 def forward(self, input):
     quant_input = self._input_quantizer(input)
     return super(QuantMaxPool2d, self).forward(quant_input)
 ```
 
-* Finally, we need to define a getter method for the `_input_quantizer`. This could, for example, be used to disable the quantization for a particular module using `module.input_quantizer.disable()` which is helpful while experimenting with different layer quantization configuration.
+* 最后，我们需要为 `_input_quantizer` 定义一个 `getter`方法。例如，可以使用 `module.input_quantizer.disable()` 来禁用某个模块的量化功能，这对对比实验不同层的量化配置将很有帮助。
 
-```
+```python
 @property
 def input_quantizer(self):
     return self._input_quantizer
 ```
 
-A complete quantized pooling module would look like following:
+一个完整的量化`pooling`模块如下所示：
 
-```
+```python
 class QuantMaxPool2d(pooling.MaxPool2d, _utils.QuantInputMixin):
     """Quantized 2D maxpool"""
     def __init__(self, kernel_size, stride=None, padding=0, dilation=1,
                 return_indices=False, ceil_mode=False, **kwargs):
         super(QuantMaxPool2d, self).__init__(kernel_size, stride, padding, dilation,
                                             return_indices, ceil_mode)
+        # 提取量化描述符
         quant_desc_input = _utils.pop_quant_desc_in_kwargs(self.__class__, input_only=True, **kwargs)
         self.init_quantizer(quant_desc_input)
 
@@ -609,17 +610,17 @@ class QuantMaxPool2d(pooling.MaxPool2d, _utils.QuantInputMixin):
 
 #### Quantizing Modules With Weights and Inputs
 
-We give an example of quantizing the `torch.nn.Linear` module. It follows that the only additional change from the previous example of quantizing pooling modules is that we’d need to accomodate the quantization of weights in the Linear module.
+我们将举例说明如何量化 `torch.nn.Linear` 模块。与之前的`pooling`模块量化示例相比，唯一的变化就是我们需要在 `Linear` 模块中对权重进行量化。
 
-* We create the quantized linear module as follows:
+* 量化`linear`模块的步骤如下
 
-```
+```python
 class QuantLinear(nn.Linear, _utils.QuantMixin):
 ```
 
-* In the `__init__` function, we first use the `pop_quant_desc_in_kwargs` function to extract the quantization descriptors for both inputs and weights. Second, we initialize the `TensorQuantizer` modules for both inputs and weights using these quantization descriptors.
+* 在 `__init__` 函数中，我们首先使用 `pop_quant_desc_in_kwargs` 函数提取输入和权重的量化描述符。其次，我们使用这些量化描述符初始化输入和权重的 `TensorQuantizer` 模块。
 
-```
+```python
 def __init__(self, in_features, out_features, bias=True, **kwargs):
         super(QuantLinear, self).__init__(in_features, out_features, bias)
         quant_desc_input, quant_desc_weight = _utils.pop_quant_desc_in_kwargs(self.__class__, **kwargs)
@@ -627,9 +628,9 @@ def __init__(self, in_features, out_features, bias=True, **kwargs):
         self.init_quantizer(quant_desc_input, quant_desc_weight)
 ```
 
-* Also, override the `forward` function call and pass the inputs and weights through `_input_quantizer` and `_weight_quantizer` respectively before passing the quantized arguments to the actual `F.Linear` call. This step adds the actual input/weight `TensorQuantizer` to the module and eventually the model.
+* 通过 `_input_quantizer` 和 `_weight_quantizer` 分别传递输入和权重。这一步将实际的输入/权重的`TensorQuantizer` 添加到模块中，并最终添加到模型中。
 
-```
+```python
 def forward(self, input):
     quant_input = self._input_quantizer(input)
     quant_weight = self._weight_quantizer(self.weight)
@@ -639,9 +640,9 @@ def forward(self, input):
     return output
 ```
 
-* Also similar to the `Linear` module, we add the getter methods for the `TensorQuantizer` modules associated with inputs/weights. This could be used to, for example, disable the quantization mechanism by calling `module_obj.weight_quantizer.disable()`
+* 与输入/权重相关的 `TensorQuantizer` 模块添加了 `getter` 方法。例如，可以通过调用 `module_obj.weight_quantizer.disable()` 来禁用量化机制。
 
-```
+```python
 @property
 def input_quantizer(self):
     return self._input_quantizer
@@ -651,9 +652,9 @@ def weight_quantizer(self):
     return self._weight_quantizer
 ```
 
-* With all of the above changes, the quantized Linear module would look like following:
+* 量化的`linear`模块如下所示：
 
-```
+```python
 class QuantLinear(nn.Linear, _utils.QuantMixin):
 
     def __init__(self, in_features, out_features, bias=True, **kwargs):
@@ -681,9 +682,7 @@ class QuantLinear(nn.Linear, _utils.QuantMixin):
 
 #### Directly Quantizing Inputs In Graph
 
-It is also possible to directly quantize graph inputs without creating wrappers as explained above.
-
-Here’s an example:
+如上所述，也可以不创建封装器，直接量化输入。下面是一个例子：
 
 ```
 test_input = torch.randn(1, 5, 5, 5, dtype=torch.double)
@@ -695,4 +694,4 @@ quant_input = quantizer(test_input)
 out = F.adaptive_avg_pool2d(quant_input, 3)
 ```
 
-Assume that there is a `F.adaptive_avg_pool2d` operation in the graph and we’d like to quantize this operation. In the example above, we use `TensorQuantizer(quant_nn.QuantLinear.default_quant_desc_input)` to define a quantizer that we then use to actually quantize the `test_input` and then feed this quantized input to the `F.adaptive_avg_pool2d` operation. Note that this quantizer is the same as the ones we used earlier while created quantized versions of torch’s modules.
+假设图中有一个 `F.adaptive_avg_pool2d` 操作，我们想对这个操作进行量化。在上面的示例中，我们使用 `TensorQuantizer(quant_nn.QuantLinear.default_quant_desc_input)` 定义了一个量化器，然后用它来量化输入，并将量化后的结果输入到 `F.adaptive_avg_pool2d` 运算中。请注意，这个量化器与我们之前量化`pytorch`模块时使用的量化器相同。
