@@ -18,6 +18,7 @@
   * [TensorRT的Python接口解析](doc/tensorrt/tensorrt-de-python-jie-kou-jie-xi.md)
   * [TensorRT如何工作](doc/tensorrt/tensorrt-ru-he-gong-zuo.md)
   * [TensorRT 进阶用法](doc/tensorrt/tensorrt-jin-jie-yong-fa.md)
+  * [pytorch-quantization文档](doc/tensorrt/pytorchquantization-wen-dang.md)
 * [模型量化和剪枝](doc/mo-xing-liang-hua-he-jian-zhi/README.md)
   * [映射和偏移](doc/mo-xing-liang-hua-he-jian-zhi/ying-she-he-pian-yi.md)
   * [动态量化范围](doc/mo-xing-liang-hua-he-jian-zhi/dong-tai-liang-hua-fan-wei.md)
