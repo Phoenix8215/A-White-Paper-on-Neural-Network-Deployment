@@ -295,9 +295,9 @@ quant_modules.initialize()
 
 **Calibration**
 
-We will use histogram based calibration for activations and the default max calibration for weights.
+<mark style="color:red;">我们对激活值使用基于直方图的校准方式，对模型权重使用基于最大值的校准方式。</mark>
 
-```
+```python
 quant_desc_input = QuantDescriptor(calib_method='histogram')
 quant_nn.QuantConv2d.set_default_quant_desc_input(quant_desc_input)
 quant_nn.QuantLinear.set_default_quant_desc_input(quant_desc_input)
@@ -306,9 +306,9 @@ model = models.resnet50(pretrained=True)
 model.cuda()
 ```
 
-To collect activation histograms we must feed sample data in to the model. First, create ImageNet dataloaders as done in the training script. Then, enable calibration in each quantizer and feed training data in to the model. 1024 samples (2 batches of 512) should be sufficient to estimate the distribution of activations. Use training data for calibration so that validation also measures generalization of the selected ranges.
+要收集激活值的直方图，我们必须向模型输入样本数据。首先，按照训练脚本创建 ImageNet 数据加载器。然后，在每个量化器中启用校准，并将训练数据输入模型。1024 个样本（2 批，每批 512 个）足以估计激活值的分布。
 
-```
+```python
 data_path = "PATH to imagenet"
 batch_size = 512
 
@@ -325,7 +325,7 @@ data_loader_test = torch.utils.data.DataLoader(
     sampler=test_sampler, num_workers=4, pin_memory=True)
 ```
 
-```
+```python
  def collect_stats(model, data_loader, num_batches):
      """Feed data to the network and collect statistic"""
 
@@ -370,7 +370,7 @@ data_loader_test = torch.utils.data.DataLoader(
      compute_amax(model, method="percentile", percentile=99.99)
 ```
 
-After calibration is done, quantizers will have `amax` set, which represents the absolute maximum input value representable in the quantized space. By default, weight ranges are per channel while activation ranges are per tensor. We can see the condensed amaxes by printing each `TensorQuantizer` module.
+校准完成后，量化器将设置一个最大值（`amax`），表示量化空间中可表示的绝对最大输入值。默认情况下，权重`scale`为`per channel`的，而激活函数的`scale`为每个张量。我们可以通过打印每个 `TensorQuantizer` 模块来查看 `amax`。
 
 ```
 conv1._input_quantizer                  : TensorQuantizer(8bit fake per-tensor amax=2.6400 calibrator=MaxCalibrator(track_amax=False) quant)
@@ -382,9 +382,9 @@ layer1.0.conv1._weight_quantizer        : TensorQuantizer(8bit fake axis=(0) ama
 
 **Evaluate the calibrated model**
 
-Next we will evaluate the classification accuracy of our post training quantized model on the ImageNet validation set.
+接下来，我们将在 ImageNet 验证集上评估训练后量化(PTQ)模型的分类准确性。
 
-```
+```python
 criterion = nn.CrossEntropyLoss()
 with torch.no_grad():
     evaluate(model, criterion, data_loader_test, device="cuda", print_freq=20)
@@ -393,7 +393,7 @@ with torch.no_grad():
 torch.save(model.state_dict(), "/tmp/quant_resnet50-calibrated.pth")
 ```
 
-This should yield 76.1% top-1 accuracy, which is close to the pre-trained model accuracy of 76.2%.
+top-1 的准确率为 76.1%，接近预训练模型 76.2% 的准确率。
 
 **Use different calibration**
 
