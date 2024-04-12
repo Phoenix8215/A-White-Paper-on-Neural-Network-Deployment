@@ -25,7 +25,7 @@
   * [校准](doc/mo-xing-liang-hua-he-jian-zhi/xiao-zhun.md)
   * [Post-Training Quantization](doc/mo-xing-liang-hua-he-jian-zhi/post-training-quantization.md)
   * [Quantization-Aware Training](doc/mo-xing-liang-hua-he-jian-zhi/quantization-aware-training.md)
-  * [pytorch-quantization文档](doc/mo-xing-liang-hua-he-jian-zhi/pytorchquantization-wen-dang.md)
+  * [pytorch-quantization使用文档](doc/mo-xing-liang-hua-he-jian-zhi/pytorchquantization-shi-yong-wen-dang.md)
 * [杂文不杂](doc/za-wen-bu-za/README.md)
   * [模型部署的几大误区](doc/za-wen-bu-za/mo-xing-bu-shu-de-ji-da-wu-qu.md)
   * [手算Ampere架构各个精度的Throughout](doc/za-wen-bu-za/shou-suan-ampere-jia-gou-ge-ge-jing-du-de-throughout.md)

@@ -1,4 +1,4 @@
-# pytorch-quantization文档
+# pytorch-quantization使用文档
 
 ### Basic Functionalities
 
@@ -684,7 +684,7 @@ class QuantLinear(nn.Linear, _utils.QuantMixin):
 
 如上所述，也可以不创建封装器，直接量化输入。下面是一个例子：
 
-```
+```python
 test_input = torch.randn(1, 5, 5, 5, dtype=torch.double)
 
 quantizer = TensorQuantizer(quant_nn.QuantLinear.default_quant_desc_input)
