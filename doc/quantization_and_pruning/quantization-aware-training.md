@@ -1,4 +1,4 @@
-# Quantization-Aware Training
+# ✊ Quantization-Aware Training
 
 ### QAT是什么&#x20;
 

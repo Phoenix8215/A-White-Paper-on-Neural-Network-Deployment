@@ -1,4 +1,4 @@
-# Post-Training Quantization
+# 👊 Post-Training Quantization
 
 ### 量化的基本原理: 基本术语(PTQ, QAT)
 

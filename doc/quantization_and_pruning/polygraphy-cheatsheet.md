@@ -1,4 +1,4 @@
-# Polygraphy-Cheatsheet
+# ✌️ Polygraphy-Cheatsheet
 
 ### Polygraphy安装
 

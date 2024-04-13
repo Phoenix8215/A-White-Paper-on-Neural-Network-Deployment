@@ -1,4 +1,4 @@
-# 量化粒度
+# 🤝 量化粒度
 
 量化中非常重要的概念: Quantization Granularity(量化粒度) 指的是对于一个Tensor，以多大的粒度去共享scale和z，或者dynamic range。
 
