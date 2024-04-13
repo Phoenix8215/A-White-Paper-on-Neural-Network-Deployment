@@ -1,6 +1,18 @@
 # ✌️ Polygraphy-Cheatsheet
 
-### Polygraphy安装
+### Polygraphy介绍
+
+polygraphy 是一个深度学习模型调试工具，包含 python API 和 命令行工具 ，它有的一些功能如下：
+
+* 使用多种后端运行推理计算，包括 TensorRT, onnxruntime, TensorFlow；
+* 比较不同后端的逐层计算结果；
+* 由模型搭建生成 TensorRT 引擎并序列化为.plan；
+* 查看模型网络的逐层信息；
+* 修改 onnx 模型，如提取子图，计算图化简；
+* 分析 onnx 转 TensorRT 失败原因，将原计算图中可以 / 不可以转 TensorRT 的子图分割保存；
+* 隔离 TensorRT 终端错误的tactic；
+
+### 安装Polygraphy
 
 ```bash
 python -m pip install colored polygraphy --extra-index-url https://pypi.ngc.nvidia.com
@@ -191,6 +203,8 @@ if __name__ == "__main__":
 
 ```
 
+查看多个`runner`的输出结果
+
 ```bash
 polygraphy inspect data inference_results.json
 ```
@@ -278,7 +292,7 @@ Validation succeeded!
 
 ### TensorRT API和Polygraphy互操作
 
-Polygraphy 的一个主要特点是与 TensorRT 以及其他后端完全互操作。由于 Polygraphy 没有隐藏底层后端 API，因此可以在 Polygraphy API 和 后端 API (TensorRT等)之间自由切换。
+Polygraphy 的一个主要特点是与 TensorRT 以及其他后端完全互操作。由于 Polygraphy 没有隐藏底层后端 API，因此可以在 Polygraphy API 和 后端 API (TensorRT等)之间自由切换使用。
 
 Polygraphy 提供了一个 `extend` 装饰器，可用于轻松扩展现有的 Polygraphy 加载器(`loaders`)。 可以用来解决以下情况：
 
@@ -364,3 +378,5 @@ Network name: MyIdentity
 [I] Finished engine building in 0.428 seconds
 Inference succeeded!
 ```
+
+###
