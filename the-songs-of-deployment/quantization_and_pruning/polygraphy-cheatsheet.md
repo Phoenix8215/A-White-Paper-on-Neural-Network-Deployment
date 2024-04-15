@@ -1,17 +1,5 @@
 # ✌️ Polygraphy-Cheatsheet
 
-### Polygraphy介绍
-
-polygraphy 是一个深度学习模型调试工具，包含 python API 和 命令行工具 ，它有的一些功能如下：
-
-* 使用多种后端运行推理计算，包括 TensorRT, onnxruntime, TensorFlow；
-* 比较不同后端的逐层计算结果；
-* 由模型搭建生成 TensorRT 引擎并序列化为.plan；
-* 查看模型网络的逐层信息；
-* 修改 onnx 模型，如提取子图，计算图化简；
-* 分析 onnx 转 TensorRT 失败原因，将原计算图中可以 / 不可以转 TensorRT 的子图分割保存；
-* 隔离 TensorRT 终端错误的tactic；
-
 ### 安装Polygraphy
 
 ```bash
@@ -884,4 +872,199 @@ if __name__ == "__main__":
 
 ## CLI
 
-###
+### TensorRT中的int8校准
+
+* 自定义数据集校准
+
+```bash
+polygraphy convert identity.onnx --int8 \
+    --data-loader-script ./data_loader.py \
+    --calibration-cache identity_calib.cache \
+    -o identity.engine
+```
+
+```python
+# data_loader.py
+"""
+Defines a `load_data` function that returns a generator yielding
+feed_dicts so that this script can be used as the argument for
+the --data-loader-script command-line parameter.
+"""
+import numpy as np
+
+INPUT_SHAPE = (1, 1, 2, 2)
+
+
+def load_data():
+    for _ in range(5):
+        yield {"x": np.ones(shape=INPUT_SHAPE, dtype=np.float32)}  # Still totally real data
+```
+
+还可以使用API中的示例，不过需要指定函数名称：
+
+```bash
+polygraphy convert identity.onnx --int8 \
+    --data-loader-script ../../../api/04_int8_calibration_in_tensorrt/example.py:calib_data \
+    -o identity.engine
+```
+
+* 使用缓存校准
+
+```bash
+polygraphy convert identity.onnx --int8 \
+    --calibration-cache identity_calib.cache \
+    -o identity.engine
+```
+
+### 在TensorRT中构建确定性引擎(engine)
+
+在引擎构建过程中，TensorRT 会运行多个核函数并进行计时，以选出最优的核函数。由于每次计时可能会略有不同，因此这一过程本质上是非确定性的。
+
+在许多情况下，我们可能需要确定性的引擎构建。实现这一点的一种方法是使用 `IAlgorithmSelector` API 来确保每次都选择相同的核函数。
+
+为了简化这一过程，Polygraphy 提供了两个内置算法选择器：`TacticRecorder`和`TacticReplayer，`与之对应的是 `--save-tactics` 和 -`-load-tactics` 选项。
+
+#### Running The Example
+
+1.  创建引擎并保存`replay`文件：
+
+    ```
+     polygraphy convert identity.onnx \
+         --save-tactics replay.json \
+         -o 0.engine
+    ```
+
+    生成的 `replay.json` 文件是可读的。我们可以选择使用`inspect tactics`查看它：
+
+    ```
+     polygraphy inspect tactics replay.json
+    ```
+2.  将`replay`文件用于另一个引擎构建：
+
+    ```
+     polygraphy convert identity.onnx \
+         --load-tactics replay.json \
+         -o 1.engine
+    ```
+3. 验证两个`engine`是否完全相同：
+
+```bash
+diff -sa 0.engine 1.engine
+```
+
+{% hint style="info" %}
+以下是一些 `diff` 命令的常见示例：
+
+1.  **比较两个文件并显示差异：**
+
+    ```
+    diff file1.txt file2.txt
+    ```
+
+    这将比较 `file1.txt` 和 `file2.txt`，并显示它们之间的差异。
+2.  **显示所有差异的详细信息：**
+
+    ```
+    diff -u file1.txt file2.txt
+    ```
+
+    使用 `-u` 选项将以 Unified diff 格式显示所有差异的详细信息。
+3.  **递归比较两个目录并显示差异：**
+
+    ```
+    diff -r directory1 directory2
+    ```
+
+    这将递归地比较 `directory1` 和 `directory2` 中的文件，并显示它们之间的差异。
+4.  **将差异输出到文件中：**
+
+    ```
+    diff file1.txt file2.txt > diff_output.txt
+    ```
+
+    这将比较 `file1.txt` 和 `file2.txt`，并将差异输出到 `diff_output.txt` 文件中。
+5.  **忽略空白字符的差异：**
+
+    ```
+    diff -b file1.txt file2.txt
+    ```
+
+    使用 `-b` 选项可以忽略空白字符的差异。
+6.  **显示所有差异并标出行号：**
+
+    ```
+    diff -u -N file1.txt file2.txt
+    ```
+
+    使用 `-N` 选项将显示所有差异并在每行前面标出行号。
+7.  **只显示不同之处的行：**
+
+    ```
+    diff -q file1.txt file2.txt
+    ```
+
+    使用 `-q` 选项将只显示不同之处的行，而不会显示详细的差异信息。
+{% endhint %}
+
+### 动态shape
+
+1. 使用三个独立的`profile`创建`engine`
+
+```bash
+polygraphy convert dynamic_identity.onnx -o dynamic_identity.engine \
+    --trt-min-shapes X:[1,3,28,28] --trt-opt-shapes X:[1,3,28,28] --trt-max-shapes X:[1,3,28,28] \
+    --trt-min-shapes X:[1,3,28,28] --trt-opt-shapes X:[4,3,28,28] --trt-max-shapes X:[32,3,28,28] \
+    --trt-min-shapes X:[128,3,28,28] --trt-opt-shapes X:[128,3,28,28] --trt-max-shapes X:[128,3,28,28]
+```
+
+对于有多个输入的模型，只需为每个 `--trt-*-shapes` 参数提供多个输入即可。
+
+`--trt-min-shapes input0:[10,10] input1:[10,10] input2:[10,10] ...`
+
+{% hint style="info" %}
+如果`min == opt == max`，可以直接使用`--input-shapes`_`，`_而不用单独设置`min/opt/max`
+{% endhint %}
+
+```bash
+polygraphy inspect model dynamic_identity.engine
+```
+
+* 输出结果示例：
+
+```bash
+[I] Loading bytes from /root/fz/Polygraphy/examples/cli/convert/03_dynamic_shapes_in_tensorrt/dynamic_identity.engine
+[I] ==== TensorRT Engine ====
+    Name: Unnamed Network 0 | Explicit Batch Engine
+    
+    ---- 1 Engine Input(s) ----
+    {X [dtype=float32, shape=(-1, 3, 28, 28)]}
+    
+    ---- 1 Engine Output(s) ----
+    {Y [dtype=float32, shape=(1, 3, 28, 28)]}
+    
+    ---- Memory ----
+    Device Memory: 0 bytes
+    
+    ---- 3 Profile(s) (2 Tensor(s) Each) ----
+    - Profile: 0
+        Tensor: X          (Input), Index: 0 | Shapes: min=(1, 3, 28, 28), opt=(1, 3, 28, 28), max=(1, 3, 28, 28)
+        Tensor: Y         (Output), Index: 1 | Shape: (1, 3, 28, 28)
+    
+    - Profile: 1
+        Tensor: X          (Input), Index: 0 | Shapes: min=(1, 3, 28, 28), opt=(4, 3, 28, 28), max=(32, 3, 28, 28)
+        Tensor: Y         (Output), Index: 1 | Shape: (1, 3, 28, 28)
+    
+    - Profile: 2
+        Tensor: X          (Input), Index: 0 | Shapes: min=(128, 3, 28, 28), opt=(128, 3, 28, 28), max=(128, 3, 28, 28)
+        Tensor: Y         (Output), Index: 1 | Shape: (1, 3, 28, 28)
+    
+    ---- 1 Layer(s) Per Profile ----
+```
+
+### 将onnx转换为FP16格式&分析精度损失情况
+
+1. 将模型转换为FP16格式
+
+```bash
+polygraphy convert --fp-to-fp16 -o identity_fp16.onnx identity.onnx
+```
