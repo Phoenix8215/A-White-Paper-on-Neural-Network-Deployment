@@ -1068,3 +1068,81 @@ polygraphy inspect model dynamic_identity.engine
 ```bash
 polygraphy convert --fp-to-fp16 -o identity_fp16.onnx identity.onnx
 ```
+
+2. 查看转换后的模型文件
+
+```bash
+polygraphy inspect model identity_fp16.onnx
+```
+
+* 输出结果示例：
+
+```bash
+[I] Loading model: /root/fz/Polygraphy/examples/cli/convert/04_converting_models_to_fp16/identity_fp16.onnx
+[I] ==== ONNX Model ====
+    Name: test_identity | ONNX Opset: 8
+    
+    ---- 1 Graph Input(s) ----
+    {x [dtype=float32, shape=(1, 1, 2, 2)]}
+    
+    ---- 1 Graph Output(s) ----
+    {y [dtype=float32, shape=(1, 1, 2, 2)]}
+    
+    ---- 0 Initializer(s) ----
+    
+    ---- 3 Node(s) ----
+```
+
+3. 在 `ONNX-Runtime` 下运行 `FP32` 和 `FP16` 模型，然后比较结果：
+
+```bash
+polygraphy run --onnxrt identity.onnx \
+   --save-inputs inputs.json --save-outputs outputs_fp32.json
+```
+
+```bash
+polygraphy run --onnxrt identity_fp16.onnx \
+   --load-inputs inputs.json --load-outputs outputs_fp32.json \
+   --atol 0.001 --rtol 0.001
+```
+
+* 输出结果示例：
+
+```bash
+[I] RUNNING | Command: /root/miniconda3/bin/polygraphy run --onnxrt identity_fp16.onnx --load-inputs inputs.json --load-outputs outputs_fp32.json --atol 0.001 --rtol 0.001
+[I] Loading input data from inputs.json
+[I] onnxrt-runner-N0-04/15/24-09:31:49  | Activating and starting inference
+[I] Creating ONNX-Runtime Inference Session with providers: ['CPUExecutionProvider']
+[I] onnxrt-runner-N0-04/15/24-09:31:49 
+    ---- Inference Input(s) ----
+    {x [dtype=float32, shape=(1, 1, 2, 2)]}
+[I] onnxrt-runner-N0-04/15/24-09:31:49 
+    ---- Inference Output(s) ----
+    {y [dtype=float32, shape=(1, 1, 2, 2)]}
+[I] onnxrt-runner-N0-04/15/24-09:31:49  | Completed 1 iteration(s) in 0.08607 ms | Average inference time: 0.08607 ms.
+[I] Loading inference results from outputs_fp32.json
+[I] Accuracy Comparison | onnxrt-runner-N0-04/15/24-09:31:49 vs. onnxrt-runner-N0-04/15/24-09:28:14
+[I]     Comparing Output: 'y' (dtype=float32, shape=(1, 1, 2, 2)) with 'y' (dtype=float32, shape=(1, 1, 2, 2))
+[I]         Tolerance: [abs=0.001, rel=0.001] | Checking elemwise error
+[I]         onnxrt-runner-N0-04/15/24-09:31:49: y | Stats: mean=0.35989, std-dev=0.25781, var=0.066464, median=0.35962, min=0.00011438 at (0, 0, 1, 0), max=0.72021 at (0, 0, 0, 1), avg-magnitude=0.35989
+[I]         onnxrt-runner-N0-04/15/24-09:28:14: y | Stats: mean=0.35995, std-dev=0.25784, var=0.066482, median=0.35968, min=0.00011437 at (0, 0, 1, 0), max=0.72032 at (0, 0, 0, 1), avg-magnitude=0.35995
+[I]         Error Metrics: y
+[I]             Minimum Required Tolerance: elemwise error | [abs=0.00010967] OR [rel=0.00028606] (requirements may be lower if both abs/rel tolerances are set)
+[I]             Absolute Difference | Stats: mean=5.6492e-05, std-dev=4.3677e-05, var=1.9077e-09, median=5.8144e-05, min=6.4974e-09 at (0, 0, 1, 0), max=0.00010967 at (0, 0, 0, 1), avg-magnitude=5.6492e-05
+[I]             Relative Difference | Stats: mean=0.00014165, std-dev=9.0956e-05, var=8.273e-09, median=0.00011186, min=5.6808e-05 at (0, 0, 1, 0), max=0.00028606 at (0, 0, 1, 1), avg-magnitude=0.00014165
+[I]         PASSED | Output: 'y' | Difference is within tolerance (rel=0.001, abs=0.001)
+[I]     PASSED | All outputs matched | Outputs: ['y']
+[I] Accuracy Summary | onnxrt-runner-N0-04/15/24-09:31:49 vs. onnxrt-runner-N0-04/15/24-09:28:14 | Passed: 1/1 iterations | Pass Rate: 100.0%
+[I] PASSED | Runtime: 1.605s | Command: /root/miniconda3/bin/polygraphy run --onnxrt identity_fp16.onnx --load-inputs inputs.json --load-outputs outputs_fp32.json --atol 0.001 --rtol 0.001
+```
+
+{% hint style="info" %}
+`--atol 0.001` 和 `--rtol 0.001`: 这两个参数分别设置了绝对误差容限和相对误差容限。在模型输出和参考输出之间的比较中，这些参数用于确定何时认为两个值相等。在这种情况下，设置为 0.001 意味着只有当两个值之间的差异小于或等于 0.001 时，才会认为它们是相等的。
+{% endhint %}
+
+4. 检查 `FP16` 模型的中间输出结果是否存在 `NaN` 或无穷大
+
+```bash
+polygraphy run --onnxrt identity_fp16.onnx --validate
+```
+

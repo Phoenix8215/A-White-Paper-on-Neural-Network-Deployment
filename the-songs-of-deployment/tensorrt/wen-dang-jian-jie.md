@@ -2,7 +2,7 @@
 
 NVIDIA® TensorRT™ 是一个促进高性能机器学习推理的 SDK。 它旨在与 TensorFlow、PyTorch 和 MXNet 等训练框架以互补的方式工作。 它特别专注于在 NVIDIA 硬件上快速高效地运行已经训练好的网络。 有关如何安装 TensorRT 的说明，请参阅 [NVIDIA TensorRT 安装指南](https://docs.nvidia.com/deeplearning/sdk/tensorrt-install-guide/index.html)。
 
-[NVIDIA TensorRT 快速入门指南](https://docs.nvidia.com/deeplearning/tensorrt/quick-start-guide/index.html)适用于想要试用 TensorRT SDK 的用户； 具体来说，您将学习如何快速构建应用程序以在 TensorRT 引擎上运行推理。
+[NVIDIA TensorRT 快速入门指南](https://docs.nvidia.com/deeplearning/tensorrt/quick-start-guide/index.html)适用于想要试用 TensorRT SDK 的用户； 具体来说，您将学习如何快速构建应用程序以在 TensorRT 引擎上运行推理。       &#x20;
 
 ## Structure of this Guide
 
@@ -37,8 +37,6 @@ NVIDIA® TensorRT™ 是一个促进高性能机器学习推理的 SDK。 它旨
 此外， [PyTorch Automatic SParsity (ASP)](https://github.com/NVIDIA/apex/tree/master/apex/contrib/sparsity)工具提供了用于训练具有结构化稀疏性的模型的工具，然后可以将其导出并允许 TensorRT 在 NVIDIA Ampere GPU 上利用更快的稀疏策略。
 
 TensorRT 与 NVIDIA 的分析工具、 [NVIDIA Nsight™ Systems](https://developer.nvidia.com/nsight-systems)和[NVIDIA® Deep Learning Profiler (DLProf)](https://docs.nvidia.com/deeplearning/frameworks/dlprof-user-guide/)集成。
-
-TensorRT 的一个受限子集经过认证可用于[NVIDIA DRIVE ®](https://developer.nvidia.com/drive)产品。某些 API 被标记为仅在 NVIDIA DRIVE 中使用，不支持一般用途。
 
 ## ONNX
 
