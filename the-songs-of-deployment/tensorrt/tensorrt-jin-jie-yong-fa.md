@@ -1,10 +1,8 @@
 # TensorRT 进阶用法
 
-## 6.1. The Timing Cache
+## The Timing Cache
 
-为了减少构建器时间，TensorRT 创建了一个层时序缓存，以在构建器阶段保存层分析信息。它包含的信息特定于目标构建器设备、CUDA 和 TensorRT 版本，以及可以更改层实现的 `BuilderConfig` 参数，例如`BuilderFlag::kTF32或BuilderFlag::kREFIT` 。
-
-如果有其他层具有相同的输入/输出张量配置和层参数，则 TensorRT 构建器会跳过分析并重用重复层的缓存结果。如果缓存中的计时查询未命中，则构建器会对该层计时并更新缓存。
+为了减少创建`Builder`的时间，TensorRT 可以 创建了一个时序缓存，以在构建器阶段保存层分析信息。
 
 时序缓存可以被序列化和反序列化。您可以通过`IBuilderConfig::createTimingCache`从缓冲区加载序列化缓存：
 

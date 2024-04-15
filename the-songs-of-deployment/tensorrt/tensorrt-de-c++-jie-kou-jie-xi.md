@@ -1,6 +1,6 @@
 # TensorRT的C++接口解析
 
-本章说明 C++ API 的基本用法，假设您从 ONNX 模型开始。 [sampleOnnxMNIST](https://github.com/NVIDIA/TensorRT/tree/main/samples/sampleOnnxMNIST)更详细地说明了这个用例。
+本章说明 C++ API 的基本用法，假设你从 ONNX 模型开始。 [sampleOnnxMNIST](https://github.com/NVIDIA/TensorRT/tree/main/samples/sampleOnnxMNIST)更详细地说明了这个用例。
 
 C++ API 可以通过头文件`NvInfer.h`访问，并且位于`nvinfer1`命名空间中。例如，一个简单的应用程序：
 
@@ -12,11 +12,11 @@ using namespace nvinfer1;
 
 <mark style="color:red;">TensorRT C++ API 中的接口类以前缀</mark><mark style="color:red;">`I`</mark><mark style="color:red;">开头，例如</mark><mark style="color:red;">`ILogger`</mark> <mark style="color:red;"></mark><mark style="color:red;">、</mark> <mark style="color:red;"></mark><mark style="color:red;">`IBuilder`</mark><mark style="color:red;">等。</mark>
 
-CUDA 上下文会在 TensorRT 第一次调用 CUDA 时自动创建，如果在该点之前不存在。通常最好在第一次调用 TensoRT 之前自己创建和配置 CUDA 上下文。 <mark style="color:red;">为了说明对象的生命周期，本章中的代码不使用智能指针；但是，建议将它们与 TensorRT 接口一起使用。</mark>
+CUDA 上下文会在 TensorRT 第一次调用 CUDA 时自动创建，如果在该点之前不存在。通常最好在第一次调用 TensoRT 之前自己创建和配置 CUDA 上下文。 <mark style="color:red;">为了说明对象的生命周期，本章中的代码不使用智能指针。</mark>
 
 ## The Build Phase
 
-要创建构建器，首先需要实例化ILogger接口。此示例捕获所有警告消息，但忽略信息性消息：
+要创建构建器，首先需要实例化`ILogger`接口。此示例捕获所有警告消息，但忽略信息性消息：
 
 ```cpp
 class Logger : public ILogger           
@@ -30,7 +30,7 @@ class Logger : public ILogger
 } logger;
 ```
 
-然后，您可以创建构建器的实例：
+然后，可以创建构建器的实例：
 
 ```cpp
 IBuilder* builder = createInferBuilder(logger);
@@ -51,7 +51,7 @@ INetworkDefinition* network = builder->createNetworkV2(flag);
 
 ### Importing a Model using the ONNX Parser
 
-现在，需要从 ONNX 表示中填充网络定义。 ONNX 解析器 API 位于文件NvOnnxParser.h中，解析器位于`nvonnxparser` C++ 命名空间中。
+现在，需要从 ONNX 表示中填充网络定义。 ONNX 解析器 API 位于文件`NvOnnxParser.h`中，解析器位于`nvonnxparser` C++ 命名空间中。
 
 ```cpp
 #include “NvOnnxParser.h”
@@ -59,13 +59,13 @@ INetworkDefinition* network = builder->createNetworkV2(flag);
 using namespace nvonnxparser;
 ```
 
-您可以创建一个 ONNX 解析器来填充网络，如下所示：
+可以创建一个 ONNX 解析器来填充网络，如下所示：
 
 ```cpp
 IParser*  parser = createParser(*network, logger);
 ```
 
-然后，读取模型文件并处理任何错误。
+然后，读取模型文件并处理错误。
 
 ```cpp
 parser->parseFromFile(modelFile, 
@@ -76,11 +76,11 @@ std::cout << parser->getError(i)->desc() << std::endl;
 }
 ```
 
-TensorRT 网络定义过程中的一个重点是它包含指向模型权重的指针，这些指针由构建器复制到优化的引擎中。<mark style="color:red;">由于网络是通过解析器创建的，解析器拥有权重占用的内存，因此在构建器运行之前不应删除解析器对象。</mark>
+TensorRT 网络定义过程中的一个重点是它包含指向模型权重的指针，这些指针由构建器(`Builder`)复制到引擎(`Engine`)中。<mark style="color:red;">由于网络是通过解析器创建的，解析器拥有权重占用的内存，因此在构建器运行之前不应删除解析器对象。</mark>
 
 ### Building an Engine
 
-下一步是创建一个构建配置，指定 TensorRT 应该如何优化模型。
+下一步是创建一个配置，指定 TensorRT 应该如何优化模型。
 
 ```cpp
 IBuilderConfig* config = builder->createBuilderConfig();
@@ -90,12 +90,6 @@ IBuilderConfig* config = builder->createBuilderConfig();
 
 ```cpp
 config->setMemoryPoolLimit(MemoryPoolType::kWORKSPACE, 1U << 20);
-```
-
-另一个重要的考虑因素是 CUDA 后端实现的最大共享内存分配。在 TensorRT 需要与其他应用程序共存的情况下，例如 TensorRT 和 DirectX 同时使用 GPU 时，这种分配就变得至关重要。
-
-```cpp
-config->setMemoryPoolLimit(MemoryPoolType::kTACTIC_SHARED_MEMORY, 48 << 10);
 ```
 
 一旦指定了配置，就可以构建引擎。
@@ -119,11 +113,11 @@ delete builder;
 delete serializedModel
 ```
 
-#### 注意：序列化引擎不能跨平台或 TensorRT 版本移植。
+#### 注意：序列化引擎不能跨平台或不同 TensorRT 版本之间移植。
 
 ## Deserializing a Plan
 
-假设您之前已经序列化了一个优化模型并希望执行推理，您将需要创建一个运行时接口的实例。与构建器一样，运行时需要一个记录器(logger)实例：
+假设您之前已经序列化了一个模型并希望执行推理，将需要创建一个运行时接口的实例。与构建器一样，运行时需要一个记录器(logger)实例：
 
 ```cpp
 IRuntime* runtime = createInferRuntime(logger);
@@ -165,6 +159,6 @@ context->setInputShape(INPUT_NAME, inputDims);
 context->enqueueV3(buffers, stream, nullptr);
 ```
 
-网络是否以异步方式执行取决于网络的结构和特性。例如，数据相关形状、DLA 使用、循环和同步插件等，都可能导致同步行为。在内核前后使用 `cudaMemcpyAsync()` 来进行数据传输是很常见的做法，这样可以将数据从 GPU 转移到其他地方。
+网络是否以异步方式执行取决于网络的结构和特性。例如，数据的维度、DLA 使用、循环和同步插件等，都可能导致同步行为。在内核前后使用 `cudaMemcpyAsync()` 来进行数据传输是很常见的做法，这样可以将数据从 GPU 转移到其他地方。
 
 要确定内核（使用 `cudaMemcpyAsyn()`的时候)何时完成，可使用标准的 CUDA 同步机制，如事件或在流上等待。

@@ -1,6 +1,6 @@
 # TensorRT的Python接口解析
 
-本章说明 Python API 的基本用法，假设您从 ONNX 模型开始。 [onnx\_resnet50.py](https://github.com/NVIDIA/TensorRT/blob/main/samples/python/introductory\_parser\_samples/onnx\_resnet50.py)示例更详细地说明了这个用例。
+本章从 ONNX 模型开始,说明 Python API 的基本用法。 [onnx\_resnet50.py](https://github.com/NVIDIA/TensorRT/blob/main/samples/python/introductory\_parser\_samples/onnx\_resnet50.py)示例更详细地说明了这个用例。
 
 Python API 可以通过tensorrt模块访问：
 
@@ -16,7 +16,7 @@ import tensorrt as trt
 logger = trt.Logger(trt.Logger.WARNING)
 ```
 
-或者，可以通过从`ILogger`类派生来定义您自己的记录器实现：
+或者，可以通过从`ILogger`类派生来定义自己的`logger`实现：
 
 ```python
 class MyLogger(trt.ILogger):
@@ -29,19 +29,23 @@ class MyLogger(trt.ILogger):
 logger = MyLogger()
 ```
 
-然后，您可以创建一个构建器：
+然后，创建一个构建器：
 
 ```python
 builder = trt.Builder(logger)
 ```
+
+由于创建引擎是一个离线过程，因此可能需要花费大量时间。请参阅 ["优化生成器性能 "](https://docs.nvidia.com/deeplearning/tensorrt/archives/tensorrt-861/developer-guide/index.html#opt-builder-perf)部分，了解如何使`builder`运行得更快。
 
 ### Creating a Network Definition in Python
 
-创建构建器后，优化模型的第一步是创建网络定义。网络定义选项是由多个标记 OR-d 组合而成的。为了使用 ONNX 解析器导入模型，需要`EXPLICIT_BATCH`标志。有关详细信息，请参阅[显式与隐式批处理](https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/index.html#explicit-implicit-batch)部分。您还可以使用 NetworkDefinitionCreationFlag.STRONGLY\_TYPED 标记指定网络应被视为强类型网络。有关详细信息，请参[阅强类型网络](https://docs.nvidia.com/deeplearning/tensorrt/archives/tensorrt-1000-ea/developer-guide/index.html#strongly-typed-networks)。 最后，创建网络：：
+创建生成器后，优化模型的第一步就是创建网络定义：
 
 ```python
-builder = trt.Builder(logger)
+network = builder.create_network(1 << int(trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH))
 ```
+
+要使用 ONNX 导入模型，必须使用 `EXPLICIT_BATCH` 标志。有关详细信息，请参阅 ["显式批处理与隐式批处理 "](https://docs.nvidia.com/deeplearning/tensorrt/archives/tensorrt-861/developer-guide/index.html#explicit-implicit-batch)部分。
 
 ### Importing a Model using the ONNX Parser
 
@@ -51,7 +55,7 @@ builder = trt.Builder(logger)
 parser = trt.OnnxParser(network, logger)
 ```
 
-然后，读取模型文件并处理任何错误：
+然后，读取模型文件并处理错误：
 
 ```python
 success = parser.parse_from_file(model_path)
@@ -64,7 +68,7 @@ if not success:
 
 ### Building an Engine
 
-下一步是创建一个构建配置，指定 TensorRT 应该如何优化模型：
+下一步是创建一个配置，指定 TensorRT 应该如何优化模型：
 
 ```cpp
 config = builder.create_builder_config()
@@ -89,23 +93,23 @@ with open(“sample.engine”, “wb”) as f:
     f.write(serialized_engine)
 ```
 
-**注意：**序列化引擎不能跨平台移植。除平台外，引擎还与所构建的 GPU 模型相关。
+**注意：**序列化引擎不能跨平台移植。除平台外，引擎还与所构建的 GPU 型号相关。
 
 ## Deserializing a Plan
 
-要执行推理，您首先需要使用Runtime接口反序列化引擎。与构建器一样，运行时需要记录器的实例。
+要执行推理，首先需要使用Runtime接口反序列化引擎。与构建器一样，运行时需要logger的实例。
 
 ```python
 runtime = trt.Runtime(logger)
 ```
 
-然后，您可以从内存缓冲区反序列化引擎：
+然后，可以从内存缓冲区反序列化引擎：
 
 ```python
 engine = runtime.deserialize_cuda_engine(serialized_engine)
 ```
 
-如果您需要首先从文件加载引擎，请运行：
+如果需要首先从文件加载引擎，请运行：
 
 ```python
 with open(“sample.engine”, “rb”) as f:
@@ -114,7 +118,7 @@ with open(“sample.engine”, “rb”) as f:
 
 ## Performing Inference
 
-引擎拥有优化的模型，但要执行推理需要额外的中间激活状态。这是通过`IExecutionContext`接口完成的：
+引擎拥有优化后的模型，但要执行推理需要额外的中间激活状态。这是通过`IExecutionContext`接口完成的：
 
 ```python
 context = engine.create_execution_context()
@@ -128,18 +132,16 @@ context = engine.create_execution_context()
 context.set_tensor_address(name, ptr)
 ```
 
-有几个 Python 软件包允许您在 GPU 上分配内存，包括但不限于官方的 CUDA Python 、PyTorch、cuPy 和 Numba。
+有几个 Python 软件包允许在 GPU 上分配内存，包括但不限于官方的 CUDA Python 、PyTorch、cuPy 和 Numba。
 
-填充输入缓冲区后，可以调用 TensorRT 的 `execute_async_v3` 方法，开始使用 CUDA 流进行推理。网络是否以异步方式执行取决于网络的结构和特性。例如，数据相关形状、DLA 使用、循环和同步插件等都可能导致同步行为。
+填充输入缓冲区后，可以调用 TensorRT 的 `execute_async_v3` 方法，开始使用 CUDA 流进行推理。网络是否以异步方式执行取决于网络的结构和特性。例如，数据的维度、DLA 使用、循环和同步插件等都可能导致同步行为。
 
-首先，创建 CUDA 数据流。如果已经有一个 CUDA 流，则可以使用指向现有流的指针。例如，对于 PyTorch CUDA 流（即 `torch.cuda.Stream()`），可以使用 `cuda_stream` 属性访问指针；对于 Polygraphy CUDA 流，可以使用 ptr 属性；也可以通过调用 `cudaStreamCreate()` 直接使用 CUDA Python 绑定创建流。
-
-接下来，开始推理：
+首先，创建 CUDA 数据流。如果已经有一个 CUDA 流，则可以使用指向现有流的指针。例如，对于 PyTorch CUDA 流（即 `torch.cuda.Stream()`），可以使用 `cuda_stream` 属性访问指针；对于 Polygraphy CUDA 流，可以使用 ptr 属性；也可以通过调用 `cudaStreamCreate()` 直接使用 CUDA Python 绑定创建流。接下来，开始推理：
 
 ```python
 context.execute_async_v3(buffers, stream_ptr)
 ```
 
-在内核之前和之后启动异步传输（`cudaMemcpyAsync()`）是很常见的做法，以便从 GPU 转移数据（如果还没有的话）。
+在内核之前和之后启动异步传输（`cudaMemcpyAsync()`）是很常见的做法，以便从 GPU 转移数据。
 
 要确定推理（和异步传输）何时完成，可使用标准的 CUDA 同步机制，如事件或在流上等待。例如，对于 PyTorch CUDA 流或 Polygraphy CUDA 流，可发出 `stream.synchronize()`。对于使用 CUDA Python 创建的流，请执行 `cudaStreamSynchronize(stream)`。
