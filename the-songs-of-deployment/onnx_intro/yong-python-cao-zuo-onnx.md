@@ -1756,9 +1756,11 @@ print(sess.run(None, feeds))
        [0., 0.]], dtype=float32)]
 ```
 
-类似的代码也适用于_GraphProto_或_FunctionProto_。
+类似的代码也适用于_`GraphProto`_或_`FunctionProto`_。
 
-#### Evaluation Step by Step参数`verbose`会显示中间结果信息。
+#### Evaluation Step by Step
+
+#### 参数`verbose`会显示中间结果信息。
 
 ```python
 import numpy
@@ -1841,7 +1843,7 @@ Add(XA, B) -> Y
 
 #### 评估自定义的节点
 
-下面的示例仍然实现了线性回归，但在矩阵_A_ 中加入了单位矩阵
+下面的示例仍然实现了线性回归，但在矩阵`A` 中加入了单位矩阵
 
 $$
 Y = X(A+I)+B
@@ -1891,7 +1893,7 @@ Add(XA1, B) -> Y
        [ 2.164718  ,  0.11840849]], dtype=float32)]
 ```
 
-如果将运算符_EyeLike_和_Add_合并为_AddEyeLike_，效率会更高。下一个示例将这两个运算符替换为`"optimized"`域中的一个运算符。
+如果将运算符_`EyeLike`_和_`Add`_合并为_`AddEyeLike`_，效率会更高。下一个示例将这两个运算符替换为`"optimized"`域中的一个运算符。
 
 ```python
 import numpy
@@ -2029,7 +2031,7 @@ time with AddEyeLike: 0.06604622999998355
 
 #### Attributes and inputs
 
-两者之间有明显的区别。输入是动态的，每次执行都可能发生变化。属性永远不会改变，优化器据此可以改进计算图。 因此，不可能将输入转化为属性。 而_Constant_是唯一能将属性转化为输入的算子。
+两者之间有明显的区别。输入是动态的，每次执行都可能发生变化。属性永远不会改变，优化器据此可以改进计算图。 因此，不可以将输入转化为属性。 而_`Constant`_是唯一能将属性转化为输入的算子。
 
 #### Shape or no shape
 
