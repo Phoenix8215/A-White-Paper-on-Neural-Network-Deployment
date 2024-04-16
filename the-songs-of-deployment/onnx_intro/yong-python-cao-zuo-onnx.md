@@ -945,7 +945,7 @@ ir_version: 10
 opset domain='' version=21
 ```
 
-`IR`定义了 ONNX 语言的版本。 Opset 定义了所用算子的版本。 ONNX 默认使用最新的版本。 也可以使用另一个版本。
+`IR`定义了 `ONNX`语言的版本。 `Opset` 定义了所用算子的版本。 `ONNX` 默认使用最新的版本。 也可以使用另一个版本。
 
 ```python
 from onnx import load
@@ -966,7 +966,7 @@ for opset in onnx_model.opset_import:
 opset domain='' version=14
 ```
 
-算子_Reshape_的第 5 版将形状定义为输入，但是在第 1 版中却将属性定义为输入。opset定义了在描述计算图时所遵循的规范。
+算子_`Reshape`_的第 5 版将形状定义为输入，但是在第 1 版中却将属性定义为输入。`opset`定义了在描述计算图时所遵循的规范。
 
 元数据可用于存储任何信息，如有关模型生成方式的信息、也可以用版本号区分不同的模型等。
 
@@ -1080,7 +1080,7 @@ metadata_props {
 
 ### <mark style="color:red;">Functions</mark>
 
-如前一章所述，函数可以用来缩短构建模型的代码，并为runtime更快地运行预测提供更多可能性。如果没有使用函数，运行时仍可使用基于现有的算子进行默认地实现。
+函数可以用来缩短构建模型的代码，并为`runtime`更快地运行预测提供更多可能性。如果没有使用函数，`runtime`只能使用基于现有的算子进行默认地实现。
 
 #### 无属性(attribute)的函数
 
@@ -1246,7 +1246,7 @@ functions {
 
 #### 带有属性(attribute)的函数
 
-下面的函数与前面的函数相同，只是将一个输入变量_B_ 转换成了一个名为_bias_ 的参数。 代码几乎相同，只是 bias 现在是一个常量。 在函数定义中，创建了一个节点_Constant_，用于将参数作为结果插入。它通过`ref_attr_name` 属性与参数相连。
+下面的函数与前面的函数相同，只是将一个输入变量`B`转换成了一个名为`bias`的参数。 代码几乎相同，只是 bias 现在是一个常量。 在函数定义中，创建了一个节点`Constant`，用于将参数作为结果插入。它通过`ref_attr_name` 属性与参数相连。
 
 ```python
 import numpy
@@ -1561,7 +1561,7 @@ b'[ParseError at position (line: 6 column: 44)]\nError context:     agraph (floa
 
 `check_model`会由于这种类型不一致而引发错误。 但是对于没有指定域的自定义算子来说，`check_model`不会检查数据的类型和形状。
 
-<mark style="color:red;">形状推理的目的只有一个：估计中间结果的形状和类型。 运行时就可以事先估计内存消耗，优化计算。它可以融合某些运算符，可以就地进行计算......</mark>
+<mark style="color:red;">形状推理的目的只有一个：估计中间结果的形状和类型。 运行时就可以事先估计内存消耗，优化计算。它可以融合某些运算符，可以就地进行计算。</mark>
 
 ```python
 import onnx.parser
@@ -1682,15 +1682,15 @@ opset_import {
 }
 ```
 
-有一个新属性`value_info`，用于存储推断出的形状。`dim_param`中的字母`I` ： `"I"`可以看作一个变量。这取决于输入，但函数能够判断出哪些中间结果将共享相同的维度。 形状推理并非一直有效。例如，`reshape`算子。形状推理只有在形状恒定的情况下才会起作用。 如果形状不恒定，则无法轻松推理出形状，除非下面的节点期望得到特定的形状。
+有一个新属性`value_info`，用于存储推断出的形状。`dim_param`中的字母`I` ： `"I"`可以看作一个变量。这取决于输入，但函数能够判断出哪些中间结果将共享相同的维度。 形状推理并非对所有算子都有效，例如，`reshape`算子。形状推理只有在形状恒定的情况下才会起作用。 如果形状不恒定，则无法推理出形状。
 
 ### Evaluation and Runtime
 
-ONNX 标准允许框架以 ONNX 格式导出模型，并允许使用任何支持_ONNX_格式的后端进行推理。它可用于多种平台，并针对快速推理进行了优化。_ONNX_ 实现了一个 Python runtime，有助于理解模型。 它不打算用于实际生产中，性能也不是它的目标。
+`ONNX`标准允许框架以 `ONNX`格式导出模型，并允许使用任何支持`ONNX`格式的后端进行推理。它可用于多种平台，并针对快速推理进行了优化。`ONNX`实现了一个 Python `runtime`，有助于理解模型。 它不用于实际生产中，性能也不是它的目标。
 
 #### 评估线性回归模型
 
-完整的 API 描述请参见[onnx.reference](https://onnx.ai/onnx/api/reference.html#l-reference-implementation)。 它接收一个模型（一个_ModelProto_、一个文件名......）。 方法`run`返回字典中指定的一组输入的输出。
+完整的 API 描述请参见[onnx.reference](https://onnx.ai/onnx/api/reference.html#l-reference-implementation)。 它接收一个模型（一个`ModelProto`、一个文件名......）。 方法`run`返回字典中指定的一组输入的输出。
 
 ```python
 import numpy
