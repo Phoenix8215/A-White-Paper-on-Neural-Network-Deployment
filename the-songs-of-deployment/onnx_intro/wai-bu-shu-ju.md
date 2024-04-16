@@ -18,7 +18,7 @@ layout:
 
 用外部数据加载 ONNX 模型
 
-* \[默认] 如果外部数据位于模型的同一目录下，只需使用 onnx.load() 即可。
+* \[默认] 如果外部数据位于模型的同一目录下，只需使用 `onnx.load()` 即可。
 
 ```python
 import onnx
@@ -37,7 +37,7 @@ load_external_data_for_model(onnx_model, "data/directory/path/")
 # Then the onnx_model has loaded the external data from the specific directory
 ```
 
-将 ONNX 模型转换为外部数据
+### 将 ONNX 模型转换为外部数据
 
 ```python
 import onnx
@@ -50,7 +50,7 @@ onnx.save_model(onnx_model, "path/to/save/the/model.onnx")
 # Then the onnx_model has converted raw data as external data and saved to specific directory
 ```
 
-将 ONNX 模型转换为外部数据并保存
+### 将 ONNX 模型转换为外部数据并保存
 
 ```python
 import onnx
@@ -60,7 +60,7 @@ onnx.save_model(onnx_model, "path/to/save/the/model.onnx", save_as_external_data
 # Then the onnx_model has converted raw data as external data and saved to specific directory
 ```
 
-`onnx.checker` 用于带有外部数据的模型
+### `onnx.checker` 用于带有外部数据的模型
 
 #### Models with External Data (<2GB)
 
@@ -96,15 +96,15 @@ onnx.checker.check_model("path/to/the/model.onnx")
 
 可识别的键有:
 
-* `"location"` (required) - 相对于存储 ONNX protobuf 模型的文件系统目录的路径。不允许使用诸如...之类的上层目录路径。
+* `"location"` (required) - 相对于存储 ONNX `protobuf` 模型的文件系统目录的路径。不允许使用诸如...之类的上层目录路径。
 * `"offset"` (optional) - 存储数据开始的字节位置。以字符串形式存储的整数。偏移值应是 4096（页面大小）的倍数，以便支持 mmap。
 * `"length"` (optional) - 包含数据的字节数。以字符串形式存储的整数。
 * `"checksum"` (optional) - `location`所指向文件的SHA1 摘要。
 
-加载 ONNX 文件后，所有 external\_data 字段都可以用一个附加键（"basepath"）来更新，该键存储加载 ONNX 模型文件的目录路径。
+加载 ONNX 文件后，所有 `external_data` 字段都可以用一个附加键（`"basepath"`）来更新，该键存储加载 ONNX 模型文件的目录路径。
 
 #### External data files
 
-外部数据文件中存储的数据将采用与当前 ONNX 中 raw\_data 字段相同的二进制字节字符串格式。
+外部数据文件中存储的数据将采用与当前 ONNX 中 `raw_data` 字段相同的二进制字节字符串格式。
 
 Reference [https://github.com/onnx/onnx/pull/678](https://github.com/onnx/onnx/pull/678)
