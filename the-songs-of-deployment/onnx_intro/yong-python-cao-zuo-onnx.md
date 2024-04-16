@@ -141,7 +141,7 @@ opset_import {
 
 <figure><img src="../../.gitbook/assets/dot_linreg.png" alt=""><figcaption></figcaption></figure>
 
-shape定义为\[None, None]表示该对象是一个两维张量，没有任何形状信息。 通过查看图中每个对象的字段，也可以检查 ONNX 计算图。
+shape定义为`[None, None]`表示该对象是一个两维张量，没有任何形状信息。 通过查看图中每个对象的字段，也可以检查 ONNX 计算图。
 
 ```python
 from onnx import TensorProto
@@ -268,7 +268,7 @@ name='' type='MatMul' input=['X', 'A'] output=['XA']
 name='' type='Add' input=['XA', 'B'] output=['Y']
 ```
 
-张量类型是整数（= 1）。函数[`onnx.helper.tensor_dtype_to_np_dtype()`](https://onnx.ai/onnx/api/helper.html#onnx.helper.tensor\_dtype\_to\_np\_dtype)会给出与 numpy 对应的数据类型。
+张量类型是浮点数（= 1）。函数[`onnx.helper.tensor_dtype_to_np_dtype()`](https://onnx.ai/onnx/api/helper.html#onnx.helper.tensor\_dtype\_to\_np\_dtype)会给出与 numpy 对应的数据类型。
 
 ```python
 from onnx import TensorProto
@@ -298,8 +298,6 @@ print(formatted_message)
 ```
 The message is: Hello,\nWorld!
 ```
-
-在这个例子中，`%r`保留了`message`字符串中的换行符，而不是将其转换为空格或忽略。
 {% endhint %}
 
 ### 序列化
@@ -308,7 +306,7 @@ ONNX 建立在 protobuf 的基础之上。它为描述机器学习模型添加�
 
 #### 模型序列化
 
-ONNX 基于 protobuf。它最大限度地减少了在磁盘上保存图形所需的空间。onnx 中的每个对象（参见[Protos](https://onnx.ai/onnx/api/classes.html#l-onnx-classes)）都可以通过`SerializeToString` 方法序列化。
+ONNX 基于 `protobuf`。它最大限度地减少了在磁盘上保存图形所需的空间。onnx 中的每个对象（参见[Protos](https://onnx.ai/onnx/api/classes.html#l-onnx-classes)）都可以通过`SerializeToString` 方法序列化。
 
 ```python
 from onnx import TensorProto
@@ -585,7 +583,7 @@ pprint.pprint([p for p in dir(onnx)
  'ValueInfoProto']
 ```
 
-使用函数_load\_tensor\_from\_string_可以简化这段代码。
+使用函数_`load_tensor_from_string`_可以简化这段代码。
 
 ```python
 from onnx import load_tensor_from_string
@@ -602,7 +600,7 @@ print(type(proto))
 
 ### Initializer，默认值
 
-之前的模型假定线性回归的系数也是模型的输入。这不是很方便。为了遵循 onnx 语义，它们应该作为常量或**initializer**成为模型本身的一部分。这个示例修改了上一个示例，将输入`A`和`B`变为initializer。以下两个函数，可以将 numpy 转换为 onnx，也可以反过来转换（参见[数组](https://onnx.ai/onnx/api/numpy\_helper.html#l-numpy-helper-onnx-array)）。
+之前的模型假定线性回归的系数也是模型的输入，这不是很方便。为了遵循 onnx 语义，它们应该作为常量或**initializer**成为模型本身的一部分。这个示例修改了上一个示例，将输入`A`和`B`变为initializer。以下两个函数，可以将 numpy 转换为 onnx，也可以反过来转换（参见[数组](https://onnx.ai/onnx/api/numpy\_helper.html#l-numpy-helper-onnx-array)）。
 
 * `onnx.numpy_helper.to_array`：从 onnx 转换到 numpy
 * `onnx.numpy_helper.from_array`: 从 numpy 转换到 onnx
@@ -695,7 +693,7 @@ opset_import {
 
 <figure><img src="../../.gitbook/assets/dot_linreg2.png" alt=""><figcaption></figcaption></figure>
 
-同样，也可以通过 onnx API来查看initializers。
+同样，也可以通过 onnx API来查看`initializers`。
 
 ```python
 import numpy
@@ -741,7 +739,7 @@ raw_data: "\315\314\314>"
 
 ### Attributes
 
-有些算子需要属性，如[`Transpose`](https://onnx.ai/onnx/operators/onnx\_\_Transpose.html#l-onnx-doc-transpose)算子。 让我们为表达式`y = Add(MatMul(X, Transpose(A))+ B`)创建一个ONNX计算图。Transpose 需要一个定义了坐标轴排列顺序的属性：`perm=[1, 0]`。它在函数`make_node` 中作为命名属性添加进去。
+有些算子需要属性，如[`Transpose`](https://onnx.ai/onnx/operators/onnx\_\_Transpose.html#l-onnx-doc-transpose)算子。 让我们为表达式`y = Add(MatMul(X, Transpose(A))+ B`)创建一个ONNX计算图。`Transpose` 需要一个定义了坐标轴排列顺序的属性：`perm=[1, 0]`。它在函数`make_node` 中作为命名属性添加进去。
 
 ```python
 from onnx import TensorProto
@@ -862,7 +860,7 @@ opset_import {
 
 <figure><img src="../../.gitbook/assets/dot_att-1.png" alt=""><figcaption></figcaption></figure>
 
-_make_函数的整个列表如下，具体使用方法在[make 函数](https://onnx.ai/onnx/api/helper.html#l-onnx-make-function)中有介绍。
+_`make`_函数的整个列表如下，具体使用方法在[make 函数](https://onnx.ai/onnx/api/helper.html#l-onnx-make-function)中有介绍。
 
 ```python
 import onnx
@@ -901,7 +899,7 @@ pprint.pprint([k for k in dir(onnx.helper)
 
 ### Opset 和元数据
 
-让我们加载之前创建好的 ONNX 文件，看看它有哪些元数据。
+让我们加载之前创建好的 `ONNX`文件，看看它有哪些元数据。
 
 ```python
 from onnx import load
@@ -923,14 +921,13 @@ functions []
 ir_version 10
 metadata_props []
 model_version 0
-opset_import [version: 21
-]
+opset_import [version: 21]
 producer_name 
 producer_version 
 training_info []
 ```
 
-其中大部分是空的，因为在创建 ONNX 计算图时没有填充，其中只有两个有数值的变量：
+其中大部分是空的，因为在创建 `ONNX`计算图时没有填充，其中只有两个有数值的变量：
 
 ```python
 from onnx import load

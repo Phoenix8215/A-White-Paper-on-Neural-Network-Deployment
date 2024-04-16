@@ -1,10 +1,36 @@
 # TensorRT 进阶用法
 
+## Version Compatibility
+
+默认情况下，TensorRT 引擎只与构建时使用的 TensorRT 版本兼容。通过构建时配置(`build-time configuration`)，可以构建与主版本中其他 TensorRT 次版本兼容的引擎。使用 TensorRT 8 构建的 TensorRT 引擎也将与 TensorRT 9 运行时兼容，但反之亦然。
+
+版本兼容性从 8.6 版开始支持；使用版本兼容性时，引擎运行时支持的 API 是其构建版本所支持的 API 与用于运行该引擎版本的 API 的交集。
+
+创建版本兼容引擎的方法如下：
+
+**C++**
+
+```cpp
+builderConfig.setFlag(BuilderFlag::kVERSION_COMPATIBLE);
+IHostMemory* plan = builder->buildSerializedNetwork(network, config);
+```
+
+**Python**
+
+```python
+builder_config.set_flag(tensorrt.BuilderFlag.VERSION_COMPATIBLE)
+plan = builder.build_serialized_network(network, config)
+```
+
+隐式批处理模式不支持该标记。网络必须使用`NetworkDefinitionCreationFlag::kEXPLICIT_BATCH`.
+
+
+
 ## The Timing Cache
 
-为了减少创建`Builder`的时间，TensorRT 可以 创建了一个时序缓存，以在构建器阶段保存层分析信息。
+为了减少创建`Builder`的时间，TensorRT 可以 创建了一个时序缓存，以在构建器阶段保存层分析的信息。
 
-时序缓存可以被序列化和反序列化。您可以通过`IBuilderConfig::createTimingCache`从缓冲区加载序列化缓存：
+时序缓存可以被序列化和反序列化，可以通过`IBuilderConfig::createTimingCache`从缓冲区加载序列化缓存：
 
 ```C++
 ITimingCache* cache = 

@@ -12,7 +12,7 @@ def onnx_linear_regressor(X):
 
 <figure><img src="../../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
 
-ONNX 旨在提供一种通用语言，任何机器学习框架都可以用它来描述自己的模型。使得生产中部署机器学习模型变得更容易。ONNX解释器（或**runtime**）可以在部署环境中专门针对某一任务进行部署和优化。有了 ONNX，我们就可以建立一个独特的流程，将模型部署到生产环境中，并且独立于各种机器学习框架。ONNX实现了一个 python runtime，可用于评估 ONNX 模型和 ONNX 操作。
+ONNX 旨在提供一种通用语言，任何机器学习框架都可以用它来描述自己的模型。使得生产中部署机器学习模型变得更容易。ONNX解释器（或**runtime**）可以在部署环境中专门针对某一任务进行部署和优化。有了 ONNX，我们就可以建立一个独特的流程，将模型部署到生产环境中，并且独立于各种机器学习框架。ONNX实现了一个 python `runtime`，可用于评估 ONNX 模型和 ONNX 操作。
 
 ### <mark style="color:red;">Input, Output, Node, Initializer, Attributes</mark>
 
@@ -49,7 +49,7 @@ xac = onnx.Add(xa, c)
 
 将机器学习模型部署到生产环境中通常需要将训练模型的整个生态系统复制下来，大多数情况下需要使用_docker_。 一旦模型转换为 ONNX，生产环境只需要runtime来执行计算图。该runtime可以用任何适合生产应用的语言开发，如 C、java、python、javascript、C#、Webassembly、ARM......
 
-但要做到这一点，就需要保存 ONNX 计算图。ONNX 使用 protobuf 将计算图序列化为单个块。其目的是尽可能优化模型大小。
+但要做到这一点，就需要保存 ONNX 计算图。ONNX 使用 `protobuf` 将计算图序列化为单个块。其目的是尽可能优化模型大小。
 
 ### <mark style="color:red;">元数据</mark>
 
@@ -79,7 +79,7 @@ xac = onnx.Add(xa, c)
 
 ### <mark style="color:red;">ONNX算子和域</mark>
 
-主要列表在此说明：[ONNX算子列表](https://onnx.ai/onnx/operators/index.html#l-onnx-operators)。它融合了标准矩阵运算符（Add、Sub、MatMul、Transpose、Greater、IsNaN、Shape、Reshape...）、归约（ReduceSum、ReduceMin...）、图像变换（Conv、MaxPool...）、深度神经网络层（RNN、DropOut...）、激活函数（Relu、Softmax...）。 <mark style="background-color:blue;">**ONNX 并不实现所有的机器学习相关的算子，否则列表将是无限的。**</mark>
+主要列表在此说明：[ONNX算子列表](https://onnx.ai/onnx/operators/index.html#l-onnx-operators)。它融合了标准矩阵运算符（Add、Sub、MatMul、Transpose、Greater、IsNaN、Shape、Reshape...）、归约（ReduceSum、ReduceMin...）、图像变换（Conv、MaxPool...）、深度神经网络层（RNN、DropOut...）、激活函数（Relu、Softmax...）。 **ONNX 并不实现所有的机器学习相关的算子，否则列表将是无限的。**
 
 运算符的主列表由一个域**ai.onnx** 标识。 一个**域**可定义为一组算子的集合。 主列表中缺少在标准机器学习中非常流行的基于树的模型，这些模型属于另一个域[**ai.onnx.ml**](http://ai.onnx.ml/)，它包括基于树的模型（TreeEnsemble Regressor, ...）、预处理（OneHotEncoder, LabelEncoder, ...）、SVM 模型（SVMRegressor, ...）和输入器（Imputer）。
 
@@ -97,7 +97,7 @@ ONNX 专门为张量的数值计算做了相关优化。**张量**是一个多�
 
 #### <mark style="color:red;">元素类型</mark>
 
-ONNX 最初是为了部署深度学习模型而开发的。 因此，其规格是针对浮点数（32 位）设计的。 当前版本支持所有常见类型。字典[TENSOR\_TYPE\_MAP](https://onnx.ai/onnx/api/mapping.html#l-onnx-types-mapping)提供了_ONNX_和[`numpy`](https://numpy.org/doc/stable/reference/index.html#module-numpy) 之间的对应关系。
+ONNX 最初是为了部署深度学习模型而开发的。 因此，其规格是针对浮点数（32 位）设计的。 当前版本支持所有常见类型。字典[TENSOR\_TYPE\_MAP](https://onnx.ai/onnx/api/mapping.html#l-onnx-types-mapping)提供了`ONNX`和[`numpy`](https://numpy.org/doc/stable/reference/index.html#module-numpy) 之间的对应关系。
 
 ```python
 import re
