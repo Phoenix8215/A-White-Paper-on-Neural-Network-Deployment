@@ -5,7 +5,7 @@
 * [😄 ONNX](README.md)
   * [😆 ONNX中的一些概念](the-songs-of-deployment/onnx\_intro/onnxconcepts.md)
   * [😍 用python操作ONNX](the-songs-of-deployment/onnx\_intro/yong-python-cao-zuo-onnx.md)
-  * [🥹 ONNX中的广播](the-songs-of-deployment/onnx\_intro/onnx-zhong-de-guang-bo.md)
+  * [🥹 ONNX中的广播机制](the-songs-of-deployment/onnx\_intro/onnx-zhong-de-guang-bo-ji-zhi.md)
   * [🤣 外部数据](the-songs-of-deployment/onnx\_intro/wai-bu-shu-ju.md)
   * [🥰 ONNX Model hub](the-songs-of-deployment/onnx\_intro/onnx-model-hub.md)
   * [😘 ONNX IR(Intermediate Representation)](the-songs-of-deployment/onnx\_intro/onnx-ir-intermediate-representation.md)
