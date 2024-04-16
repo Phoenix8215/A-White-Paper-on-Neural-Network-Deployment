@@ -1,8 +1,8 @@
-# ONNX Model hub
+# 🥰 ONNX Model hub
 
 ## ONNX Model Hub
 
-ONNX Model Hub 是一种简单快捷的方法，可让您从 ONNX Model Zoo 开始使用最先进的预训练 ONNX 模型。此外，它还能让研究人员和模型开发人员有机会与更广泛的社区分享他们的预训练模型。
+ONNX Model Hub 是一种简单快捷的方法，可让你从 `ONNX Model Zoo` 开始使用最先进的预训练 ONNX 模型。此外，它还能让研究人员和模型开发人员有机会与更广泛的社区分享他们的预训练模型。
 
 ### Install
 
@@ -53,7 +53,7 @@ vision_models = hub.list_models(tags=["vision"])
 print(hub.get_model_info(model="mnist", opset=8))
 ```
 
-This will print something like:
+打印结果如下：
 
 ```sh
 ModelInfo(
@@ -168,8 +168,6 @@ ONNX hub由客户端和服务器两个主要部分组成。客户端代码目前
  }
 }
 ```
-
-These important fields are:
 
 * `model`: 用于查询的模型名称
 * `model_path`: 存储在 Git LFS 中的模型的相对路径。
