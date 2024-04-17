@@ -34,6 +34,7 @@
   * [Tensor Core VS CUDA Core](the-songs-of-deployment/za-wen-bu-za/tensor-core-vs-cuda-core.md)
   * [PNNX计算图结构剖析](the-songs-of-deployment/za-wen-bu-za/pnnx-ji-suan-tu-jie-gou-pou-xi.md)
   * [融合BN和Conv层](the-songs-of-deployment/za-wen-bu-za/rong-he-bn-he-conv-ceng.md)
+  * [深度神经网络编译器](the-songs-of-deployment/za-wen-bu-za/shen-du-shen-jing-wang-luo-bian-yi-qi.md)
 * [C🌿](the-songs-of-deployment/c/README.md)
   * [C++11智能指针](the-songs-of-deployment/c/c++11-zhi-neng-zhi-zhen.md)
   * [C++11多线程](the-songs-of-deployment/c/c++11-duo-xian-cheng.md)
