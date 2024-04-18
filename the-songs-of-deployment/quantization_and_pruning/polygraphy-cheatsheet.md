@@ -1146,3 +1146,34 @@ polygraphy run --onnxrt identity_fp16.onnx \
 polygraphy run --onnxrt identity_fp16.onnx --validate
 ```
 
+### 调试TensorRT策略(`tactics`)
+
+由于 TensorRT 生成器依赖于定时策略(timing tactics)，因此引擎生成是非确定性的。
+
+解决这一问题的方法之一是多次运行生成器，保存每次运行的`tatic`文件，可以对它们进行比较，以确定哪种`tactic`可能是错误的根源。`debug build`命令自动执行上述过程。
+
+有关调试工具如何工作的详细信息，请参阅帮助： `polygraphy debug -h` 和 `polygraphy debug build -h`。
+
+1. 从 `ONNX-Runtime` 生成输出：
+
+```bash
+polygraphy run identity.onnx --onnxrt \
+    --save-outputs golden.json
+```
+
+使用`debug build`重复构建 TensorRT 引擎，并将结果与输出进行比较，每次都保存一个`tactics`文件：
+
+```bash
+polygraphy debug build identity.onnx --fp16 --save-tactics replay.json \
+    --artifacts-dir replays --artifacts replay.json --until=10 \
+    --check polygraphy run polygraphy_debug.engine --trt --load-outputs golden.json
+```
+
+* 提供 --until 选项，以便工具知道何时停止，这可以是迭代次数，也可以是`good`或 `bad`。在后一种情况下，工具将分别在找到第一个通过或失败的迭代后停止。
+* 我们指定 `--save-tactics` 来保存每次迭代的重放文件，然后使用 `--artifacts` 来告诉`debug build`来管理它们，这包括将它们分类到用 `--artifacts-dir` 指定的目录下的`good`和`bad`子目录中。
+
+3. 使用`inspect diff-tactics`来确定哪些`tactics`可能不好：
+
+```bash
+polygraphy inspect diff-tactics --dir replays
+```
