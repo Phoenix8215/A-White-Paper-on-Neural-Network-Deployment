@@ -1146,7 +1146,7 @@ polygraphy run --onnxrt identity_fp16.onnx \
 polygraphy run --onnxrt identity_fp16.onnx --validate
 ```
 
-### 调试TensorRT策略(`tactics`)
+### 调试TensorRT引擎生成策略(`tactics`)
 
 由于 TensorRT 生成器依赖于定时策略(timing tactics)，因此引擎生成是非确定性的。
 
@@ -1177,3 +1177,152 @@ polygraphy debug build identity.onnx --fp16 --save-tactics replay.json \
 ```bash
 polygraphy inspect diff-tactics --dir replays
 ```
+
+### <mark style="color:red;">减少运行失败的ONNX模型</mark>
+
+当一个模型由于某种原因出现故障时（例如，TensorRT 中的精度问题），将其定位到引发故障的最小可能子图很有用，这样更容易找出故障原因，`debug reduce`这个工具可以帮助我们快速定位到这样的子图。
+
+在本例中，我们的模型（`./model.onnx`）在 TensorRT 中存在精度问题，模拟故障通过`Mul`节点触发。
+
+<figure><img src="../../.gitbook/assets/图片 (4).png" alt="" width="563"><figcaption></figcaption></figure>
+
+1. 对于使用动态输入形状或包含形状算子的模型，应冻结输入形状并折叠形状算子：
+
+```bash
+polygraphy surgeon sanitize model.onnx -o folded.onnx --fold-constants \
+    --override-input-shapes x0:[1,3,224,224] x1:[1,3,224,224]
+```
+
+2. 假设 ONNX-Runtime 能给出正确的输出结果。我们将首先为网络中的每个张量生成输出值。我们还将保存所使用的输入值：
+
+### 查看 TensorRT 网络
+
+`inspect model`工具可以自动将其他格式的网络转换为 TensorRT 网络，然后显示出来。
+
+```bash
+polygraphy inspect model identity.onnx \
+    --show layers --display-as=trt
+```
+
+还可以使用 `--show layers attrs weights` 来显示更多的详细信息，包括图层属性信息。
+
+### 查看 TensorRT 引擎
+
+1. 生成具有动态形状和 2 个`profile`的引擎：
+
+```bash
+polygraphy run dynamic_identity.onnx --trt \
+    --trt-min-shapes X:[1,2,1,1] --trt-opt-shapes X:[1,2,3,3] --trt-max-shapes X:[1,2,5,5] \
+    --trt-min-shapes X:[1,2,2,2] --trt-opt-shapes X:[1,2,4,4] --trt-max-shapes X:[1,2,6,6] \
+    --save-engine dynamic_identity.engine
+```
+
+2. 查看TensorRT引擎
+
+```bash
+polygraphy inspect model dynamic_identity.engine \
+    --show layers
+```
+
+还可以使用 `--show layers attrs weights` 来显示更多的详细信息。
+
+### 查看ONNX模型
+
+```bash
+polygraphy inspect model identity.onnx --show layers
+```
+
+还可以使用 `--show layers attrs weights` 来显示更多的详细信息。
+
+### 查看模型的输出数据
+
+1. 使用 `ONNX-Runtime` 生成一些推理的输出结果：
+
+```bash
+polygraphy run identity.onnx --onnxrt --save-outputs outputs.json
+```
+
+2. 查看输出结果
+
+```bash
+polygraphy inspect data outputs.json --show-values
+```
+
+### 查看模型的输入数据
+
+1. 通过运行推理生成一些输入数据：
+
+```bash
+polygraphy run identity.onnx --onnxrt --save-inputs inputs.json
+```
+
+2. 查看输入数据
+
+```bash
+polygraphy inspect data inputs.json --show-values
+```
+
+### 查看tactic文件
+
+1. 生成`tactic`文件
+
+```bash
+polygraphy run model.onnx --trt --save-tactics replay.json
+```
+
+2. 查看`tactic`文件
+
+```bash
+polygraphy inspect tactics replay.json
+```
+
+### 检查TensorRT对ONNX算子的支持情况
+
+1. 可为给定的 ONNX 计算图提供有关 TensorRT 对ONNX 算子是否支持的详细信息。 它还会从原始模型中分割并保存支持和不支持的子图。
+
+```bash
+polygraphy inspect capability model.onnx
+```
+
+输出结果如下：
+
+```bash
+[I] [I] Loading bytes from /root/fz/Polygraphy/examples/cli/inspect/08_inspecting_tensorrt_onnx_support/model.onnx
+[E] 3: getPluginCreator could not find plugin: Fake version: 1
+[I] Loading model: /root/fz/Polygraphy/examples/cli/inspect/08_inspecting_tensorrt_onnx_support/model.onnx
+[I] Saving ONNX model to: /tmp/intermediate_ccecc810b356444b90862c4dac0f21399da5edefa7609d79.onnx
+[I] Loading bytes from /tmp/intermediate_ccecc810b356444b90862c4dac0f21399da5edefa7609d79.onnx
+[I] Saving ONNX model to: /tmp/intermediate_267de26509875e559cabd8b128c58aa6f78e141c1e66c9cd.onnx
+[I] Loading bytes from /tmp/intermediate_267de26509875e559cabd8b128c58aa6f78e141c1e66c9cd.onnx
+[I] Saving ONNX model to: polygraphy_capability_dumps/supported_subgraph-nodes-0-1.onnx
+[I] Saving ONNX model to: polygraphy_capability_dumps/unsupported_subgraph-nodes-2-2.onnx
+[I] Loading bytes from polygraphy_capability_dumps/unsupported_subgraph-nodes-2-2.onnx
+[E] 3: getPluginCreator could not find plugin: Fake version: 1
+[I] Saving ONNX model to: polygraphy_capability_dumps/supported_subgraph-nodes-3-3.onnx
+[I] ===== Summary =====
+    Operator | Count   | Reason                                                                                                                                                            | Nodes
+    -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    Fake     |       1 | In node 0 (importFallbackPluginImporter): UNSUPPORTED_NODE: Assertion failed: creator && "Plugin not found, are the plugin name, version, and namespace correct?" | [[2, 3]]
+[I] Saving results to polygraphy_capability_dumps/results.txt
+```
+
+* 原图
+
+<figure><img src="../../.gitbook/assets/图片.png" alt="" width="563"><figcaption></figcaption></figure>
+
+* 支持的子图
+
+<figure><img src="../../.gitbook/assets/图片 (1).png" alt="" width="563"><figcaption></figcaption></figure>
+
+
+
+* 不支持的子图
+
+<figure><img src="../../.gitbook/assets/图片 (2).png" alt="" width="535"><figcaption></figcaption></figure>
+
+<figure><img src="../../.gitbook/assets/图片 (3).png" alt="" width="538"><figcaption></figcaption></figure>
+
+在本例中，model.onnx 包含一个 TensorRT 不支持的 `Fake` 节点。 汇总表显示了不支持的运算符、不支持的原因、在图中出现的次数，以及这些节点在图中的索引范围（例如：一行中有多个不支持的节点）。 该索引遵循"包头不包尾"原则，和python中列表的索引规则是一样的。更多信息和选项，请参阅 `polygraphy inspect capability --help` 。
+
+### 不同推理框架之间的比较
+
