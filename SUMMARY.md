@@ -22,7 +22,7 @@
   * [TensorRT 进阶用法](the-songs-of-deployment/tensorrt/tensorrt-jin-jie-yong-fa.md)
 * [🫶 模型量化和剪枝](the-songs-of-deployment/qap/README.md)
   * [🖕 IEEE754标准](the-songs-of-deployment/qap/ieee754.md)
-  * [🫰 浮点运算产生的误差](the-songs-of-deployment/qap/fu-dian-yun-suan-chan-sheng-de-wu-cha.md)
+  * [🫰 浮点运算产生的误差](the-songs-of-deployment/qap/float\_error.md)
   * [🤲 映射和偏移](the-songs-of-deployment/qap/scale\_and\_shift.md)
   * [👏 动态量化范围](the-songs-of-deployment/qap/dynamic\_range.md)
   * [🤝 量化粒度](the-songs-of-deployment/qap/quantization\_granularity.md)
