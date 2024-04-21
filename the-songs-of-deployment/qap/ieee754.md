@@ -46,7 +46,7 @@ $$
 
 现在我们可以回答最初的问题：**`float` 的表示方式包含指数位，导致其取值范围远大于 `int`** 。根据以上计算，`float` 可表示的最大正数为 $$2^{254 - 127} \times (2 - 2^{-23}) \approx 3.4 \times 10^{38}$$ ，($$2^{e-1}-1=127$$)切换符号位便可得到最小负数。
 
-**尽管浮点数 `float` 扩展了取值范围，但其副作用是牺牲了精度**。整数类型 `int` 将全部 32 比特用于表示数字，数字是均匀分布的；而由于指数位的存在，浮点数 `float` 的数值越大，相邻两个数字之间的差值就会趋向越大。
+<mark style="color:red;">**尽管浮点数**</mark><mark style="color:red;">** **</mark><mark style="color:red;">**`float`**</mark><mark style="color:red;">** **</mark><mark style="color:red;">**扩展了取值范围，但其副作用是牺牲了精度**</mark><mark style="color:red;">。整数类型</mark> <mark style="color:red;"></mark><mark style="color:red;">`int`</mark> <mark style="color:red;"></mark><mark style="color:red;">将全部 32 比特用于表示数字，数字是均匀分布的；而由于指数位的存在，浮点数</mark> <mark style="color:red;"></mark><mark style="color:red;">`float`</mark> <mark style="color:red;"></mark><mark style="color:red;">的数值越大，相邻两个数字之间的差值就会趋向越大。</mark>
 
 如下表所示，指数位 $$\mathrm{E} = 0$$ 和 $$\mathrm{E} = 255$$ 具有特殊含义，**用于表示零、无穷大、**$$\mathrm{NaN}$$ **等**。
 
