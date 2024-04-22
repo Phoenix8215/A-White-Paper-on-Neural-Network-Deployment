@@ -122,6 +122,8 @@ c = 499999.90625000000000000000000
 
 ### 解决 C++ 中的浮点数精度问题 <a href="#san-jie-jue-c-zhong-de-fu-dian-shu-jing-du-wen-ti" id="san-jie-jue-c-zhong-de-fu-dian-shu-jing-du-wen-ti"></a>
 
+#### Boost库
+
 目前，我尝试的解决办法为使用 [Boost 库](https://www.boost.org/)中的 `boost::multiprecision::cpp_dec_float_50` 来代替 `float` 或 `double` 类型。
 
 ```cpp
@@ -177,7 +179,27 @@ c2      =       49989.9879999999975552782416344
 
 很明显，精度丢失问题在 Boost 库中得到了很好的解决。当然，Boost 库还有很多其他的关于浮点数操作的优化，而且基本都是基于源标准库的模式重写的，所以使用起来的非常顺手（注意命名空间即可）。
 
+#### Kahan 求和
+
+[Kahan 求和](https://link.zhihu.com/?target=https%3A//en.wikipedia.org/wiki/Kahan\_summation\_algorithm) 是一种补偿的求和算法。代码如下：
+
+```cpp
+float sum(const std::vector<float> &a) {
+    float res = 0;
+    float c = 0;
+    for (auto y : a) {
+        y -= c;
+        float t = res + y;
+        c = (t - res) - y;
+        res = t;
+    }
+    return res;
+}
+```
+
 ### reference
 
 * [https://medium.com/@kusal95/computer-floating-point-arithmetic-and-round-off-errors-5c879c480982](https://medium.com/@kusal95/computer-floating-point-arithmetic-and-round-off-errors-5c879c480982)
 * [https://seayj.cn/articles/6d33/](https://seayj.cn/articles/6d33/)
+* [https://zhuanlan.zhihu.com/p/673320830](https://zhuanlan.zhihu.com/p/673320830)
+* Higham N J. The accuracy of floating point summation\[J]. SIAM Journal on Scientific Computing, 1993, 14(4): 783-799.
