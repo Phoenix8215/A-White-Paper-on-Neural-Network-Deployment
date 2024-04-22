@@ -159,10 +159,10 @@ $$
 
 目前为止我们所做的事情其实就是所谓的量化，我们稍微把一些概念和术语给整理一下&#x20;
 
-* &#x20;R是一组FP32的数据，能够表现的数据种类有很多，大约是2^32种(4亿)，
-* 范围是: −1.2 ∗ 10^−38\~3.4 ∗ 10^38&#x20;
-* Q是一组INT8的数据，只能够表现2^8种数据(256)。&#x20;
-* &#x20;范围是：-128 \~128 or 0 \~ 255&#x20;
+* &#x20;R是一组FP32的数据，能够表现的数据种类有很多，大约是$$2^{32}$$种(4亿)，
+* 范围是: $$−1.2 ∗ 10^{−38}-3.4 ∗ 10^{38}$$
+* Q是一组INT8的数据，只能够表现$$2^8$$种数据(256)。&#x20;
+* &#x20;范围是：$$-128 -127 或 0 -255$$
 * R到Q的映射的缩放因子scale的计算公式为：
 
 $$
@@ -209,6 +209,50 @@ $$
 1. r’ = S \* (\[0, 89, 200, 255] – Z) = \[-1.80392157, -1.00117647, 0, 0.49607843]
 
 可以看到：反量化后数值对比原始数值存在一定误差。
+
+### 非对称量化
+
+<figure><img src="../../.gitbook/assets/图片 (59).png" alt="" width="563"><figcaption></figcaption></figure>
+
+将实数$$x\in\mathbb{R}$$转换到$$b-bit$$的有符号整数上，$$x_q\in\{-2^{b-1},-2^{b-1}+1,\ldots,2^{b-1}-1\}$$转换方程为$$f(x)=s\cdot x+z$$
+
+$$
+s=\frac{2^{b}-1}{\alpha-\beta}\\z=-\operatorname{round}(\beta\cdot s)-2^{b-1}
+$$
+
+z为`zero-point`，实数上的0映射到整数上的`zero-point`,在int8这个案例中，$$s=\frac{255}{\alpha-\beta}$$，$$z=-round(\beta\cdot s)-128$$。
+
+非对称量化算子的定义如下：
+
+$$
+\operatorname{clip}(x,l,u)\begin{cases}l,&x<l\\x,&l\leq x\leq u\\u,&x>u\end{cases}\\x_{q}=\operatorname{quantize}(x,b,s,z)=\operatorname{clip}(\operatorname{round}(s\cdot x+z),-2^{b-1},2^{b-1}-1)
+$$
+
+`round()`代表离得最近的一个整数。
+
+反量化算子的定义如下，输出结果约等于输入值，$$\hat{x}\approx x$$
+
+$$
+\hat{x}=\text{dequantize}(x_q,s,z)=\frac{1}{s}(x_q-z)
+$$
+
+### 对称量化
+
+<figure><img src="../../.gitbook/assets/图片 (60).png" alt="" width="563"><figcaption></figcaption></figure>
+
+输入范围和整数范围关于0点对称，这就意味着在int8量化中我们使用整数范围\[-127, 127]，为了对称不使用-128这个数值。扔掉一个数值-128对于int8量化来说影响不大，但是如果是4-bit量化呢，甚至bit数更少，这时我们就要思考是不是应该使用对称量化了。
+
+对称量化的算子如下：
+
+$$
+s=\frac{2^{b-1}-1}{\alpha}\\x_{q}=\mathrm{quantize}(x,b,s)=\mathrm{clip}(\mathrm{round}(s\cdot x),-2^{b-1}+1,2^{b-1}-1)
+$$
+
+相应的反量化算子如下：
+
+$$
+\hat{x}=\text{dequantize}(x_q,s)=\frac{1}{s}x_q
+$$
 
 ### Reference
 
