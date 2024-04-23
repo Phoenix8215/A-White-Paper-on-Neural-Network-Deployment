@@ -268,7 +268,7 @@ $$
 \frac1{s_{x,i}\cdot s_{w,j}}\sum_{k=1}^px_{q,ik}\cdot w_{q,kj}
 $$
 
-整数矩阵乘法需要激活值的量化粒度为`per-row`或`per-tensor`，权重的量化粒度为`per-column`或`per-tensor`.但是在推理阶段，不同的batch实例会导致不同的行数，所以为了最大化性能
+整数矩阵乘法需要激活值的量化粒度为`per-row`或`per-tensor`，权重的量化粒度为`per-column`或`per-tensor`.但是在推理阶段，不同的`batch`实例会导致不同的行数，所以为了最大化性能激活值应采用`per-tensor`的量化粒度，权重采用`per-tensor`或者`per-column`(`per-column`对应于卷积核就是`per-channel`的量化粒度)。
 
 
 
