@@ -254,7 +254,7 @@ $$
 \hat{x}=\text{dequantize}(x_q,s)=\frac{1}{s}x_q
 $$
 
-### 非对称量化的计算成本
+### 对称量化的计算过程
 
 考虑一个矩阵乘法$$Y=XW$$，其中$$X=(x_{ik})\in\mathbb{R}^{m\times p}$$是输入的激活函数值，$$W=(w_{kj})\stackrel{\cdot}{\in}\mathbb{R}^{p\times n}$$是权重，$$Y=(y_{ij})\in\mathbb{R}^{m\times n}$$是输出值$$Y=XW$$可以用量化后的张量$$X_{q}=(x_{q,ik})\in\mathbb{Z}^{m\times p}$$和$$W_{q}=(w_{q,kj})\in\mathbb{Z}^{\hat{p}\times n}$$近似表示：
 
@@ -270,13 +270,14 @@ $$
 
 整数矩阵乘法需要激活值的量化粒度为`per-row`或`per-tensor`，权重的量化粒度为`per-column`或`per-tensor`.但是在推理阶段，不同的`batch`实例会导致不同的行数，所以为了最大化性能激活值应采用`per-tensor`的量化粒度，权重采用`per-tensor`或者`per-column`(`per-column`对应于卷积核就是`per-channel`的量化粒度)。
 
+### 非对称量化的计算过程
 
-
-
-
-
-
-
+$$
+\begin{aligned}
+y_{ij}& \approx\sum_{k=1}^{p}\frac{1}{s_{x}}(x_{q,ik}-z_{x})\frac{1}{s_{w,j}}(w_{q,kj}-z_{w,j})  \\
+&=\frac{1}{s_{x}s_{w,j}}\biggl(\sum_{k=1}^{p}x_{q,ik}w_{q,kj}-\sum_{k=1}^{p}\left(w_{q,kj}z_{x}+x_{q,ik}z_{w,j}\right)-\sum_{k=1}^{p}z_{x}z_{w,j}\biggr)
+\end{aligned}
+$$
 
 ### Reference
 
