@@ -254,6 +254,30 @@ $$
 \hat{x}=\text{dequantize}(x_q,s)=\frac{1}{s}x_q
 $$
 
+### 非对称量化的计算成本
+
+考虑一个矩阵乘法$$Y=XW$$，其中$$X=(x_{ik})\in\mathbb{R}^{m\times p}$$是输入的激活函数值，$$W=(w_{kj})\stackrel{\cdot}{\in}\mathbb{R}^{p\times n}$$是权重，$$Y=(y_{ij})\in\mathbb{R}^{m\times n}$$是输出值$$Y=XW$$可以用量化后的张量$$X_{q}=(x_{q,ik})\in\mathbb{Z}^{m\times p}$$和$$W_{q}=(w_{q,kj})\in\mathbb{Z}^{\hat{p}\times n}$$近似表示：
+
+$$
+y_{ij}=\sum_{k=1}^px_{ik}\cdot w_{kj}\approx\sum_{k=1}^p\text{dequantize}(x_{q,ik},s_{q,ik})\cdot\text{dequantize}(w_{q,kj},s_{w,kj})=\sum_{k=1}^p\frac{1}{s_{x,ik}}x_{q,ik}\cdot\frac{1}{s_{w,kj}}w_{q,kj}
+$$
+
+为了使用整数类型的矩阵乘法，我们需要把`scale`提到求和符号的外面：
+
+$$
+\frac1{s_{x,i}\cdot s_{w,j}}\sum_{k=1}^px_{q,ik}\cdot w_{q,kj}
+$$
+
+整数矩阵乘法需要激活值的量化粒度为`per-row`或`per-tensor`，权重的量化粒度为`per-column`或`per-tensor`.但是在推理阶段，不同的batch实例会导致不同的行数，所以为了最大化性能
+
+
+
+
+
+
+
+
+
 ### Reference
 
 * [https://www.lesswrong.com/posts/vnvGhfikBbrjZHMuD/predicting-gpu-performance](https://www.lesswrong.com/posts/vnvGhfikBbrjZHMuD/predicting-gpu-performance)
