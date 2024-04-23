@@ -6,6 +6,8 @@ C++程序设计中使用堆内存是非常频繁的操作，堆内存的申请�
 
 C++里面的四个智能指针: ~~`auto_ptr`~~,`unique_ptr`,`shared_ptr`, `weak_ptr` 其中后三个是C++11支持， 并且第一个已经被C++11弃用。
 
+<mark style="color:red;">使用这些智能指针时需要引用头文件</mark><mark style="color:red;">`<memory>`</mark><mark style="color:red;">。</mark>
+
 ### `shared_ptr`共享的智能指针
 
 共享的智能指针 `std::shared_ptr`使用引用计数，每一个`shared_ptr`的拷贝都指向相同的内存。再最后一个`shared_ptr`析 构的时候，内存才会被释放。 `shared_ptr`共享被管理对象，同一时刻可以有多个`shared_ptr`拥有对象的所有权，当最后一个 `shared_ptr`对象销毁时，被管理对象自动销毁。 简单来说，`shared_ptr`实现包含了两部分，
@@ -508,11 +510,45 @@ std::unique_ptr<int> ptr4(new int(1), [](int *p){delete p;}); // 错误
 
 unique\_ptr需要确定删除器的类型，所以不能像shared\_ptr那样直接指定删除器，可以这样写：
 
-```c++
+```cpp
 std::unique_ptr<int, void(*)(int*)> ptr5(new int(1), [](int *p){delete p;}); //正确
 ```
 
-<mark style="color:red;">关于shared\_ptr和unique\_ptr的使用场景是要根据实际应用需求来选择。如果希望只有一个智能指针管 理资源或者管理数组就用unique\_ptr，如果希望多个智能指针管理同一个资源就用shared\_ptr。</mark>
+{% hint style="info" %}
+```cpp
+int main()
+{
+    using func_ptr = void(*)(int*);
+    unique_ptr<int, func_ptr> ptr1(new int(10), [](int*p) {delete p; });
+
+    return 0;
+}
+```
+
+在上面的代码中第7行，`func_ptr`的类型和`lambda表达式`的类型是一致的。在lambda表达式没有捕获任何变量的情况下是正确的，如果捕获了变量，编译时则会报错：
+
+```c
+int main()
+{
+    using func_ptr = void(*)(int*);
+    unique_ptr<int, func_ptr> ptr1(new int(10), [&](int*p) {delete p; });	// error
+    return 0;
+}
+```
+
+<mark style="color:red;">上面的代码中错误原因是这样的，在lambda表达式没有捕获任何外部变量时，可以直接转换为函数指针，一旦捕获了就无法转换了(仿函数)，如果想要让编译器成功通过编译，那么需要使用可调用对象包装器来处理声明的函数指针：</mark>
+
+```c
+int main()
+{
+    using func_ptr = void(*)(int*);
+    unique_ptr<int, function<void(int*)>> ptr1(new int(10), [&](int*p) {delete p; });
+    return 0;
+}
+```
+{% endhint %}
+
+<mark style="color:red;">关于shared\_ptr和unique\_ptr的使用场景是要根据实际应用需求来选择。如果希望只有一个智能指针管理资源或者管理数组就用unique\_ptr，如果希望多个智能指针管理同一个资源就用shared\_ptr。</mark>
 
 ```cpp
 #include <iostream>
@@ -769,3 +805,4 @@ shared_ptr no destroy
 ## reference
 
 * [https://subingwen.cn/cpp/shared\_ptr/](https://subingwen.cn/cpp/shared\_ptr/)
+* [https://subingwen.cn/cpp/unique\_ptr/](https://subingwen.cn/cpp/unique\_ptr/)
