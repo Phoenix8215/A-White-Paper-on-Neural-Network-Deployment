@@ -1,4 +1,4 @@
-# Tensor Core VS CUDA Core
+# 😻 Tensor Core VS CUDA Core
 
 ### Tensor core和cuda core 的概念
 
