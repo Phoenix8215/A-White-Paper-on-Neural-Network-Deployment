@@ -40,5 +40,5 @@
   * [👾 深度神经网络编译器原理简介](whitepaper/essay/compiler.md)
 * [C🌿](whitepaper/cpp/README.md)
   * [🌴 C++11智能指针](whitepaper/cpp/ptr.md)
-  * [🌲 C++11右值引用和移动语义](whitepaper/cpp/move.md)
+  * [🌲 C++11右值引用和移动语义](whitepaper/cpp/move\_forward.md)
   * [🥬 C++11多线程](whitepaper/cpp/thread.md)
