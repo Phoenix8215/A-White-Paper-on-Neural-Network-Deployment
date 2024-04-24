@@ -11,6 +11,7 @@
 
 * TensorRT可以对模型做适当的优化，但是有上限 ，比如:
   * 计算密度低的1x1 conv， depthwise conv不会重构&#x20;
+  * concat和shortcut对memory不友好
   * &#x20;GPU无法优化的地方会到CPU执行&#x20;
   * &#x20;可以手动修改代码实现部分，让部分cpu执行转到gpu执行，可以直接将前后处理加到模型中。
   * 有些冗长的计算，TensorRT可能不能优化 ，这时只能修改代码实现部分&#x20;

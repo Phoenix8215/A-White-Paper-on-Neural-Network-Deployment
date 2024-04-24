@@ -2,7 +2,8 @@
 
 ## ❤️‍🔥 A White Paper on Neural Network Deployment <a href="#whitepaper" id="whitepaper"></a>
 
-* [CUDA](README.md)
+* [🤠 CUDA](README.md)
+  * [🤑 CPU|GPU程序执行流程](whitepaper/cuda/quitstart.md)
 * [😄 ONNX](whitepaper/onnx\_intro/README.md)
   * [😆 ONNX中的一些概念](whitepaper/onnx\_intro/onnxconcepts.md)
   * [😍 用python操作ONNX](whitepaper/onnx\_intro/yong-python-cao-zuo-onnx.md)
