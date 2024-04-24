@@ -12,7 +12,7 @@ NVIDIA公司在1999年发布Geforce 256图形处理芯片时首先提出GPU的�
 
 全球GPU巨头：NVIDIA(英伟达)AMD(超威半导体)。
 
-<figure><img src="../../.gitbook/assets/图片 (2).png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (2) (1).png" alt="" width="563"><figcaption></figcaption></figure>
 
 ### GPU与CPU的区别
 
@@ -115,13 +115,13 @@ CPU/GPU从memory获取数据所需要的等待时间
 
 <figure><img src="../../.gitbook/assets/图片 (70).png" alt="" width="481"><figcaption></figcaption></figure>
 
-<figure><img src="../../.gitbook/assets/图片.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (3).png" alt=""><figcaption></figcaption></figure>
 
 `cache miss` 这个时候，CPU core由于没有数据，所以 在等待数据的到来。这个状态叫做`stall`，
 
 如果数据不在cache里，那么就需要往下级 memory中寻找数据，然而访问下级memory是很耗时的。
 
-<figure><img src="../../.gitbook/assets/图片 (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 不同memory在latency上的比较
 
