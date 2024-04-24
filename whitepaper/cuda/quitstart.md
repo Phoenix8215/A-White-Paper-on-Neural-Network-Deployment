@@ -246,3 +246,4 @@ Tensor core:&#x20;
 * [https://lwn.net/Articles/252125/](https://lwn.net/Articles/252125/)
 * [https://medium.com/codex/understanding-the-architecture-of-a-gpu-d5d2d2e8978b](https://medium.com/codex/understanding-the-architecture-of-a-gpu-d5d2d2e8978b)
 * [https://arxiv.org/pdf/1603.07285.pdf](https://arxiv.org/pdf/1603.07285.pdf)
+* [https://pdf.dfcfw.com/pdf/H3\_AP202111101528199831\_1.pdf?1636553716000.pdf](https://pdf.dfcfw.com/pdf/H3\_AP202111101528199831\_1.pdf?1636553716000.pdf)
