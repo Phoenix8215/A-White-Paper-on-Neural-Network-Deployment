@@ -26,6 +26,7 @@
   * [🖕 IEEE754标准](whitepaper/quantization\_and\_pruning/ieee754.md)
   * [🫰 浮点运算产生的误差](whitepaper/quantization\_and\_pruning/float\_error.md)
   * [🤲 映射和偏移](whitepaper/quantization\_and\_pruning/scale\_and\_shift.md)
+  * [🫴 quantization from scratch|python](whitepaper/quantization\_and\_pruning/vs.md)
   * [👏 动态量化范围](whitepaper/quantization\_and\_pruning/dynamic\_range.md)
   * [🤝 量化粒度](whitepaper/quantization\_and\_pruning/quantization\_granularity.md)
   * [👍 校准](whitepaper/quantization\_and\_pruning/calibration.md)
