@@ -1312,13 +1312,13 @@ polygraphy inspect capability model.onnx
 
 * 支持的子图
 
-<figure><img src="../../.gitbook/assets/图片 (1) (1) (1).png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1).png" alt="" width="563"><figcaption></figcaption></figure>
 
 
 
 * 不支持的子图
 
-<figure><img src="../../.gitbook/assets/图片 (2) (1) (1).png" alt="" width="535"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (2) (1) (1) (1).png" alt="" width="535"><figcaption></figcaption></figure>
 
 <figure><img src="../../.gitbook/assets/图片 (3) (1) (1).png" alt="" width="538"><figcaption></figcaption></figure>
 

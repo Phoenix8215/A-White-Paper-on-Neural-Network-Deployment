@@ -6,7 +6,7 @@
 
 <figure><img src="../../.gitbook/assets/图片 (58).png" alt="" width="563"><figcaption></figcaption></figure>
 
-所以100的二进制表示就是1100100，大家也可以用`windows`自带的程序员计算器多试试几个例子
+所以`100`的二进制表示就是`1100100`，大家也可以用`windows`自带的程序员计算器多试几个例子
 
 2. 小数🌰
 
@@ -18,7 +18,7 @@
 
 <figure><img src="../../.gitbook/assets/1 65lZwfJ7YpHe_j5xt4BKzA.webp" alt="" width="249"><figcaption></figcaption></figure>
 
-可以看出是无限循环的，0.1的二进制表示为`000110011001100...`,于是误差就产生了。
+可以看出是无限循环的，`0.1`的二进制表示为`000110011001100...`,于是误差就产生了。
 
 ### IEEE754标准下下的9.1
 
@@ -34,7 +34,7 @@
 {% endhint %}
 
 4. 分数位为`0010001100110011001100…`，如果不够23位则在后面补0
-5. 最终9.1按照IEEE754表示如下
+5. 最终9.1按照`IEEE754`表示如下
 
 <figure><img src="../../.gitbook/assets/1 qRb9t3mYCqBQCH1SXFh8bQ (1).webp" alt=""><figcaption></figcaption></figure>
 
@@ -202,4 +202,4 @@ float sum(const std::vector<float> &a) {
 * [https://medium.com/@kusal95/computer-floating-point-arithmetic-and-round-off-errors-5c879c480982](https://medium.com/@kusal95/computer-floating-point-arithmetic-and-round-off-errors-5c879c480982)
 * [https://seayj.cn/articles/6d33/](https://seayj.cn/articles/6d33/)
 * [https://zhuanlan.zhihu.com/p/673320830](https://zhuanlan.zhihu.com/p/673320830)
-* Higham N J. The accuracy of floating point summation\[J]. SIAM Journal on Scientific Computing, 1993, 14(4): 783-799.
+* [Higham N J. The accuracy of floating point summation\[J\]. SIAM Journal on Scientific Computing, 1993, 14(4): 783-799.](https://citeseerx.ist.psu.edu/document?repid=rep1\&type=pdf\&doi=5c179d447a27c40a54b2bf8b1b2d6819e63c1a69)

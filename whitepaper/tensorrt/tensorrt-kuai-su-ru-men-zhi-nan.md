@@ -15,7 +15,7 @@ TensorRT 生态系统分为两个部分：
 1. 用户可通过各种途径将其模型转换为已经优化好的 TensorRT 引擎。
 2. 用户在部署已经优化后的 TensorRT 引擎时，可将 TensorRT 作为推理 runtime。
 
-<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 使用 TensorRT 转换模型有三个主要选项：
 
@@ -55,7 +55,7 @@ TensorRT runtime  API 可以实现最低的开销和最精细的控制，但 Ten
 
 下面的流程图涵盖了本指南中涉及的不同工作流程。该流程图将帮助您根据这两个因素选择合适的路径。
 
-<figure><img src="../../.gitbook/assets/图片 (2) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (2) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 使用 ONNX 的部署示例
 

@@ -27,13 +27,45 @@ DNN模型的大小，几乎在以每年10倍的FLOPs在增长
 
 所以一般来说我们会对conv或者linear这些计算密集型算子进行量化
 
-<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+
+### 量化的意义
+
+在深度学习中，量化有以下优势：
+
+* 减小内存占用
+* 加速计算
+* 减小功耗和延迟
+
+量化是模型部署中的一种重要的优化方法，可以在部分精度损失的前提下，大幅提高神经网络的效率和性能。
+
+我们平时训练出的模型如YOLOv5、ResNet50正常导出默认都是FP32的精度，现在我们来看下ResNet50导出的ONNX模型的输入、权重、偏置以及输出的数据类型，ResNet50导出至ONNX的代码如下：
+
+```python
+import torch
+import torchvision.models as models
+
+model = models.resnet50(pretrained=True)
+
+input = torch.randn(1, 3, 224, 224)
+torch.onnx.export(model, input, "resnet50-1.onnx")
+```
+
+使用`netron`进行查看
+
+<figure><img src="../../.gitbook/assets/图片 (1).png" alt=""><figcaption></figcaption></figure>
+
+FP32->FP16几乎是无损的(CUDA中使用`float2half`直接进行转换)，不需要`calibrator`去校正、更不需要`retrain`。而且FP16的精度下降对于大部分任务影响不是很大，甚至有些任务会提升。NVIDIA对于FP16有专门的Tensor Cores可以进行矩阵运算，相比FP32来说吞吐量直接提升一倍，提速效果明显！
+
+<figure><img src="../../.gitbook/assets/图片.png" alt=""><figcaption></figcaption></figure>
+
+实际点来说，**量化就是将我们训练好的模型，不论是权重、还是计算op，都转换为低精度去计算**。因为FP16的量化很简单，所以实际中我们谈论的量化更多的是**INT8的量化**，当然也有3-bit、4-bit的量化，不过目前来说比较常见比较实用的，也就是INT8量化了。
 
 ### 量化会出现什么问题
 
 fp32某个区间内的数值等于量化后int8上的一个点
 
-<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../.gitbook/assets/图片 (23).png" alt=""><figcaption></figcaption></figure>
 
@@ -193,22 +225,11 @@ $$
 
 <figure><img src="../../.gitbook/assets/图片 (30).png" alt=""><figcaption></figcaption></figure>
 
-如上图，对称映射的 Z 始终为 0， 即原数值的 0 量化后仍然是 0，量化前后的数值都是以 0 为中点对称分布，但实际上有些数值的分布并不是左右对称的，比如 ReLU 激活后都是大于 0，这样会导致量化后 q 的范围只用到了一半，而非对称映射则解决了这个问题。
+如上图，对称映射的 Z 始终为 0， 即原数值的 0 量化后仍然是 0，量化前后的数值都是以 0 为中点对称分布，**但实际上有些数值的分布并不是左右对称的，比如 ReLU 激活后都是大于 0，这样会导致量化后 Q 的范围只用到了一半，而非对称映射则解决了这个问题。**
 
-非对称映射的 min、max 独立统计，Z 的值根据 r 的分布不同而不同，这样可以使 q 的范围被充分利用。
+非对称映射的 min、max 独立统计，Z 的值根据 R 的分布不同而不同，这样可以使 Q 的范围被充分利用。
 
 我们来看一个实际的例子：量化 FP32 \[-1.8, -1.0, 0, 0.5] 到 INT8 \[0, 255] (非对称)：
-
-1. rmin = -1.8，rmax = 0.5， bitWidth = 8
-2. S = (rmax – rmin)/(qmax – qmin) = (0.5 – (-1.8)) / (255 – 0) = 0.009019607843
-3. Z = qmin – rmin/S = 255 – (-1.8)/S = 199.56521739 ≈ 200
-4. 量化结果：q = round(\[-1.8, -1.0, 0, 0.5] / S + Z) = \[0, 89, 200, 255]
-
-反量化：
-
-1. r’ = S \* (\[0, 89, 200, 255] – Z) = \[-1.80392157, -1.00117647, 0, 0.49607843]
-
-可以看到：反量化后数值对比原始数值存在一定误差。
 
 ### 非对称量化
 
@@ -283,5 +304,5 @@ $$
 
 * [https://www.lesswrong.com/posts/vnvGhfikBbrjZHMuD/predicting-gpu-performance](https://www.lesswrong.com/posts/vnvGhfikBbrjZHMuD/predicting-gpu-performance)
 * [https://arxiv.org/abs/2202.05924](https://arxiv.org/abs/2202.05924)
-* [https://robot9.me/ai-model-quantization-principles-practice/](https://robot9.me/ai-model-quantization-principles-practice/)
 * [https://www.researchgate.net/publication/357408276\_A\_Case\_Study\_of\_Quantizing\_Convolutional\_Neural\_Networks\_for\_Fast\_Disease\_Diagnosis\_on\_Portable\_Medical\_Devices?\_tp=eyJjb250ZXh0Ijp7InBhZ2UiOiJfZGlyZWN0In19](https://www.researchgate.net/publication/357408276\_A\_Case\_Study\_of\_Quantizing\_Convolutional\_Neural\_Networks\_for\_Fast\_Disease\_Diagnosis\_on\_Portable\_Medical\_Devices?\_tp=eyJjb250ZXh0Ijp7InBhZ2UiOiJfZGlyZWN0In19)
+* [https://blog.csdn.net/qq\_40672115/article/details/129746156](https://blog.csdn.net/qq\_40672115/article/details/129746156)

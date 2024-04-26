@@ -25,7 +25,7 @@ Tesla V100 的Tensor Core是可编程矩阵乘积单元，可为训练和推理�
 
 
 
-<figure><img src="../../.gitbook/assets/图片 (2) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (2) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 如下图所示，每个Tensor Core每时钟可执行 64 次浮点 FMA 混合精度操作（FP16 输入乘法与全精度乘积和 FP32 累加），一个 SM 中的 8 个Tensor Core每时钟总共可执行 1024 次浮点运算。与使用标准 FP32 运算的 Pascal GP100 相比，每个 SM 的深度学习应用吞吐量大幅提高了 8 倍，因此 Volta V100 GPU 的吞吐量与 Pascal P100 GPU 相比总共提高了 12 倍。张量核通过 FP32 累加对 FP16 输入数据进行运算。如图 所示，在 4x4x4 矩阵乘法中，FP16 乘法产生的全精度结果与给定点乘中的其他乘积一起在 FP32 运算中累加。
 
@@ -37,15 +37,15 @@ Tensor Core基础能力在于，一个时钟周期内可以完成一个64 floati
 
 其次，Tensor Core也能堆叠，V100上面就堆了640个。而且Tensor Core经过了几次升级，其操作的精度更加丰富了：
 
-<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### More examples
 
 <figure><img src="../../.gitbook/assets/图片 (3) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../.gitbook/assets/图片 (2) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (2) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../.gitbook/assets/图片 (3) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
