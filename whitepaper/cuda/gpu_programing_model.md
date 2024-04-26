@@ -41,7 +41,7 @@ GPU在管理线程(thread)的时候是以block(线程块)为单元调度到SM上
 
 当warp访问内存的时候，processor(处理器)会做context switch(上下文切换)，让其他warp使用硬件资源。因为是硬件 来做，所以速度非常快。
 
-<figure><img src="../../.gitbook/assets/图片 (2).png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (5).png" alt="" width="563"><figcaption></figcaption></figure>
 
 
 

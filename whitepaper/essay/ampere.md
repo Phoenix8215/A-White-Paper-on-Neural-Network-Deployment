@@ -35,7 +35,7 @@ Throughput = 1.41 GHz \* 108 \* 64 \* 1\* 2 = 19.4 TFLOPS
 
 ### FP16 CUDA Core
 
-<figure><img src="../../.gitbook/assets/图片 (3) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (3) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Ampere中没有专门针对FP16的CUDA core，而是将FP32的CUDA Core和FP64的CUDA Core一起使用来计算FP16。我们暂且说一个 SM中计算FP16的CUDA core的数量是: 256 ( = 32 \* 4 + 64 \* 2 )&#x20;
 
@@ -49,7 +49,7 @@ Throughput = 1.41 GHz \* 108 \* 256 \* 1 \* 2 = 78 TFLOPS
 
 ### INT8 CUDA Core
 
-<figure><img src="../../.gitbook/assets/图片 (4) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (4) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Ampere中没有专门针对INT8的CUDA core，而是用INT32的CUDA Core计算INT8。我们暂且说一个SM中计算INT8的CUDA core的数量 是: 256 ( = 64 \* 4 )&#x20;
 

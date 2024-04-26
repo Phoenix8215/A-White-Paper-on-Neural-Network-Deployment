@@ -63,7 +63,7 @@ TensorRT runtime  API 可以实现最低的开销和最精细的控制，但 Ten
 
 在本例中，我们将使用 ONNX 格式转换一个预训练的 ResNet-50 模型；ONNX 是一种与框架无关的模型格式，可从大多数主流框架（包括 TensorFlow 和 PyTorch）导出。有关 ONNX 格式的更多信息，请[点击此处](https://github.com/onnx/onnx/blob/main/docs/IR.md)。
 
-<figure><img src="../../.gitbook/assets/图片 (5) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (5) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### 导出模型
 

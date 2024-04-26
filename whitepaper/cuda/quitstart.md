@@ -115,7 +115,7 @@ CPU/GPU从memory获取数据所需要的等待时间
 
 <figure><img src="../../.gitbook/assets/图片 (70).png" alt="" width="481"><figcaption></figcaption></figure>
 
-<figure><img src="../../.gitbook/assets/图片 (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (3) (1).png" alt=""><figcaption></figcaption></figure>
 
 `cache miss` 这个时候，CPU core由于没有数据，所以 在等待数据的到来。这个状态叫做`stall`，
 
@@ -217,7 +217,7 @@ Tensor core:&#x20;
 
 类似于SIMD的一种概念 ，将一条指令分给大量的thread去执行，thread间的调度是由warp来负责管理 • GPU体系架构中有一个warp schedular，专门负责管理线程调度的。Warp schedular是GPU体系 架构中特有的概念，CPU中 没有这个。
 
-<figure><img src="../../.gitbook/assets/图片 (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (4) (1).png" alt=""><figcaption></figcaption></figure>
 
 * 由于`throughput`非常的高，所以相比与`CPU`，`cache miss`所产生的`latency`对性能的影响比较小&#x20;
 * `GPU`主要负责的任务是大规模计算(图像处理、深度学习等等)，所以一旦`fetch`好了数据以后，就会一直连续 处理，并且很少`cache miss`
