@@ -5,7 +5,7 @@
 根据量化的时机，一般我们会把量化分为&#x20;
 
 * PTQ(Post-Training Quantization)，训练后量化&#x20;
-* QAT(Quantization-Aware Training)，训练时量化 PTQ一般是指对于训练好的模型，通过calibration算法等来获取dynamic range来进行量化。 但量化普遍上会产生精度下降。所以QAT为了弥补精度下降，在学习过程中通过Fine-tuning权 重来适应这种误差，实现精度下降的最小化。所以一般来讲，QAT的精度会高于PTQ。但并不绝对。
+* QAT(Quantization-Aware Training)，**训练时量化 PTQ一般是指对于训练好的模型，通过calibration算法等来获取dynamic range来进行量化。** 但量化普遍上会产生精度下降。所以QAT为了弥补精度下降，在学习过程中通过Fine-tuning权 重来适应这种误差，实现精度下降的最小化。所以一般来讲，QAT的精度会高于PTQ。但并不绝对。
 
 <figure><img src="../../.gitbook/assets/图片 (40).png" alt=""><figcaption></figcaption></figure>
 

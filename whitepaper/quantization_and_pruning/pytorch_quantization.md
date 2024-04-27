@@ -42,6 +42,7 @@ quant_x, scale = tensor_quant.tensor_quant(x, x.abs().max())
 ```python
 from pytorch_quantization.tensor_quant import QuantDescriptor
 from pytorch_quantization.nn.modules.tensor_quantizer import TensorQuantizer
+import torch
 
 quant_desc = QuantDescriptor(num_bits=4, fake_quant=False, axis=(0), unsigned=True)
 quantizer = TensorQuantizer(quant_desc)
@@ -50,6 +51,18 @@ torch.manual_seed(12345)
 x = torch.rand(10, 9, 8, 7)
 
 quant_x = quantizer(x)
+```
+
+输出结果：
+
+```bash
+tensor([[[[15., 13., 15.,  ...,  1.,  3.,  6.],
+          [ 9.,  5.,  3.,  ..., 12., 14.,  4.],
+          [ 3.,  7., 11.,  ...,  5., 10.,  6.],
+          ....................................
+          [ 8.,  1.,  6.,  ...,  7., 11., 10.],
+          [ 7.,  5., 13.,  ...,  3.,  7., 14.],
+          [14., 10., 11.,  ...,  2., 14.,  9.]]]])
 ```
 
 来看看源码中对这几个参数的解释：
@@ -98,7 +111,7 @@ quant_x = quantizer(x)
 
 #### Quantized module
 
-该模块有两种主要类型：Conv 和 Linear。这两种模块都可以替代 `torch.nn` 版本，并对权重和激活值进行量化。除了原始模块的参数外，这两种模块都需要 `quant_desc_input` 和 `quant_desc_weight`。
+该模块有两种主要类型：`Conv` 和 `Linear`。这两种模块都可以替代 `torch.nn` 版本，并对权重和激活值进行量化。除了原始模块的参数外，这两种模块都需要 `quant_desc_input` 和 `quant_desc_weight`。
 
 ```python
 from torch import nn
@@ -121,7 +134,7 @@ quant_conv1 = quant_nn.Conv2d(
     quant_desc_weight=tensor_quant.QUANT_DESC_8BIT_CONV2D_WEIGHT_PER_CHANNEL)
 ```
 
-从源码查看提前定义好的`descriptors`
+从源码可以查看到提前定义好的`descriptors`
 
 ```python
 QUANT_DESC_8BIT_PER_TENSOR = QuantDescriptor(num_bits=8)
@@ -135,7 +148,7 @@ QUANT_DESC_8BIT_CONVTRANSPOSE2D_WEIGHT_PER_CHANNEL = QuantDescriptor(num_bits=8,
 QUANT_DESC_8BIT_CONVTRANSPOSE3D_WEIGHT_PER_CHANNEL = QuantDescriptor(num_bits=8, axis=(0))
 ```
 
-### Post training quantization
+### <mark style="color:red;">Post training quantization</mark>
 
 只需调用 `quant_modules.initialize()`，即可对模型进行训练后量化(`PTQ`)。
 
@@ -155,11 +168,15 @@ quant_nn.TensorQuantizer.use_fb_fake_quant = True
 torch.onnx.export(model, inputs, 'quant_resnet18.onnx', opset_version=13)
 ```
 
-上述示例代码通过指定 `quant_nn.TensorQuantizer.use_fb_fake_quant` 来将 `resnet18` 模型中的所有节点替换为 QDQ 算子，并导出为 ONNX 格式的模型文件，实现了模型的量化。值得注意的是：
+上述示例代码通过指定 `quant_nn.TensorQuantizer.use_fb_fake_quant` 来将 `resnet18` 模型中的所有节点替换为 `QDQ` 算子，并导出为 `ONNX` 格式的模型文件，实现了模型的量化。值得注意的是：
 
 * `quant_modules.initialize()` 函数会把 `PyTorch-Quantization` 库中所有的量化算子按照数据类型、位宽等特性进行分类，并将其保存在全局变量 `_DEFAULT_QUANT_MAP` 中&#x20;
 * <mark style="color:red;">导出的带有 QDQ 节点的 ONNX 模型中，对于输入</mark> <mark style="color:red;"></mark><mark style="color:red;">`input`</mark><mark style="color:red;">的整个</mark> <mark style="color:red;"></mark><mark style="color:red;">`tensor`</mark><mark style="color:red;">是共用一个</mark> <mark style="color:red;"></mark><mark style="color:red;">`scale`</mark><mark style="color:red;">，而对于权重</mark> <mark style="color:red;"></mark><mark style="color:red;">`weight`</mark><mark style="color:red;">则是每个</mark> <mark style="color:red;"></mark><mark style="color:red;">`channel`</mark><mark style="color:red;">共用一个</mark> <mark style="color:red;"></mark><mark style="color:red;">`scale`</mark>
 * <mark style="color:red;">导出的带有 QDQ 节点的 ONNX 模型中，</mark><mark style="color:red;">`x_zero_point`</mark><mark style="color:red;">是之前提到的偏移量，其值为0，因为整个量化过程是对称量化，其偏移量 Z 为0</mark>
+
+用netron可视化量化后的模型：
+
+<figure><img src="../../.gitbook/assets/图片 (81).png" alt=""><figcaption></figcaption></figure>
 
 #### Calibration
 
@@ -203,20 +220,20 @@ model.cuda()
 
 ### Quantization Aware Training
 
-`Quantization Aware Training` 基于直通估计（STE）导数近似。它有时被称为 "量化感知训练"。我们不使用这个名称，因为它并不反映下面的假设。由于采用了 STE 近似方法，所以训练 "不感知 "量化。
+`Quantization Aware Training` 基于直通估计（STE）导数近似。它有时被称为 "量化感知训练"。我们不使用这个名称，因为它并不反映下面的假设。由于采用了 STE 近似方法，所以训练过程并 "不感知 "量化。
 
-校准完成后，量化感知训练只需选择一个训练计划，然后继续训练校准后的模型。通常，它不需要微调很长时间。我们通常使用原始训练计划的 10% 左右，从初始训练学习率的 1% 开始，使用余弦退火学习率计划，按照余弦周期的一半递减，直到初始微调学习率的 1% （初始训练学习率的 0.01%）。
+校准完成后，量化感知训练只需选择一个训练计划，然后继续训练校准后的模型。通常，它不需要微调很长时间。我们通常使用原始训练计划的 10% 左右，从初始训练学习率的 1% 开始，使用余弦退火学习率，按照余弦周期的一半递减，直到初始微调学习率的 1% （初始训练学习率的 0.01%）。
 
 #### Some recommendations
 
 量化感知训练（本质上是一个离散数值优化问题）在数学上并不是一个已经解决的问题。根据我们的经验，这里有一些建议：
 
 * 要使 STE 近似效果良好，最好使用较小的学习率。大的学习率更有可能扩大 STE 近似引入的方差，破坏训练好的网络。
-* 在训练过程中不要改变量化表示（scale），至少不要过于频繁。每一步都改变刻度，实际上就等于每一步都改变数据格式（e8m7、e5m10、e3m4 等），这很容易影响收敛性。
+* 在训练过程中不要改变量化scale，至少不要过于频繁。每一步都改变scale，实际上就等于每一步都改变数据格式（e8m7、e5m10、e3m4 等），这很容易影响收敛性。
 
 ### Export to ONNX
 
-导出到 ONNX 的目的是部署到 TensorRT，而不是 ONNX runtime。因此，我们只将假量化模型导出为 TensorRT 可以接受的形式。假量化将分解为一对 `QuantizeLinear/DequantizeLinear` ONNX 操作。TensorRT 将获取生成的 ONNX 图，并以最优化的方式在 int8 中执行。
+导出到 ONNX 的目的是部署到 TensorRT，因此，我们只<mark style="color:red;">将假量化模型导出为 TensorRT 可以接受的形式</mark>。假量化将分解为一对 `QuantizeLinear/DequantizeLinear` ONNX 操作。TensorRT 将获取生成的 ONNX 图，并以最优化的方式在 int8 中执行。
 
 {% hint style="info" %}
 目前，我们只支持导出 int8 和 fp8 假量化模块。此外，量化模块在导出到 ONNX 之前需要进行校准。
@@ -274,9 +291,7 @@ from train import evaluate, train_one_epoch, load_data
 
 **Adding quantized modules**
 
-第一步是在神经网络图中添加量化模块。例如，`quant_nn.QuantLinear` 可以用来替代 `nn.Linear`。这些量化层可以通过 "`Monkey-patching` "自动替换，也可以通过手动修改模型定义来替换。
-
-自动层替换是通过 `quant_modules` 完成的。应在创建模型前调用它。
+第一步是在神经网络图中添加量化模块。例如，`quant_nn.QuantLinear` 可以用来替代 `nn.Linear`。这些量化层可以通过 "`Monkey-patching` "自动替换，也可以通过手动修改模型定义来替换。自动层替换是通过 `quant_modules`完成的，应在创建模型前调用它。
 
 ```python
 from pytorch_quantization import quant_modules
