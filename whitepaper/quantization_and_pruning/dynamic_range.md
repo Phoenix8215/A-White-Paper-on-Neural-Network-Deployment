@@ -154,7 +154,7 @@ if __name__ == "__main__":
 
 首先定义了一个计算KL散度的函数cal\_kl，用于计算两个概率分布P和Q之间的KL散度 然后定义了一个kl\_test函数，用于使用Entropy方法来估计数据的动态范围。在kl\_test中，先随机生成概率分布y，将其归一化后计算与输入的概率分布x之间的KL散度，如果小于阈值，则认为当前的概率分布y最优，结束迭代。否则继续生成一个新的随机概率分布y，重复KL散度计算，直到找到满足条件的最优概率分布 最后返回找到的最优概率分布y，并可视化原始数据分布x和最优概率分布y的差异 下面是KL散度阈值为0.01时原始数据x(蓝色)和最优概率分布y(橙色)的可视化图，可以看到此时的x和y的分布比较接近：&#x20;
 
-<figure><img src="../../.gitbook/assets/图片 (80).png" alt="" width="375"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (80).png" alt="" width="563"><figcaption></figcaption></figure>
 
 
 
