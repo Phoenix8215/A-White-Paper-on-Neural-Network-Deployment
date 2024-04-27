@@ -30,12 +30,6 @@ $$
 \operatorname{clip}(x,l,u)\begin{cases}l,&x<l\\x,&l\leq x\leq u\\u,&x>u\end{cases}
 $$
 
-
-
-
-
-
-
 那么Q的公式可以理解为：
 
 $$
@@ -78,7 +72,7 @@ $$
 
 <mark style="color:red;">所以我们知道DQ + fp32精度的op可以拼成一个int8精度的op.</mark>
 
-> 这里以NVIDIA采用的 对称量化量化与反量 化计算为例，计算过 程没有涉及zero-shift
+> 这里以NVIDIA采用的对称量化为例，计算过程没有涉及zero-shift
 
 如果DQ + fp32精度op可以拼成一个int8精度的op， 那么DQ + fp32精度op +Q是不是也可以融合呢？
 
@@ -129,21 +123,24 @@ $$
 
 <figure><img src="../../.gitbook/assets/图片 (6) (1).png" alt=""><figcaption></figcaption></figure>
 
-新生成的QConvRelu以及Qconv是int8精度的计算，速度很快并且TensorRT会很大几率分配tensor core执行 这个计算。这个就是TensorRT中对量化节点的优化方法之一。
+新生成的QConvRelu以及Qconv是int8精度的计算，速度很快并且TensorRT会很大几率分配`tensor core`执行 这个计算。这个就是TensorRT中对量化节点的优化方法之一。
 
 ### QAT的工作流
 
-理解了Q/DQ再去看QAT就非常容易了。QAT是一种Fine-tuning方式，通常对一个pre-trained model进行添加Q/DQ节点模拟量化，并通过训练来更新权重去吸收量化过程所带来的误差。添 加了Q/DQ节点后的算子会以int8精度执行
+理解了Q/DQ再去看QAT就非常容易了。QAT是一种Fine-tuning方式，通常对一个`pre-trained model`进行添加Q/DQ节点模拟量化，并通过训练来更新权重去吸收量化过程所带来的误差。添加了Q/DQ节点后的算子会以int8精度执行
 
 <figure><img src="../../.gitbook/assets/图片 (7) (1).png" alt="" width="563"><figcaption></figcaption></figure>
 
-pytorch支持对已经训练好的模型自动添加Q/DQ节点。详细可以参考 https://github.com/NVIDIA/TensorRT/tree/main/tools/pytorch-quantization
+pytorch支持对已经训练好的模型自动添加Q/DQ节点。详细可以参考 `https://github.com/NVIDIA/TensorRT/tree/main/tools/pytorch-quantization`
 
 TensorRT对包含Q/DQ节点的onnx模型使用很多图优化，从而提高计算效率。主要分为&#x20;
 
-* Q/DQ fusion&#x20;
-  * 通过层融合，将Q/DQ中的线性计算与conv或者linear这种线性计算融合在一起，实现int8计算 • Q/DQ Propagation&#x20;
-  * 将Q节点尽量往前挪，将DQ节点尽量往后挪，让网络中int8计算的部分变得更长
+* Q/DQ fusion：通过层融合，将Q/DQ中的线性计算与conv或者linear这种线性计算融合在一起，实现int8计算Q/DQ Propagation&#x20;
+* QDQ-ONNX网络在输入到TensorRT中的时候，TensorRT的算法会propagate整个网络，根据一些规则适当移动Q/DQ算子的位置，将Q节点尽量往前挪，将DQ节点尽量往后挪，让网络中int8计算的部分变得更长
+
+{% hint style="info" %}
+为什么移动QDQ呢，毕竟QDQ模型是我们产出的，QDQ算子也是我们亲手插的，这个插得位置其实也是有讲究的。毕竟这个QDQ模型是要经过TensorRT进行解析优化（或者其他推理框架进行解析），而解析算法也是人写的，难免会有一些case没有考虑到，而这些badcase或者hardcase往往与我们QDQ插得位置有关。
+{% endhint %}
 
 ### TensorRT中QAT的Q/DQ Fusion技巧
 
@@ -159,6 +156,7 @@ Max Pooling与Q/DQ的propagation (由于maxpooling的结果在量化前后是没
 
 * 主要是训练weight来学习误差&#x20;
 * Q/DQ中的scale和zero-point也是可以训练的。通过训练来学习最好的scale来表示dynamic range
+* 可以显式指定哪一层是量化层，我们可以默认认为包在QDQ操作中间的op都是INT8类型的op，也就是我们需要量化的op
 * 没有PTQ中那样人为的指定calibration过程 ,不是因为没有calibration这个过程来做histogram的统计，而是因为QAT会利用fine-tuning的数 据集在训练的过程中同时进行calibration，这个过程是我们看不见的。这就是为什么我们在 pytorch创建QAT模型的时候需要选定calibration algorithm.
 
 ### 我们在部署过程中应该按照什么样子的流程进行QAT
@@ -168,10 +166,10 @@ Max Pooling与Q/DQ的propagation (由于maxpooling的结果在量化前后是没
 1. 先进行PTQ
    1. 从多种calibration策略中选取最佳的算法
    2. 查看是否精度满足，如果不行再下一步。
-2. 进行partial-quantization
-   1. 通过layer-wise的sensitve analysis分析每一层的精度损失
-   2. 尝试fp16 + int8的组合
-   3. fp16用在敏感层(网络入口和出口)，int8用在计算密集处(网络的中间)
+2. 进行`partial-quantization`
+   1. 通过`layer-wise`的`sensitve analysis`分析每一层的精度损失
+   2. 尝试`fp16 + int8`的组合
+   3. `fp16`用在敏感层(网络入口和出口)，`int8`用在计算密集处(网络的中间)
    4. 查看是否精度满足，如果不行再下一步。
    5. (注意，这里同时也需要查看计算效率是否得到满足)
 3. 进行QAT来通过学习权重来适应误差
@@ -183,3 +181,7 @@ Max Pooling与Q/DQ的propagation (由于maxpooling的结果在量化前后是没
 <figure><img src="../../.gitbook/assets/图片 (2) (1) (1) (1) (1).png" alt="" width="360"><figcaption></figcaption></figure>
 
 普遍来讲，量化后精度下降控制在相对精度损失<=2%是最好的。
+
+### reference
+
+* [https://blog.csdn.net/qq\_40672115/article/details/130489067](https://blog.csdn.net/qq\_40672115/article/details/130489067)

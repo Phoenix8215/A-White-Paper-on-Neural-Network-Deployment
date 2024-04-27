@@ -1,6 +1,6 @@
 # 👊 Post-Training Quantization
 
-### 量化的基本原理: 基本术语(PTQ, QAT)
+### 基本术语(PTQ, QAT)
 
 根据量化的时机，一般我们会把量化分为&#x20;
 

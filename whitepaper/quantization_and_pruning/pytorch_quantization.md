@@ -4,7 +4,7 @@
 
 #### Quantization function
 
-`fake_tensor_quant` 返回假量化张量（浮点值）。`tensor_quant` 返回量化张量（整数值）和比例。
+`fake_tensor_quant` 函数对输入的 tensor 进行 FQ 操作，即 QDQ 操作，返回假量化张量（浮点值）。`tensor_quant` 返回量化张量（整数值）和比例。
 
 ```python
 tensor_quant(inputs, amax, num_bits=8, output_dtype=torch.float, unsigned=False)
