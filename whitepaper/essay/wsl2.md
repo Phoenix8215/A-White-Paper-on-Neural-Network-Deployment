@@ -1,4 +1,4 @@
-# 在WSL2上安装CUDA\_cuDNN\_TensorRT
+# 👽 在WSL2上安装CUDA\_cuDNN\_TensorRT
 
 ### 安装Toolkit Driver
 
