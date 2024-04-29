@@ -180,7 +180,7 @@ torch.onnx.export(model, inputs, 'quant_resnet18.onnx', opset_version=13)
 
 #### Calibration
 
-校准是 TensorRT 的术语，即把数据样本传递给量化器，并决定amax(绝对值最大的元素)的最佳值。我们支持 4 种校准方法：
+校准是 TensorRT 的术语，即把数据样本传递给量化器，并决定`amax`(绝对值最大的元素)的最佳值。我们支持 4 种校准方法：
 
 * `max`: 只需使用全局最大绝对值
 * `entropy`: TensorRT 的熵校准
@@ -220,7 +220,7 @@ model.cuda()
 
 ### Quantization Aware Training
 
-`Quantization Aware Training` 基于直通估计（STE）导数近似。它有时被称为 "量化感知训练"。我们不使用这个名称，因为它并不反映下面的假设。由于采用了 STE 近似方法，所以训练过程并 "不感知 "量化。
+`Quantization Aware Training` 基于直通估计（STE）导数近似。它有时被称为 "量化感知训练"。
 
 校准完成后，量化感知训练只需选择一个训练计划，然后继续训练校准后的模型。通常，它不需要微调很长时间。我们通常使用原始训练计划的 10% 左右，从初始训练学习率的 1% 开始，使用余弦退火学习率，按照余弦周期的一半递减，直到初始微调学习率的 1% （初始训练学习率的 0.01%）。
 
@@ -291,14 +291,14 @@ from train import evaluate, train_one_epoch, load_data
 
 **Adding quantized modules**
 
-第一步是在神经网络图中添加量化模块。例如，`quant_nn.QuantLinear` 可以用来替代 `nn.Linear`。这些量化层可以通过 "`Monkey-patching` "自动替换，也可以通过手动修改模型定义来替换。自动层替换是通过 `quant_modules`完成的，应在创建模型前调用它。
+第一步是在神经网络图中添加量化模块。例如，`quant_nn.QuantLinear` 可以用来替代 `nn.Linear`。<mark style="color:red;">这些量化层可以通过 "</mark><mark style="color:red;">`Monkey-patching`</mark> <mark style="color:red;"></mark><mark style="color:red;">"自动替换，也可以通过手动修改模型定义来替换。自动层替换是通过</mark> <mark style="color:red;"></mark><mark style="color:red;">`quant_modules`</mark><mark style="color:red;">完成的，应在创建模型前调用它。</mark>
 
 ```python
 from pytorch_quantization import quant_modules
 quant_modules.initialize()
 ```
 
-这将适用于每个模块的所有实例。如果不希望对所有模块进行量化，则应手动替换已量化的模块。也可以使用 `quant_nn.TensorQuantizer` 将量化器添加到模型中。
+<mark style="color:red;">这将适用于每个模块的所有实例。如果不希望对所有模块进行量化，则应手动替换已量化的模块。也可以使用</mark> <mark style="color:red;"></mark><mark style="color:red;">`quant_nn.TensorQuantizer`</mark> <mark style="color:red;"></mark><mark style="color:red;">将量化器添加到模型中。</mark>
 
 {% hint style="info" %}
 `Monkey-patching` 是一种编程术语，指的是在运行时动态修改或扩展现有的代码，通常是在不修改原始源代码的情况下实现。这种技术允许开发者在程序运行过程中修改类、函数、方法或模块的行为，以满足特定的需求或修复 `bug`。
@@ -321,7 +321,7 @@ model = models.resnet50(pretrained=True)
 model.cuda()
 ```
 
-要收集激活值的直方图，我们必须向模型输入样本数据。首先，按照训练脚本创建 ImageNet 数据加载器。然后，在每个量化器中启用校准，并将训练数据输入模型。1024 个样本（2 批，每批 512 个）足以估计激活值的分布。
+要收集激活值的直方图，我们必须向模型输入样本数据。首先，按照训练脚本创建 `ImageNet` 数据加载器。然后，在每个量化器中启用校准，并将训练数据输入模型。`1024` 个样本（2 批，每批 512 个）足以估计激活值的分布。
 
 ```python
 data_path = "PATH to imagenet"
@@ -385,7 +385,7 @@ data_loader_test = torch.utils.data.DataLoader(
      compute_amax(model, method="percentile", percentile=99.99)
 ```
 
-校准完成后，量化器将设置一个最大值（`amax`），表示量化空间中可表示的绝对值最大的输入。默认情况下，权重`scale`为`per channel`的，而激活函数的`scale`为`per tensor`的。我们可以通过打印每个 `TensorQuantizer` 模块来查看 `amax`。
+校准完成后，量化器将设置一个最大值（`amax`），表示量化空间中可表示的绝对值最大的输入。<mark style="color:red;">默认情况下，权重</mark><mark style="color:red;">`scale`</mark><mark style="color:red;">为</mark><mark style="color:red;">`per channel`</mark><mark style="color:red;">的，而激活函数的</mark><mark style="color:red;">`scale`</mark><mark style="color:red;">为</mark><mark style="color:red;">`per tensor`</mark><mark style="color:red;">的。我们可以通过打印每个</mark> <mark style="color:red;"></mark><mark style="color:red;">`TensorQuantizer`</mark> <mark style="color:red;"></mark><mark style="color:red;">模块来查看</mark> <mark style="color:red;"></mark><mark style="color:red;">`amax`</mark><mark style="color:red;">。</mark>
 
 ```
 conv1._input_quantizer                  : TensorQuantizer(8bit fake per-tensor amax=2.6400 calibrator=MaxCalibrator(track_amax=False) quant)
@@ -408,7 +408,7 @@ with torch.no_grad():
 torch.save(model.state_dict(), "/tmp/quant_resnet50-calibrated.pth")
 ```
 
-top-1 的准确率为 76.1%，接近预训练模型 76.2% 的准确率。
+`top-1` 的准确率为 `76.1%`，接近预训练模型 `76.2%` 的准确率。
 
 **Use different calibration**
 
@@ -444,13 +444,13 @@ train_one_epoch(model, criterion, optimizer, data_loader, "cuda", 0, 100)
 torch.save(model.state_dict(), "/tmp/quant_resnet50-finetuned.pth")
 ```
 
-经过一个epoch的微调，我们可以获得超过76.4%的top-1准确率。利用余弦退火算法衰减学习率对更多的epoch进行微调，可以进一步提高准确率。例如，从学习率为 0.001 开始，使用余弦退火对 15 个 epoch 进行微调，可以获得 76.7% 以上的准确率。值得注意的是，同样的微调策略也能提高未量化模型的准确率。
+经过一个`epoch`的微调，我们可以获得超过`76.4%`的`top-1`准确率。利用余弦退火算法衰减学习率对更多的`epoch`进行微调，可以进一步提高准确率。例如，从学习率为 `0.001` 开始，使用余弦退火对 15 个 `epoch` 进行微调，可以获得 `76.7%` 以上的准确率。
 
 **Further optimization**
 
-为了在 TensorRT 上实现高效推理，我们需要了解运行时优化的更多细节。TensorRT 支持量化卷积和残差加法的融合。新的融合算子有两个输入。我们称它们为卷积输入和残差输入。在这里，融合算子的输出精度必须与残差输入精度相匹配。如果在融合算子之后还有另一个量化节点，我们可以在残差输入和元素相加节点之间插入一对QDQ节点，这样卷积节点之后的量化节点就会与卷积节点融合，卷积节点就会完全量化为 INT8 输入和输出。我们不能使用 "猴子补丁 "来自动应用这种优化，而需要手动插入QDQ节点。
+为了在 TensorRT 上实现高效推理，我们需要了解运行时优化的更多细节。TensorRT 支持量化卷积和残差加法的融合。新的融合算子有两个输入。我们称它们为卷积输入和残差输入。在这里，融合算子的输出精度必须与残差输入精度相匹配。如果在融合算子之后还有另一个量化节点，我们可以在残差输入和元素相加节点之间插入一对QDQ节点，这样卷积节点之后的量化节点就会与卷积节点融合，卷积节点就会完全量化为 INT8 输入和输出。我们不能使用猴子补丁来自动应用这种优化，而需要手动插入QDQ节点。
 
-首先从 https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py 创建 resnet.py 的副本，修改构造函数，显式添加 bool 类型的量化标志
+首先从 [https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py](https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py) 创建 resnet.py 的副本，修改构造函数，显式添加 bool 类型的量化标志
 
 ```python
 def resnet50(pretrained: bool = False, progress: bool = True, quantize: bool = False, **kwargs: Any) -> ResNet:

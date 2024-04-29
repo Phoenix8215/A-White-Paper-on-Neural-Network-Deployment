@@ -10,7 +10,7 @@ CUDA中线程也可以分成三个层次：线程、线程块和线程网络。&
 * 线程块（Block）是若干线程的分组，Block内一个块至多512个线程、或1024个线程（根据不 同的GPU规格），线程块可以是一维、二维或者三维的；&#x20;
 * 线程网络（Grid）是若干线程块的网格，Grid是一维和二维的。 线程用ID索引，线程块内用局部ID标记threadID，配合blockDim和blockID可以计算出全局ID，用 于SIMT（`Single Instruction Multiple Thread`单指令多线程）分配任务。
 
-<figure><img src="../../.gitbook/assets/图片 (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 首先需要关注的是具体线程数量的划分，在并行计算部分里也提到数据划分和指令划分的概念， GPU有很多线程，在CUDA里被称为thread，同时我们会把一组thread归为一个block，而block又 会被组织成一个grid。
 
@@ -18,7 +18,7 @@ CUDA中线程也可以分成三个层次：线程、线程块和线程网络。&
 
 解释完了执行层面，再来分析一下内存层面上的对应，一个block不光要绑定在一个SM上，同时一 个block内的thread是共享一块share memory（一般就是SM的一级缓存，越靠近SM的内存就越快 ）。GPU和CPU也一样有着多级cache还有寄存器的架构，把全局内存的数据加载到共享内存上再 去处理可以有效的加速。所以结合具体的硬件具体的参数（SM和寄存器数量、缓存大小等）做出 合适的划分，确保最大化的利用各种资源（计算、内存、带宽）是做异构计算的核心。
 
-<figure><img src="../../.gitbook/assets/图片 (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 GPU在管理线程(thread)的时候是以block(线程块)为单元调度到SM上执行。每个block中以warp(一般32个线程或64线 程)作为一次执行的单位(真正的同时执行)。 1.\
 2.\

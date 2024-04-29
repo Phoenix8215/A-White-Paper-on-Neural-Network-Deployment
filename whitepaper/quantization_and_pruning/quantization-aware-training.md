@@ -178,7 +178,7 @@ Max Pooling与Q/DQ的propagation (由于maxpooling的结果在量化前后是没
    3. 查看是否精度满足，如果不行查看模型设计是否有问题
    4. (注意，这里同时也需要查看层融合是否被适用，以及Tensor core是否被用)
 
-<figure><img src="../../.gitbook/assets/图片 (2) (1) (1) (1) (1).png" alt="" width="360"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (2) (1) (1) (1) (1) (1).png" alt="" width="360"><figcaption></figcaption></figure>
 
 普遍来讲，量化后精度下降控制在相对精度损失<=2%是最好的。
 

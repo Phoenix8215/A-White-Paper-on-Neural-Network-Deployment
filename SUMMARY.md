@@ -41,6 +41,7 @@
   * [😺 PNNX计算图结构剖析](whitepaper/essay/pnnx.md)
   * [🎃 融合BN和Conv层](whitepaper/essay/bn\_conv.md)
   * [👾 深度神经网络编译器原理简介](whitepaper/essay/compiler.md)
+  * [在WSL2上安装CUDA\_cuDNN\_TensorRT](whitepaper/essay/zai-wsl2-shang-an-zhuang-cudacudnntensorrt.md)
 * [C🌿](whitepaper/cpp/README.md)
   * [🌴 C++11智能指针](whitepaper/cpp/ptr.md)
   * [🌲 C++11右值引用和移动语义](whitepaper/cpp/move\_forward.md)
