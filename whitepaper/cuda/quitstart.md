@@ -12,7 +12,7 @@ NVIDIA公司在1999年发布Geforce 256图形处理芯片时首先提出GPU的�
 
 全球GPU巨头：NVIDIA(英伟达)AMD(超威半导体)。
 
-<figure><img src="../../.gitbook/assets/图片 (2) (1) (1) (1).png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (2) (1) (1) (1) (1).png" alt="" width="563"><figcaption></figcaption></figure>
 
 ### GPU与CPU的区别
 
@@ -115,13 +115,13 @@ CPU/GPU从memory获取数据所需要的等待时间
 
 <figure><img src="../../.gitbook/assets/图片 (70).png" alt="" width="481"><figcaption></figcaption></figure>
 
-<figure><img src="../../.gitbook/assets/图片 (3) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (3) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 `cache miss` 这个时候，CPU core由于没有数据，所以 在等待数据的到来。这个状态叫做`stall`，
 
 如果数据不在cache里，那么就需要往下级 memory中寻找数据，然而访问下级memory是很耗时的。
 
-<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 不同memory在latency上的比较
 
@@ -176,7 +176,7 @@ while(i < 100) {
 
 * `Multi-threading`
 
-充分利用计算资源的一种技术 ，让因为数据依赖或者cache miss而stall的core去做一些其他的事情 ，提高throughput的一种技术。
+充分利用计算资源的一种技术 ，让因为数据依赖或者`cache miss`而`stall`的`core`去做一些其他的事情 ，提高throughput的一种技术。
 
 由于CPU处理的大多数都是一些复杂逻辑的计算，有大量的分支以及难以预测的分支方向，所以增加core的数 量，增加线程数而带来的throughput的收益往往并不是那么高。
 
@@ -217,7 +217,7 @@ Tensor core:&#x20;
 
 类似于SIMD的一种概念 ，将一条指令分给大量的thread去执行，thread间的调度是由warp来负责管理 • GPU体系架构中有一个warp schedular，专门负责管理线程调度的。Warp schedular是GPU体系 架构中特有的概念，CPU中 没有这个。
 
-<figure><img src="../../.gitbook/assets/图片 (4) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (4) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 * 由于`throughput`非常的高，所以相比与`CPU`，`cache miss`所产生的`latency`对性能的影响比较小&#x20;
 * `GPU`主要负责的任务是大规模计算(图像处理、深度学习等等)，所以一旦`fetch`好了数据以后，就会一直连续 处理，并且很少`cache miss`
