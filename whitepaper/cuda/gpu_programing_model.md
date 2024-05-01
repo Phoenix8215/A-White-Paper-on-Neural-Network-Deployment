@@ -212,7 +212,7 @@ __global__ void print_dim_kernel(){
          blockDim.z, blockDim.y, blockDim.x);
 }
 
-// 在block空间中打印每个thread一维连续的线性索引(一维度索引)
+// 在block空间中打印每个thread一维连续的线性索引
 __global__ void print_thread_idx_per_block_kernel(){
     int index = threadIdx.z * blockDim.x * blockDim.y + \
               threadIdx.y * blockDim.x + \
@@ -223,7 +223,7 @@ __global__ void print_thread_idx_per_block_kernel(){
          index);
 }
 
-// 在grid空间中打印每个thread一维连续的线性索引(一维度索引)
+// 在grid空间中打印每个thread一维连续的线性索引
 __global__ void print_thread_idx_per_grid_kernel(){
     int bSize  = blockDim.z * blockDim.y * blockDim.x;
 
@@ -314,6 +314,8 @@ int main() {
 
 #### 程序输出结果分析
 
+1. `print_idx_kernel()`
+
 ```c
 __global__ void print_idx_kernel(){
     printf("block idx: (%3d, %3d, %3d), thread idx: (%3d, %3d, %3d)\n",
@@ -321,6 +323,8 @@ __global__ void print_idx_kernel(){
          threadIdx.z, threadIdx.y, threadIdx.x);
 }
 ```
+
+<figure><img src="../../.gitbook/assets/图片 (85).png" alt=""><figcaption></figcaption></figure>
 
 * 一维输出结果：
 
@@ -356,55 +360,199 @@ block idx: (  0,   0,   0), thread idx: (  0,   1,   0)
 block idx: (  0,   0,   0), thread idx: (  0,   1,   1)
 ```
 
+2. `print_dim_kernel()`
 
+```c
+__global__ void print_dim_kernel(){
+    printf("grid dimension: (%3d, %3d, %3d), block dimension: (%3d, %3d, %3d)\n",
+         gridDim.z, gridDim.y, gridDim.x,
+         blockDim.z, blockDim.y, blockDim.x);
+}
+```
 
+* 一维输出结果：
 
+```bash
+grid dimension: (  1,   1,   2), block dimension: (  1,   1,   4)
+grid dimension: (  1,   1,   2), block dimension: (  1,   1,   4)
+grid dimension: (  1,   1,   2), block dimension: (  1,   1,   4)
+grid dimension: (  1,   1,   2), block dimension: (  1,   1,   4)
+grid dimension: (  1,   1,   2), block dimension: (  1,   1,   4)
+grid dimension: (  1,   1,   2), block dimension: (  1,   1,   4)
+grid dimension: (  1,   1,   2), block dimension: (  1,   1,   4)
+grid dimension: (  1,   1,   2), block dimension: (  1,   1,   4)
+```
 
+* 二维输出结果：
 
+```bash
+grid dimension: (  1,   2,   2), block dimension: (  1,   2,   2)
+grid dimension: (  1,   2,   2), block dimension: (  1,   2,   2)
+grid dimension: (  1,   2,   2), block dimension: (  1,   2,   2)
+grid dimension: (  1,   2,   2), block dimension: (  1,   2,   2)
+grid dimension: (  1,   2,   2), block dimension: (  1,   2,   2)
+grid dimension: (  1,   2,   2), block dimension: (  1,   2,   2)
+grid dimension: (  1,   2,   2), block dimension: (  1,   2,   2)
+grid dimension: (  1,   2,   2), block dimension: (  1,   2,   2)
+grid dimension: (  1,   2,   2), block dimension: (  1,   2,   2)
+grid dimension: (  1,   2,   2), block dimension: (  1,   2,   2)
+grid dimension: (  1,   2,   2), block dimension: (  1,   2,   2)
+grid dimension: (  1,   2,   2), block dimension: (  1,   2,   2)
+grid dimension: (  1,   2,   2), block dimension: (  1,   2,   2)
+grid dimension: (  1,   2,   2), block dimension: (  1,   2,   2)
+grid dimension: (  1,   2,   2), block dimension: (  1,   2,   2)
+grid dimension: (  1,   2,   2), block dimension: (  1,   2,   2)
+```
 
+3. `print_thread_idx_per_block_kernel()`
 
+```c
+// 在block空间中打印每个thread一维连续的线性索引
+__global__ void print_thread_idx_per_block_kernel(){
+    int index = threadIdx.z * blockDim.x * blockDim.y + \
+              threadIdx.y * blockDim.x + \
+              threadIdx.x;
 
+    printf("block idx: (%3d, %3d, %3d), thread idx: %3d\n",
+         blockIdx.z, blockIdx.y, blockIdx.x,
+         index);
+}
+```
 
+<figure><img src="../../.gitbook/assets/图片 (82).png" alt=""><figcaption></figcaption></figure>
 
+* 一维输出结果：
 
+```bash
+block idx: (  0,   0,   0), thread idx:   0
+block idx: (  0,   0,   0), thread idx:   1
+block idx: (  0,   0,   0), thread idx:   2
+block idx: (  0,   0,   0), thread idx:   3
+block idx: (  0,   0,   1), thread idx:   0
+block idx: (  0,   0,   1), thread idx:   1
+block idx: (  0,   0,   1), thread idx:   2
+block idx: (  0,   0,   1), thread idx:   3
+```
 
+* 二维输出结果：
 
+```bash
+block idx: (  0,   1,   0), thread idx:   0
+block idx: (  0,   1,   0), thread idx:   1
+block idx: (  0,   1,   0), thread idx:   2
+block idx: (  0,   1,   0), thread idx:   3
+block idx: (  0,   1,   1), thread idx:   0
+block idx: (  0,   1,   1), thread idx:   1
+block idx: (  0,   1,   1), thread idx:   2
+block idx: (  0,   1,   1), thread idx:   3
+block idx: (  0,   0,   1), thread idx:   0
+block idx: (  0,   0,   1), thread idx:   1
+block idx: (  0,   0,   1), thread idx:   2
+block idx: (  0,   0,   1), thread idx:   3
+block idx: (  0,   0,   0), thread idx:   0
+block idx: (  0,   0,   0), thread idx:   1
+block idx: (  0,   0,   0), thread idx:   2
+block idx: (  0,   0,   0), thread idx:   3
+```
 
+4. `print_thread_idx_per_grid_kernel()`
 
+<pre class="language-c"><code class="lang-c">// 在grid空间中打印每个thread一维连续的线性索引
+__global__ void print_thread_idx_per_grid_kernel(){
+<strong>    int bSize  = blockDim.z * blockDim.y * blockDim.x;
+</strong>
+    int bIndex = blockIdx.z * gridDim.x * gridDim.y + \
+               blockIdx.y * gridDim.x + \
+               blockIdx.x;
 
+    int tIndex = threadIdx.z * blockDim.x * blockDim.y + \
+               threadIdx.y * blockDim.x + \
+               threadIdx.x;
 
+    int index  = bIndex * bSize + tIndex;//从这里开始理解
 
+    printf("block idx: %3d, thread idx in block: %3d, thread idx: %3d\n", 
+         bIndex, tIndex, index);
+}
+</code></pre>
 
+{% hint style="info" %}
+使用CUDA 在图像中进行寻找坐标的时候推荐这么使用
+{% endhint %}
 
+<figure><img src="../../.gitbook/assets/图片 (84).png" alt="" width="563"><figcaption></figcaption></figure>
 
+* 一维输出结果：
 
+```bash
+block idx:   0, thread idx in block:   0, thread idx:   0
+block idx:   0, thread idx in block:   1, thread idx:   1
+block idx:   0, thread idx in block:   2, thread idx:   2
+block idx:   0, thread idx in block:   3, thread idx:   3
+block idx:   1, thread idx in block:   0, thread idx:   4
+block idx:   1, thread idx in block:   1, thread idx:   5
+block idx:   1, thread idx in block:   2, thread idx:   6
+block idx:   1, thread idx in block:   3, thread idx:   7
+```
 
+* 二维输出结果：
 
+```bash
+block idx:   3, thread idx in block:   0, thread idx:  12
+block idx:   3, thread idx in block:   1, thread idx:  13
+block idx:   3, thread idx in block:   2, thread idx:  14
+block idx:   3, thread idx in block:   3, thread idx:  15
+block idx:   2, thread idx in block:   0, thread idx:   8
+block idx:   2, thread idx in block:   1, thread idx:   9
+block idx:   2, thread idx in block:   2, thread idx:  10
+block idx:   2, thread idx in block:   3, thread idx:  11
+block idx:   1, thread idx in block:   0, thread idx:   4
+block idx:   1, thread idx in block:   1, thread idx:   5
+block idx:   1, thread idx in block:   2, thread idx:   6
+block idx:   1, thread idx in block:   3, thread idx:   7
+block idx:   0, thread idx in block:   0, thread idx:   0
+block idx:   0, thread idx in block:   1, thread idx:   1
+block idx:   0, thread idx in block:   2, thread idx:   2
+block idx:   0, thread idx in block:   3, thread idx:   3
+```
 
+5. `print_cord_kernel()`
 
+```bash
+__global__ void print_cord_kernel(){
+    int index = threadIdx.z * blockDim.x * blockDim.y + \
+              threadIdx.y * blockDim.x + \
+              threadIdx.x;
 
+    int x  = blockIdx.x * blockDim.x + threadIdx.x;
+    int y  = blockIdx.y * blockDim.y + threadIdx.y;
 
+    printf("block idx: (%3d, %3d, %3d), thread idx: %3d, cord: (%3d, %3d)\n",
+         blockIdx.z, blockIdx.y, blockIdx.x,
+         index, x, y);
+}
+```
 
+* 输出结果：
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+```bash
+block idx: (  0,   1,   0), thread idx:   0, cord: (  0,   2)
+block idx: (  0,   1,   0), thread idx:   1, cord: (  1,   2)
+block idx: (  0,   1,   0), thread idx:   2, cord: (  0,   3)
+block idx: (  0,   1,   0), thread idx:   3, cord: (  1,   3)
+block idx: (  0,   1,   1), thread idx:   0, cord: (  2,   2)
+block idx: (  0,   1,   1), thread idx:   1, cord: (  3,   2)
+block idx: (  0,   1,   1), thread idx:   2, cord: (  2,   3)
+block idx: (  0,   1,   1), thread idx:   3, cord: (  3,   3)
+block idx: (  0,   0,   1), thread idx:   0, cord: (  2,   0)
+block idx: (  0,   0,   1), thread idx:   1, cord: (  3,   0)
+block idx: (  0,   0,   1), thread idx:   2, cord: (  2,   1)
+block idx: (  0,   0,   1), thread idx:   3, cord: (  3,   1)
+block idx: (  0,   0,   0), thread idx:   0, cord: (  0,   0)
+block idx: (  0,   0,   0), thread idx:   1, cord: (  1,   0)
+block idx: (  0,   0,   0), thread idx:   2, cord: (  0,   1)
+block idx: (  0,   0,   0), thread idx:   3, cord: (  1,   1)
+```
 
 {% hint style="info" %}
 **CUDA中的几种同步机制**
