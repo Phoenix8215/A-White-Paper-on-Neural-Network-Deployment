@@ -61,5 +61,96 @@ cudaError_t cudaStreamCreate(cudaStream_t* pStream)
 
 cudaStreamCreate创建了一个可以显式管理的非空流。之后，返回到pStream中的流就 可以被当作流参数供cudaMemcpyAsync和其他异步CUDA的API函数来使用。在使用异步 CUDA函数时，常见的疑惑在于，它们可能会从先前启动的异步操作中返回错误代码。
 
+当执行异步数据传输时，必须使用固定（或非分页的）主机内存。可以使用cuda MallocHost函数或cudaHostAlloc函数分配固定内存：
+
+```c
+cudaError t cudaMallocHost(void **ptr, sizet size);
+cudaError_t cudaHostAlloc(void **pHost, size_t ssize, unsigned int flags);
+```
+
+在主机虚拟内存中固定分配，可以确保其在CPU内存中的物理位置在应用程序的整个 生命周期中保持不变。否则，操作系统可以随时自由改变主机虚拟内存的物理位置。如果 在没有固定主机内存的情况下执行一个异步CUDA转移操作，操作系统可能会在物理层面 上移动数组，这样会导致未定义的行为。
+
+{% hint style="info" %}
+* `cudaMalloc`分配的是页锁定内存，也称为固定内存。
+* 页锁定内存不会被分页到磁盘，因此对于GPU访问非常高效。
+* 在某些情况下，人们更喜欢直接使用`cudaMallocHost`来分配页锁定内存，因为它更容易使用。
+{% endhint %}
+
+在非默认流中启动内核，必须在内核执行配置中提供一个流标识符作为第四个参数：
+
+```c
+kernel name<<<grid, block, sharedMemSize,stream>>>(argument list);
+```
+
+一个非默认流声明如下：
+
+```c
+cudaStream_t stream;
+```
+
+非默认流可以使用如下方式进行创建：
+
+```c
+cudaStreamCreate (&stream);
+```
+
+可以使用如下代码释放流中的资源：
+
+```c
+cudaError t cudaStreamDestroy(cudaStream_t stream);
+```
+
+在一个流中，当cudaStreamDestroy函数被调用时，如果该流中仍有未完成的工作， cudaStreamDestroy函数将立即返回，当流中所有的工作都已完成时，与流相关的资源将被 自动释放。&#x20;
+
+因为所有的CUDA流操作都是异步的，所以CUDA的API提供了两个函数来检查流中所 有操作是否都已经完成：
+
+```c
+cudaError_t cudaStreamSynchronize(cudaStream_(t stream)
+cudaError t cudaStreamQuery(cudaStream_t sttream);
+```
+
+**cudaStreamSynchronize强制阻塞主机，直到在给定流中所有的操作都完成了。cudaStreamQuery会检查流中所有操作是否都已经完成，但在它们完成前不会阻塞主机。**当所有操作都完成时cudaStreamQuery函数会返回cudaSuccess，当一个或多个操作仍在执行或等待执行时返回cudaErrorNotReady。
+
+来看几个简单的编程示例：
+
+```c
+#include <cstdio>
+
+using namespace std;
+
+__global__ void
+foo_kernel(int step)
+{
+    printf("loop: %d\n", step);
+}
+
+int main()
+{
+    int n_loop = 5;
+
+    // 使用默认流
+    for (int i = 0; i < n_loop; i++)
+        foo_kernel<<< 1, 1, 0, 0 >>>(i);
+
+    cudaDeviceSynchronize();
+
+    return 0;
+}
+```
+
+<figure><img src="../../.gitbook/assets/图片.png" alt=""><figcaption></figcaption></figure>
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

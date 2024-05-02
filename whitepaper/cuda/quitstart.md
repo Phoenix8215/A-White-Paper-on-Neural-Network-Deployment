@@ -121,7 +121,7 @@ CPU/GPU从memory获取数据所需要的等待时间
 
 如果数据不在cache里，那么就需要往下级 memory中寻找数据，然而访问下级memory是很耗时的。
 
-<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 不同memory在latency上的比较
 
