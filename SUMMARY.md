@@ -5,6 +5,7 @@
 * [🤠 CUDA](README.md)
   * [🤑 CPU|GPU程序执行流程](whitepaper/cuda/quitstart.md)
   * [🤒 GPU编程模型](whitepaper/cuda/gpu\_programing\_model.md)
+  * [😷 CUDA流和事件](whitepaper/cuda/stream\_event.md)
 * [😄 ONNX](whitepaper/onnx\_intro/README.md)
   * [😆 ONNX中的一些概念](whitepaper/onnx\_intro/onnxconcepts.md)
   * [😍 用python操作ONNX](whitepaper/onnx\_intro/yong-python-cao-zuo-onnx.md)
