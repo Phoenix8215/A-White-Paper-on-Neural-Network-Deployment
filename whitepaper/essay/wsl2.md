@@ -39,7 +39,7 @@ Thu Mar 16 18:15:53 2023
 
 在 Nvidia 官网选择对应版本：[https://developer.nvidia.com/cuda-toolkit-archive](https://developer.nvidia.com/cuda-toolkit-archive)。比如我选择的是 11.7 版本，选择 Linux ， x86\_64 ， WSL-Ubuntu ， 2.0 ， deb(local) ，如下
 
-<figure><img src="../../.gitbook/assets/图片 (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (5) (1).png" alt=""><figcaption></figcaption></figure>
 
 使用提示的安装命令直接安装即可
 

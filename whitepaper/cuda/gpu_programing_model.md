@@ -47,7 +47,7 @@ GPU在管理线程(thread)的时候是以block(线程块)为单元调度到SM上
 
 当warp访问内存的时候，processor(处理器)会做context switch(上下文切换)，让其他warp使用硬件资源。因为是硬件来做，所以速度非常快。
 
-<figure><img src="../../.gitbook/assets/图片 (5) (1).png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (5) (1) (1).png" alt="" width="563"><figcaption></figcaption></figure>
 
 ### CUDA内存模型
 
@@ -113,7 +113,7 @@ cudaError_t cudaMemcpyToSymbol(const void* symbol, const void* src, size_t count
 
 CUDA的软件架构由网格（Grid）、线程块（Block）和线程（Thread）组成，相当于把GPU上的计算单元分为若干 （2\~3）个网格，每个网格内包含若干（65535）个线程块，每个线程块包含若干（512/1024）个线程，三者的关系如 下图：
 
-<figure><img src="../../.gitbook/assets/图片 (1).png" alt="" width="375"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (5).png" alt="" width="375"><figcaption></figcaption></figure>
 
 Thread，block，grid是CUDA编程上的概念，为了方便程序员软件设计，组织线程。&#x20;
 
@@ -146,11 +146,11 @@ CUDA中可以创建的网格数量跟GPU的计算能力有关，可创建的Grid
 
 函数限定符：
 
-<figure><img src="../../.gitbook/assets/图片 (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (3) (1).png" alt=""><figcaption></figcaption></figure>
 
 变量限定符：
 
-<figure><img src="../../.gitbook/assets/图片 (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (4) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### CUDA运行时API&#x20;
 
@@ -191,7 +191,7 @@ CUDA中可以创建的网格数量跟GPU的计算能力有关，可创建的Grid
 
 下面这张图比较清晰的表示的几个概念的关系：
 
-<figure><img src="../../.gitbook/assets/图片 (2).png" alt="" width="375"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (2) (1).png" alt="" width="375"><figcaption></figcaption></figure>
 
 #### 示例程序
 
@@ -586,4 +586,3 @@ block idx: (  0,   0,   0), thread idx:   3, cord: (  1,   1)
 
 * [https://zhuanlan.zhihu.com/p/123170285](https://zhuanlan.zhihu.com/p/123170285)
 * [https://www.cnblogs.com/dama116/p/6909629.html](https://www.cnblogs.com/dama116/p/6909629.html)
-* John Cheng, Max Grossman, ty McKercher . <\<Professional CUDA C Programming>>

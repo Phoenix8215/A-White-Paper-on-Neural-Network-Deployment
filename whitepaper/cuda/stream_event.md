@@ -2,7 +2,7 @@
 
 ### 流和事件的概述
 
-CUDA流是一系列异步的CUDA操作，这些操作按照主机代码确定的顺序在设备上执 行。流能封装这些操作，保持操作的顺序，允许操作在流中排队，并使它们在先前的所有 操作之后执行，并且可以查询排队操作的状态。这些操作包括在主机与设备间进行数据传 输，内核启动以及大多数由主机发起但由设备处理的其他命令。流中操作的执行相对于主 机总是异步的。CUDA运行时决定何时可以在设备上执行操作。<mark style="color:red;">我们的任务是使用CUDA 的API来确保一个异步操作在运行结果被使用之前可以完成。在同一个CUDA流中的操作 有严格的执行顺序，而在不同CUDA流中的操作在执行顺序上不受限制。</mark>使用多个流同时 启动多个内核，可以实现网格级并发。
+CUDA流是一系列异步的CUDA操作，这些操作按照主机代码确定的顺序在设备上执行。流能封装这些操作，保持操作的顺序，允许操作在流中排队，并使它们在先前的所有 操作之后执行，并且可以查询排队操作的状态。这些操作包括在主机与设备间进行数据传 输，内核启动以及大多数由主机发起但由设备处理的其他命令。流中操作的执行相对于主 机总是异步的。CUDA运行时决定何时可以在设备上执行操作。<mark style="color:red;">我们的任务是使用CUDA 的API来确保一个异步操作在运行结果被使用之前可以完成。在同一个CUDA流中的操作 有严格的执行顺序，而在不同CUDA流中的操作在执行顺序上不受限制。</mark>使用多个流同时 启动多个内核，可以实现网格级并发。
 
 因为所有在CUDA流中排队的操作都是异步的，所以在主机与设备系统中可以重叠执 行其他操作。在同一时间内将流中排队的操作与其他有用的操作一起执行，可以隐藏执行 那些操作的开销。
 
@@ -138,11 +138,638 @@ int main()
 }
 ```
 
+<figure><img src="../../.gitbook/assets/图片 (4).png" alt=""><figcaption></figcaption></figure>
+
+```c
+#include <cstdio>
+
+using namespace std;
+
+__global__ void
+foo_kernel(int step)
+{
+    printf("loop: %d\n", step);
+}
+
+int main()
+{
+    int n_stream = 5;
+    cudaStream_t *ls_stream;
+    ls_stream = (cudaStream_t*) new cudaStream_t[n_stream];
+
+    // create multiple streams
+    for (int i = 0; i < n_stream; i++)
+        cudaStreamCreate(&ls_stream[i]);
+
+    // execute kernels with the CUDA stream each
+    for (int i = 0; i < n_stream; i++)
+        foo_kernel<<< 1, 1, 0, ls_stream[i] >>>(i);
+
+    // synchronize the host and GPU
+    cudaDeviceSynchronize();
+
+    // terminates all the created CUDA streams
+    for (int i = 0; i < n_stream; i++)
+        cudaStreamDestroy(ls_stream[i]);
+    delete [] ls_stream;
+
+    return 0;
+}
+```
+
+<figure><img src="../../.gitbook/assets/图片 (2).png" alt=""><figcaption></figcaption></figure>
+
+{% hint style="info" %}
+<mark style="color:red;">从上图可以看到，数据传输操作虽然分布在不同的流中，但是并没有并发执行。这是由一 个共享资源导致的：PCIe总线。虽然从编程模型的角度来看这些操作是独立的，但是因为它们共享一个相同的硬件资源，所以它们的执行必须是串行的。</mark>
+{% endhint %}
+
+### 流同步
+
+CUDA 流通过 cudaStreamSynchronize() 函数提供流级同步。使用该函数可强制主机等待某个流操作的结束。下面的代码展示了在内核执行结束时使用流同步的示例：
+
+```c
+#include <cstdio>
+
+using namespace std;
+
+__global__ void
+foo_kernel(int step)
+{
+    printf("loop: %d\n", step);
+}
+
+int main()
+{
+    int n_stream = 5;
+    cudaStream_t *ls_stream;
+    ls_stream = (cudaStream_t*) new cudaStream_t[n_stream];
+
+    // create multiple streams
+    for (int i = 0; i < n_stream; i++)
+        cudaStreamCreate(&ls_stream[i]);
+
+    // execute kernels with the CUDA stream each
+    for (int i = 0; i < n_stream; i++) {
+       foo_kernel<<< 1, 1, 0, ls_stream[i] >>>(i);
+       cudaStreamSynchronize(ls_stream[i]);
+    }
+
+    // synchronize the host and GPU
+    cudaDeviceSynchronize();
+
+    // terminates all the created CUDA streams
+    for (int i = 0; i < n_stream; i++)
+        cudaStreamDestroy(ls_stream[i]);
+    delete [] ls_stream;
+
+    return 0;
+}
+```
+
+内核操作的并发性将因同步而消失
+
+<figure><img src="../../.gitbook/assets/图片 (3).png" alt=""><figcaption></figcaption></figure>
+
+可以看到，所有内核执行都没有重叠点，尽管它们是以不同的流执行的。利用这一特性，我们可以让主机等待某一流操作返回的结果。
+
+### 默认流的使用
+
+要同时运行多个流，我们应该使用显式创建的流，因为所有流操作都与默认流同步：
+
+> In general, when an operation is issued to the NULL stream, the CUDA context waits on all operations previously issued to all blocking streams before starting that operation. Also, any operations issued to blocking streams will wait on preceding operations in the NULL stream to complete before executing.
+
 <figure><img src="../../.gitbook/assets/图片.png" alt=""><figcaption></figcaption></figure>
 
+相关代码如下(只需要改循环启动核函数那块代码)：
 
+```c
+//....省略
+// execute kernels with the CUDA stream each
+for (int i = 0; i < n_stream; i++)
+    if (i == 3)
+        foo_kernel<<< 1, 1, 0, 0 >>>(i);
+    else
+        foo_kernel<<< 1, 1, 0, ls_stream[i] >>>(i);
+//....省略
+```
 
+因此，我们可以看到，最后一次操作不能与之前的内核执行重叠，而必须等到第四次内核执行结束。
 
+### GPU流水线执行
+
+多数据流的主要优势之一是数据传输与内核执行重叠。通过重叠内核操作和数据传输，我们可以隐藏数据传输开销，提高整体性能。
+
+#### GPU 流水线概念
+
+当我们执行内核函数时，需要将数据从主机传输到 GPU。 然后，再将结果从 GPU 传输回主机。下图显示了在主机和内核之间传输数据的过程：
+
+<figure><img src="../../.gitbook/assets/图片 (1).png" alt=""><figcaption></figcaption></figure>
+
+然而，内核执行基本上是异步的，主机和 GPU 可以同时运行。如果主机和 GPU 之间的数据传输具有相同的特性，我们就可以重叠执行。
+
+<figure><img src="../../.gitbook/assets/图片 (86).png" alt=""><figcaption></figcaption></figure>
+
+从图中我们可以看到，主机和设备之间的数据传输可以与内核执行重叠。那么，这种重叠操作的好处就是缩短了应用程序的执行时间。通过比较两幅图的长度，你就能确定哪种操作的吞吐量更高。
+
+关于 CUDA 数据流，所有 CUDA 操作（数据传输和内核执行）在同一数据流中都是顺序进行的。不过，这些操作可以与不同的数据流同时进行。下图显示了多个数据流中重叠的数据传输和内核操作：
+
+<figure><img src="../../.gitbook/assets/图片 (87).png" alt="" width="563"><figcaption></figcaption></figure>
+
+要实现这种流水线操作，有三个条件：
+
+1. 主机内存应被分配为`pinned memory`(cudaMallocHost() 函数和 cudaFreeHost() 函数)。
+2. 在主机和 GPU 之间传输数据而不阻塞主机进程(cudaMemcpyAsync() 函数)。
+3. 将每个操作放到不同的 CUDA 流中管理，以实现并发操作。
+
+#### 构建流水线执行
+
+现在，让我们构建一个在数据传输和内核执行中进行流水线操作的应用程序。在此应用程序中，我们将使用一个内核函数，通过对数据流进行分片(分成4段)，将两个向量相加，然后输出结果。 每个核函数中将重复加法操作 500 次，以延长内核执行时间。因此，实现的代码如下：
+
+```c
+__global__ void
+vecAdd_kernel(float *c, const float* a, const float* b)
+{
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+
+    for (int i = 0; i < 500; i++)
+        c[idx] = a[idx] + b[idx];
+}
+```
+
+为了处理每个流的操作，我们将创建一个管理 CUDA 流和 CUDA 操作的类。使用该类，我们可以通过索引来管理 CUDA 流。以下代码显示了该类的基本架构：
+
+```c
+class Operator
+{
+private:
+    int index;
+    cudaStream_t stream;
+
+public:
+    Operator() {
+        cudaStreamCreate(&stream);
+    }
+
+    ~Operator() {
+        cudaStreamDestroy(stream);
+    }
+
+    void set_index(int idx) { index = idx; }
+    void async_operation(float *h_c, const float *h_a, const float *h_b,
+                          float *d_c, float *d_a, float *d_b,
+                          const int size, const int bufsize);
+
+}; // Operator
+
+void Operator::async_operation(float *h_c, const float *h_a, const float *h_b,
+                          float *d_c, float *d_a, float *d_b,
+                          const int size, const int bufsize)
+{
+    // copy host -> device
+    cudaMemcpyAsync(d_a, h_a, bufsize, cudaMemcpyHostToDevice, stream);
+    cudaMemcpyAsync(d_b, h_b, bufsize, cudaMemcpyHostToDevice, stream);
+
+    // launch cuda kernel
+    dim3 dimBlock(256);
+    dim3 dimGrid(size / dimBlock.x);
+    vecAdd_kernel<<< dimGrid, dimBlock, 0, stream >>>(d_c, d_a, d_b);
+
+    // copy device -> host
+    cudaMemcpyAsync(h_c, d_c, bufsize, cudaMemcpyDeviceToHost, stream);
+
+    cudaStreamSynchronize(stream);
+
+    printf("Launched GPU task %d\n", index);
+}
+```
+
+完整的代码如下：
+
+```c
+#include <cstdio>
+#include <helper_timer.h>
+
+using namespace std;
+
+__global__ void vecAdd_kernel(float *c, const float* a, const float* b);
+void init_buffer(float *data, const int size);
+
+class Operator
+{
+private:
+    int index;
+    cudaStream_t stream;
+
+public:
+    Operator() {
+        cudaStreamCreate(&stream);
+    }
+
+    ~Operator() {
+        cudaStreamDestroy(stream);
+    }
+
+    void set_index(int idx) { index = idx; }
+    void async_operation(float *h_c, const float *h_a, const float *h_b,
+                          float *d_c, float *d_a, float *d_b,
+                          const int size, const int bufsize);
+
+}; // Operator
+
+void Operator::async_operation(float *h_c, const float *h_a, const float *h_b,
+                          float *d_c, float *d_a, float *d_b,
+                          const int size, const int bufsize)
+{
+    // copy host -> device
+    cudaMemcpyAsync(d_a, h_a, bufsize, cudaMemcpyHostToDevice, stream);
+    cudaMemcpyAsync(d_b, h_b, bufsize, cudaMemcpyHostToDevice, stream);
+
+    // launch cuda kernel
+    dim3 dimBlock(256);
+    dim3 dimGrid(size / dimBlock.x);
+    vecAdd_kernel<<< dimGrid, dimBlock, 0, stream >>>(d_c, d_a, d_b);
+
+    // copy device -> host
+    cudaMemcpyAsync(h_c, d_c, bufsize, cudaMemcpyDeviceToHost, stream);
+
+    printf("Launched GPU task %d\n", index);
+}
+
+int main(int argc, char* argv[])
+{
+    float *h_a, *h_b, *h_c;
+    float *d_a, *d_b, *d_c;
+    int size = 1 << 24;
+    int bufsize = size * sizeof(float);
+    int num_operator = 4;
+
+    if (argc != 1)
+        num_operator = atoi(argv[1]);
+    
+    // allocate host memories
+    cudaMallocHost((void**)&h_a, bufsize);
+    cudaMallocHost((void**)&h_b, bufsize);
+    cudaMallocHost((void**)&h_c, bufsize);
+
+    // initialize host values
+    srand(2019);
+    init_buffer(h_a, size);
+    init_buffer(h_b, size);
+    init_buffer(h_c, size);
+
+    // allocate device memories
+    cudaMalloc((void**)&d_a, bufsize);
+    cudaMalloc((void**)&d_b, bufsize);
+    cudaMalloc((void**)&d_c, bufsize);
+
+    // create list of operation elements
+    Operator *ls_operator = new Operator[num_operator];
+
+    // initialize & start timer
+    StopWatchInterface *timer;
+    sdkCreateTimer(&timer);
+    sdkStartTimer(&timer);
+
+    // execute each operator collesponding data
+    for (int i = 0; i < num_operator; i++) {
+        int offset = i * size / num_operator;
+        ls_operator[i].set_index(i);
+        ls_operator[i].async_operation(&h_c[offset], &h_a[offset], &h_b[offset],
+                                       &d_c[offset], &d_a[offset], &d_b[offset],
+                                       size / num_operator, bufsize / num_operator);
+    }
+
+    // synchronize until all the stream operation is finished
+    cudaDeviceSynchronize();
+
+    sdkStopTimer(&timer);
+
+    // print out the result
+    int print_idx = 256;
+    printf("compared a sample result...\n");
+    printf("host: %.6f, device: %.6f\n",  h_a[print_idx] + h_b[print_idx], h_c[print_idx]);
+
+    // Compute and print the performance
+    float elapsed_time_msed = sdkGetTimerValue(&timer);
+    float bandwidth = 3 * bufsize * sizeof(float) / elapsed_time_msed / 1e6;
+    printf("Time= %.3f msec, bandwidth= %f GB/s\n", elapsed_time_msed, bandwidth);
+
+    sdkDeleteTimer(&timer);
+
+    // terminate operators
+    delete [] ls_operator;
+
+    // terminate device memories
+    cudaFree(d_a);
+    cudaFree(d_b);
+    cudaFree(d_c);
+
+    // terminate host memories
+    cudaFreeHost(h_a);
+    cudaFreeHost(h_b);
+    cudaFreeHost(h_c);
+    
+    return 0;
+}
+
+void init_buffer(float *data, const int size)
+{
+    for (int i = 0; i < size; i++) 
+        data[i] = rand() / (float)RAND_MAX;
+}
+
+__global__ void
+vecAdd_kernel(float *c, const float* a, const float* b)
+{
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+
+    for (int i = 0; i < 500; i++)
+        c[idx] = a[idx] + b[idx];
+}
+```
+
+输出结果如下：
+
+```bash
+ Launched GPU task 0
+ Launched GPU task 1
+ Launched GPU task 2
+ Launched GPU task 3
+ compared a sample result...
+ host: 1.523750, device: 1.523750
+ Time= 29.508 msec, bandwidth= 27.291121 GB/s
+```
+
+下面的截图显示了四个 CUDA 数据流通过重叠数据传输和内核执行进行的操作：
+
+<figure><img src="../../.gitbook/assets/图片 (88).png" alt=""><figcaption></figcaption></figure>
+
+因此，GPU 可以一直忙到最后一个内核执行完毕，而且我们可以隐藏大部分数据传输。这不仅提高了 GPU 的利用率，还缩短了应用程序总的执行时间。
+
+在内核函数执行之间，我们可以发现，虽然它们属于不同的 CUDA 流，但是存在征用窗口期。这是因为 GPU 调度器首先为第一个请求提供服务。不过，当任务完成后，流式多处理器就为另一个 CUDA 流中的内核提供服务。
+
+在所有的 CUDA 流操作结束后，我们需要同步主机和 GPU，以确认 GPU 上的所有 CUDA 操作都已完成。为此，我们在循环之后使用了 `cudaDeviceSynchronize()`。该函数可以在函数调用处同步所有的 GPU 操作。
+
+<mark style="color:red;">对于同步任务，我们可以用下面的代码替换</mark> <mark style="color:red;"></mark><mark style="color:red;">`cudaDeviceSynchronize()`</mark><mark style="color:red;">函数。为此，我们还必须将私有成员</mark> <mark style="color:red;"></mark><mark style="color:red;">`_stream`</mark> <mark style="color:red;"></mark><mark style="color:red;">改为公有</mark>：
+
+```c
+ for (int i = 0; i < num_operator; i++) {
+    cudaStreamSynchronize(ls_operator[i]._stream);
+ }
+```
+
+<mark style="color:red;">如果程序设计得依赖于在每个流操作完成后立即执行一些特定的CPU操作，那么这种设计可能会导致不必要的同步点，从而影响程序的整体性能。这是因为即使某些流的操作已经完成，CPU上的后续操作可能仍然需要等待其他流的操作完成才能开始。(这个问题可以通过流回调函数的方式比较完美的解决)</mark>
+
+如果在循环中使用 `cudaStreamSynchronize()` 这将无法重叠核函数的执行与数据的传输。
+
+```c
+void Operator::async_operation(float *h_c, const float *h_a, const float *h_b,
+                          float *d_c, float *d_a, float *d_b,
+                          const int size, const int bufsize)
+{
+    // copy host -> device
+    cudaMemcpyAsync(d_a, h_a, bufsize, cudaMemcpyHostToDevice, stream);
+    cudaMemcpyAsync(d_b, h_b, bufsize, cudaMemcpyHostToDevice, stream);
+
+    // launch cuda kernel
+    dim3 dimBlock(256);
+    dim3 dimGrid(size / dimBlock.x);
+    vecAdd_kernel<<< dimGrid, dimBlock, 0, stream >>>(d_c, d_a, d_b);
+
+    // copy device -> host
+    cudaMemcpyAsync(h_c, d_c, bufsize, cudaMemcpyDeviceToHost, stream);
+
+    cudaStreamSynchronize(stream);
+
+    printf("Launched GPU task %d\n", index);
+}
+```
+
+<figure><img src="../../.gitbook/assets/图片 (89).png" alt=""><figcaption></figcaption></figure>
+
+在这种情况下，测得的执行时间为 41.521 毫秒，比重叠执行时间慢了约 40%。
+
+### 流回调函数
+
+CUDA 回调函数是由 GPU 上下文执行的可调用主机函数。利用它，程序员可以在 GPU 操作结束之后调用所需的主机操作。
+
+CUDA 回调函数有一个名为 `CUDART_CB` 的特殊数据类型。使用这种类型，程序员可以指定由哪个 CUDA 流启动该函数、传递 GPU 错误状态并提供用户数据。
+
+为注册回调函数，CUDA 提供了 `cudaStreamAddCallback()`。该函数接受 CUDA 流、CUDA 回调函数及其参数，这样就可以从指定的 CUDA 流调用指定的 CUDA 回调函数，获取用户数据。该函数有四个输入参数，但最后一个是保留参数。因此，我们不使用该参数，其值为 0。
+
+现在，让我们改进代码，使用回调函数并输出单个数据流的性能。首先，将下面这些声明放入到`Operator`类的`private`区域：
+
+```c
+private:
+    int _index;
+    cudaStream_t stream;
+    StopWatchInterface *p_timer;
+
+    static void CUDART_CB Callback(cudaStream_t stream, cudaError_t status, void* userData);
+    void print_time();
+```
+
+`Callback()` 函数将在每个数据流操作完成后调用，而 `print_time()` 函数将使用主机端(`host side`)计时器 `_p_timer` 报告估计的性能。这些函数的实现如下：
+
+```c
+void Operator::CUDART_CB Callback(cudaStream_t stream, cudaError_t status, void* userData) {
+    Operator* this_ = (Operator*) userData;
+    this_->print_time();
+}
+
+void Operator::print_time() {
+    sdkStopTimer(&p_timer);    // end timer
+    float elapsed_time_msed = sdkGetTimerValue(&p_timer);
+    printf("stream %2d - elapsed %.3f ms \n", _index, elapsed_time_msed);
+}
+```
+
+完整的程序如下：
+
+```c
+#include <cstdio>
+#include <helper_timer.h>
+
+using namespace std;
+
+__global__ void vecAdd_kernel(float *c, const float* a, const float* b);
+void init_buffer(float *data, const int size);
+
+class Operator
+{
+private:
+    int _index;
+    cudaStream_t stream;
+    StopWatchInterface *p_timer;
+
+    static void CUDART_CB Callback(cudaStream_t stream, cudaError_t status, void* userData);
+    void print_time();
+
+public:
+    Operator() {
+        cudaStreamCreate(&stream);
+        sdkCreateTimer(&p_timer);
+    }
+
+    ~Operator() {
+        cudaStreamDestroy(stream);
+        sdkDeleteTimer(&p_timer);
+    }
+
+    void set_index(int index) { _index = index; }
+    void async_operation(float *h_c, const float *h_a, const float *h_b,
+                          float *d_c, float *d_a, float *d_b,
+                          const int size, const int bufsize);
+
+}; // Operator
+
+void Operator::CUDART_CB Callback(cudaStream_t stream, cudaError_t status, void* userData) {
+    Operator* this_ = (Operator*) userData;
+    this_->print_time();
+}
+
+void Operator::print_time() {
+    sdkStopTimer(&p_timer);    // end timer
+    float elapsed_time_msed = sdkGetTimerValue(&p_timer);
+    printf("stream %2d - elapsed %.3f ms \n", _index, elapsed_time_msed);
+}
+
+void Operator::async_operation(float *h_c, const float *h_a, const float *h_b,
+                          float *d_c, float *d_a, float *d_b,
+                          const int size, const int bufsize)
+{
+    // start timer
+    sdkStartTimer(&p_timer);
+
+    // copy host -> device
+    cudaMemcpyAsync(d_a, h_a, bufsize, cudaMemcpyHostToDevice, stream);
+    cudaMemcpyAsync(d_b, h_b, bufsize, cudaMemcpyHostToDevice, stream);
+
+    // launch cuda kernel
+    dim3 dimBlock(256);
+    dim3 dimGrid(size / dimBlock.x);
+    vecAdd_kernel<<< dimGrid, dimBlock, 0, stream >>>(d_c, d_a, d_b);
+
+    // copy device -> host
+    cudaMemcpyAsync(h_c, d_c, bufsize, cudaMemcpyDeviceToHost, stream);
+
+    // register callback function
+    cudaStreamAddCallback(stream, Operator::Callback, this, 0);
+}
+
+int main(int argc, char* argv[])
+{
+    float *h_a, *h_b, *h_c;
+    float *d_a, *d_b, *d_c;
+    int size = 1 << 24;
+    int bufsize = size * sizeof(float);
+    int num_operator = 4;
+
+    if (argc != 1)
+        num_operator = atoi(argv[1]);
+
+    // initialize timer
+    StopWatchInterface *timer;
+    sdkCreateTimer(&timer);
+    
+    // allocate host memories
+    cudaMallocHost((void**)&h_a, bufsize);
+    cudaMallocHost((void**)&h_b, bufsize);
+    cudaMallocHost((void**)&h_c, bufsize);
+
+    // initialize host values
+    srand(2019);
+    init_buffer(h_a, size);
+    init_buffer(h_b, size);
+    init_buffer(h_c, size);
+
+    // allocate device memories
+    cudaMalloc((void**)&d_a, bufsize);
+    cudaMalloc((void**)&d_b, bufsize);
+    cudaMalloc((void**)&d_c, bufsize);
+
+    // create list of operation elements
+    Operator *ls_operator = new Operator[num_operator];
+
+    sdkStartTimer(&timer);
+    
+    // execute each operator collesponding data
+    for (int i = 0; i < num_operator; i++) {
+        int offset = i * size / num_operator;
+        ls_operator[i].set_index(i);
+        ls_operator[i].async_operation(&h_c[offset], &h_a[offset], &h_b[offset],
+                                       &d_c[offset], &d_a[offset], &d_b[offset],
+                                       size / num_operator, bufsize / num_operator);
+    }
+
+    // synchronize all the stream operation
+    cudaDeviceSynchronize();
+
+    sdkStopTimer(&timer);
+
+    // print out the result
+    int print_idx = 256;
+    printf("compared a sample result...\n");
+    printf("host: %.6f, device: %.6f\n",  h_a[print_idx] + h_b[print_idx], h_c[print_idx]);
+
+    // Compute and print the performance
+    float elapsed_time_msed = sdkGetTimerValue(&timer);
+    float bandwidth = 3 * bufsize * sizeof(float) / elapsed_time_msed / 1e6;
+    printf("Time= %.3f msec, bandwidth= %f GB/s\n", elapsed_time_msed, bandwidth);
+
+    // delete timer
+    sdkDeleteTimer(&timer);
+
+    // terminate operators
+    delete [] ls_operator;
+
+    // terminate device memories
+    cudaFree(d_a);
+    cudaFree(d_b);
+    cudaFree(d_c);
+
+    // terminate host memories
+    cudaFreeHost(h_a);
+    cudaFreeHost(h_b);
+    cudaFreeHost(h_c);
+    
+    return 0;
+}
+
+__global__ void
+vecAdd_kernel(float *c, const float* a, const float* b)
+{
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+
+    for (int i = 0; i < 500; i++)
+        c[idx] = a[idx] + b[idx];
+}
+
+void init_buffer(float *data, const int size)
+{
+    for (int i = 0; i < size; i++) 
+        data[i] = rand() / (float)RAND_MAX;
+}
+```
+
+程序输出结果如下：
+
+```bash
+stream
+stream
+stream
+0 - elapsed 11.136 ms
+1 - elapsed 16.998 ms
+2 - elapsed 23.283 ms
+stream 3 - elapsed 29.487 ms
+compared a sample result...
+host: 1.523750, device: 1.523750
+Time= 29.771 msec, bandwidth= 27.050028 GB/
+```
+
+可以看出流回调函数可以直接预测核函数的执行时间，由于存在`overlap`，会导致靠后的CUDA流执行时间比较长
+
+<figure><img src="../../.gitbook/assets/图片 (90).png" alt=""><figcaption></figcaption></figure>
 
 
 

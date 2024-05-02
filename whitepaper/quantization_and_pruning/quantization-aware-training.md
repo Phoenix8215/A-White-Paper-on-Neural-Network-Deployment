@@ -99,7 +99,7 @@ $$
 * &#x20;这个可量化层的输入和输出都是int8&#x20;
 * 计算的主体也是int8，可以节省带宽的同时，提高计算效率
 
-<figure><img src="../../.gitbook/assets/图片 (3) (1) (1) (1) (1) (1).png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (3) (1) (1) (1) (1) (1) (1).png" alt="" width="563"><figcaption></figcaption></figure>
 
 将上面的公式用图比较直观的表示出来就是 这个样子：&#x20;
 
@@ -110,14 +110,14 @@ $$
 
 我们理解了Q/DQ之后，我们再回到这张图看一下，
 
-<figure><img src="../../.gitbook/assets/图片 (4) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (4) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 我们知道conv和Relu是可以融合在一起成为ConvReLU算子，同时根据之前的公式和图，我们知道：
 
 * DQ和fp32精度的conv组合在一起，可以融合成一个int8精度的conv&#x20;
 * fp32精度输出的conv和后面的Q也可以融合在一起，输出一个int8精度的activation value
 
-<figure><img src="../../.gitbook/assets/图片 (5) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (5) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 将这些虚线包围起来的算子融合在一起，用一个int8的op来替换后，整个网络就会变成这个样子
 
@@ -178,7 +178,7 @@ Max Pooling与Q/DQ的propagation (由于maxpooling的结果在量化前后是没
    3. 查看是否精度满足，如果不行查看模型设计是否有问题
    4. (注意，这里同时也需要查看层融合是否被适用，以及Tensor core是否被用)
 
-<figure><img src="../../.gitbook/assets/图片 (2) (1) (1) (1) (1) (1) (1).png" alt="" width="360"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (2) (1) (1) (1) (1) (1) (1) (1).png" alt="" width="360"><figcaption></figcaption></figure>
 
 普遍来讲，量化后精度下降控制在相对精度损失<=2%是最好的。
 
