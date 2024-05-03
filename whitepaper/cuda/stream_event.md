@@ -1428,5 +1428,4 @@ Time= 27.836 msec, bandwidth= 28.930389GB/s
 
 为了解其运行情况，让我们对应用程序进行剖析。
 
-<figure><img src="broken-reference" alt=""><figcaption></figcaption></figure>
-
+<figure><img src="../../.gitbook/assets/图片 (93).png" alt=""><figcaption></figcaption></figure>
