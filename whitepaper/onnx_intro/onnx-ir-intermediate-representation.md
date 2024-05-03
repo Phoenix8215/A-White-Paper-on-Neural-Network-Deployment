@@ -23,7 +23,7 @@ onnx的各类proto的定义需要看官方文档([https://github.com/onnx/onnx/t
 
 ​
 
-<figure><img src="../../.gitbook/assets/image-20240407122445898.png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image-20240407122445898 (1).png" alt="" width="563"><figcaption></figcaption></figure>
 
 <figure><img src="../../.gitbook/assets/image-20240407122349880.png" alt="" width="563"><figcaption></figcaption></figure>
 
@@ -31,17 +31,17 @@ onnx的各类proto的定义需要看官方文档([https://github.com/onnx/onnx/t
 
 ​
 
-<figure><img src="../../.gitbook/assets/image-20240407122924505.png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image-20240407122924505 (1).png" alt="" width="563"><figcaption></figcaption></figure>
 
-<figure><img src="../../.gitbook/assets/image-20240407122853847.png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image-20240407122853847 (1).png" alt="" width="563"><figcaption></figcaption></figure>
 
-<figure><img src="../../.gitbook/assets/image-20240407122743299.png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image-20240407122743299 (1).png" alt="" width="563"><figcaption></figcaption></figure>
 
 一般用来定义一个权重，比如conv的w和b ，`dims`是`repeated`类型，意味着是数组，`raw_data`是`bytes`类型。
 
 ### onnx中的NodeProto
 
-<figure><img src="../../.gitbook/assets/image-20240407125750798.png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image-20240407125750798 (1).png" alt="" width="563"><figcaption></figcaption></figure>
 
 一般用来定义一个计算节点，比如`conv`, `linear` ，`input`是`repeated`类型，意味着是数组，output是repeated类型，意味着是数组，`attribute`有一个自己的Proto，`op_type`需要严格根据`onnx`所提供的`Operators`写。
 
@@ -49,7 +49,7 @@ onnx的各类proto的定义需要看官方文档([https://github.com/onnx/onnx/t
 
 ​
 
-<figure><img src="../../.gitbook/assets/image-20240407130648541.png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image-20240407130648541 (1).png" alt="" width="563"><figcaption></figcaption></figure>
 
 <figure><img src="../../.gitbook/assets/image-20240407130708914.png" alt="" width="563"><figcaption></figcaption></figure>
 
