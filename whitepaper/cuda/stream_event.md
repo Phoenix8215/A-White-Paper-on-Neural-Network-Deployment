@@ -1004,5 +1004,429 @@ Time= 29.730 msec, bandwidth= 27.087332 GB/s
 
 这可以使用 CUDA 事件来解决。CUDA 事件与 CUDA 数据流一起记录 GPU 端事件。CUDA 事件可以是基于 GPU 状态的事件，并记录相关时间。利用这一点，我们可以估算内核执行时间
 
-CUDA 事件由 `cudaEvent_t` 句柄管理。我们可以使用 `cudaEventCreate()` 创建一个 CUDA 事件句柄，并使用 `cudaEventDestroy()` 终止它。要记录事件时间，可以使用 `cudaEventRecord()`。然后，CUDA 事件句柄会记录 GPU 的事件时间。该函数还接受 CUDA 流，这样我们就能枚举出特定 CUDA 流的事件时间。获得内核执行的开始和结束事件后，就可以使用<mark style="color:red;">以毫秒为单位</mark>的 `cudaEventElapsedTime()` 来获得经过时间。
+CUDA 事件由 `cudaEvent_t` 句柄管理。我们可以使用 `cudaEventCreate()`创建一个 CUDA 事件句柄，并使用 `cudaEventDestroy()` 终止它。要记录事件时间，可以使用 `cudaEventRecord()`。然后，CUDA 事件句柄会记录 GPU 的事件时间。该函数还接受 CUDA 流，这样我们就能枚举出特定 CUDA 流的事件时间。获得内核执行的开始和结束事件后，就可以使用<mark style="color:red;">以毫秒为单位</mark>的 `cudaEventElapsedTime()`来获得经过时间。
+
+### 使用CUDA事件
+
+修改之前的代码：
+
+```c
+#include <cstdio>
+#include <helper_timer.h>
+
+using namespace std;
+
+__global__ void vecAdd_kernel(float *c, const float* a, const float* b);
+void init_buffer(float *data, const int size);
+
+int main(int argc, char* argv[])
+{
+    float *h_a, *h_b, *h_c;
+    float *d_a, *d_b, *d_c;
+    int size = 1 << 24;
+    int bufsize = size * sizeof(float);
+
+    // allocate host memories
+    cudaMallocHost((void**)&h_a, bufsize);
+    cudaMallocHost((void**)&h_b, bufsize);
+    cudaMallocHost((void**)&h_c, bufsize);
+
+    // initialize host values
+    srand(2019);
+    init_buffer(h_a, size);
+    init_buffer(h_b, size);
+    init_buffer(h_c, size);
+
+    // allocate device memories
+    cudaMalloc((void**)&d_a, bufsize);
+    cudaMalloc((void**)&d_b, bufsize);
+    cudaMalloc((void**)&d_c, bufsize);
+
+    // copy host -> device
+    cudaMemcpyAsync(d_a, h_a, bufsize, cudaMemcpyHostToDevice);
+    cudaMemcpyAsync(d_b, h_b, bufsize, cudaMemcpyHostToDevice);
+
+    // initialize the host timer
+    StopWatchInterface *timer;
+    sdkCreateTimer(&timer);
+
+    cudaEvent_t start, stop;
+    // create CUDA events
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+
+    // start to measure the execution time
+    sdkStartTimer(&timer);
+    cudaEventRecord(start);
+
+    // launch cuda kernel
+    dim3 dimBlock(256);
+    dim3 dimGrid(size / dimBlock.x);
+    vecAdd_kernel<<< dimGrid, dimBlock >>>(d_c, d_a, d_b);
+
+    // record the event right after the kernel execution finished
+    cudaEventRecord(stop);
+
+    // Synchronize the device to measure the execution time from the host side
+    cudaEventSynchronize(stop); // we also can make synchronization based on CUDA event
+    sdkStopTimer(&timer);
+    
+    // copy device -> host
+    cudaMemcpyAsync(h_c, d_c, bufsize, cudaMemcpyDeviceToHost);
+
+    // print out the result
+    int print_idx = 256;
+    printf("compared a sample result...\n");
+    printf("host: %.6f, device: %.6f\n",  h_a[print_idx] + h_b[print_idx], h_c[print_idx]);
+
+    // print estimated kernel execution time
+    float elapsed_time_msed = 0.f;
+    cudaEventElapsedTime(&elapsed_time_msed, start, stop);
+    printf("CUDA event estimated - elapsed %.3f ms \n", elapsed_time_msed);
+
+    // Compute and print the performance
+    elapsed_time_msed = sdkGetTimerValue(&timer);
+    printf("Host measured time= %.3f msec/s\n", elapsed_time_msed);
+
+    // terminate device memories
+    cudaFree(d_a);
+    cudaFree(d_b);
+    cudaFree(d_c);
+
+    // terminate host memories
+    cudaFreeHost(h_a);
+    cudaFreeHost(h_b);
+    cudaFreeHost(h_c);
+
+    // delete timer
+    sdkDeleteTimer(&timer);
+
+    // terminate CUDA events
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
+    
+    return 0;
+}
+
+__global__ void
+vecAdd_kernel(float *c, const float* a, const float* b)
+{
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+
+    for (int i = 0; i < 500; i++)
+        c[idx] = a[idx] + b[idx];
+}
+
+void init_buffer(float *data, const int size)
+{
+    for (int i = 0; i < size; i++) 
+        data[i] = rand() / (float)RAND_MAX;
+}
+```
+
+上述代码中定时器需要 GPU 和主机同步， 为了同步，我们使用了 `cudaEventSynchronize(stop)` 函数，让主机线程与事件同步。&#x20;
+
+分别用 CUDA 事件和计时器测量核函数运行时间，我们可以发现两者是不同的。 可以使用 NVIDIA Profiler 来验证两种方法谁更准确一些，使用 `# nvprof ./cuda_event` 命令，输出如下：
+
+<figure><img src="../../.gitbook/assets/图片 (92).png" alt=""><figcaption></figcaption></figure>
+
+由上图可知CUDA 事件能提供准确的结果。
+
+使用 CUDA 事件的另一个好处是，我们可以在多个 CUDA 流中同时测量多个内核的执行时间。
+
+#### 多流估计
+
+`cudaEventRecord()`函数与主机是异步的。要实现事件与主机的同步，我们需要使用 `cudaEventSynchronize()`。
+
+```c
+#include <cstdio>
+#include <helper_timer.h>
+
+using namespace std;
+
+__global__ void vecAdd_kernel(float *c, const float* a, const float* b);
+void init_buffer(float *data, const int size);
+
+class Operator
+{
+private:
+    int index;
+    StopWatchInterface *p_timer;
+
+    static void CUDART_CB Callback(cudaStream_t stream, cudaError_t status, void* userData);
+    void print_time();
+
+    cudaEvent_t start, stop;
+
+protected:
+    cudaStream_t stream = nullptr;
+
+public:
+    Operator(bool create_stream = true) {
+        if (create_stream)
+            cudaStreamCreate(&stream);
+        sdkCreateTimer(&p_timer);
+
+        // create CUDA events
+        cudaEventCreate(&start);
+        cudaEventCreate(&stop);
+    }
+
+    ~Operator() {
+        if (stream != nullptr)
+            cudaStreamDestroy(stream);
+        sdkDeleteTimer(&p_timer);
+
+        // terminate CUDA events
+        cudaEventDestroy(start);
+        cudaEventDestroy(stop);
+    }
+
+    void set_index(int idx) { index = idx; }
+    void async_operation(float *h_c, const float *h_a, const float *h_b,
+                          float *d_c, float *d_a, float *d_b,
+                          const int size, const int bufsize);
+    void print_kernel_time();
+
+}; // Operator
+
+void Operator::CUDART_CB Callback(cudaStream_t stream, cudaError_t status, void* userData) {
+    Operator* this_ = (Operator*) userData;
+    this_->print_time();
+}
+
+void Operator::print_time() {
+    // end timer
+    sdkStopTimer(&p_timer);
+    float elapsed_time_msed = sdkGetTimerValue(&p_timer);
+    printf("stream %2d - elapsed %.3f ms \n", index, elapsed_time_msed);
+}
+
+void Operator::print_kernel_time() {
+    float elapsed_time_msed = 0.f;
+    cudaEventElapsedTime(&elapsed_time_msed, start, stop);
+    printf("kernel in stream %2d - elapsed %.3f ms \n", index, elapsed_time_msed);
+}
+
+void Operator::async_operation(float *h_c, const float *h_a, const float *h_b,
+                          float *d_c, float *d_a, float *d_b,
+                          const int size, const int bufsize)
+{
+    // start timer
+    sdkStartTimer(&p_timer);
+
+    // copy host -> device
+    cudaMemcpyAsync(d_a, h_a, bufsize, cudaMemcpyHostToDevice, stream);
+    cudaMemcpyAsync(d_b, h_b, bufsize, cudaMemcpyHostToDevice, stream);
+
+    // record the event before the kernel execution
+    cudaEventRecord(start, stream);
+
+    // launch cuda kernel
+    dim3 dimBlock(256);
+    dim3 dimGrid(size / dimBlock.x);
+    vecAdd_kernel<<< dimGrid, dimBlock, 0, stream >>>(d_c, d_a, d_b);
+
+    // record the event right after the kernel execution finished
+    cudaEventRecord(stop, stream);
+
+    // copy device -> host
+    cudaMemcpyAsync(h_c, d_c, bufsize, cudaMemcpyDeviceToHost, stream);
+
+    // what happen if we include CUDA event synchronize?
+    // QUIZ: cudaEventSynchronize(stop);
+
+    // register callback function
+    cudaStreamAddCallback(stream, Operator::Callback, this, 0);
+}
+
+class Operator_with_priority: public Operator {
+public:
+    Operator_with_priority() : Operator(false) {}
+
+    void set_priority(int priority) {
+        cudaStreamCreateWithPriority(&stream, cudaStreamNonBlocking, priority);
+    }
+};
+
+int main(int argc, char* argv[])
+{
+    float *h_a, *h_b, *h_c;
+    float *d_a, *d_b, *d_c;
+    int size = 1 << 24;
+    int bufsize = size * sizeof(float);
+    int num_operator = 4;
+
+    if (argc != 1)
+        num_operator = atoi(argv[1]);
+
+    // check the current device supports CUDA stream's prority
+    cudaDeviceProp prop;
+    cudaGetDeviceProperties(&prop, 0); 
+    if (prop.streamPrioritiesSupported == 0) {
+        printf("This device does not support priority streams");
+        return 1;
+    }
+
+    // initialize timer
+    StopWatchInterface *timer;
+    sdkCreateTimer(&timer);
+
+    // allocate host memories
+    cudaMallocHost((void**)&h_a, bufsize);
+    cudaMallocHost((void**)&h_b, bufsize);
+    cudaMallocHost((void**)&h_c, bufsize);
+
+    // initialize host values
+    srand(2019);
+    init_buffer(h_a, size);
+    init_buffer(h_b, size);
+    init_buffer(h_c, size);
+
+    // allocate device memories
+    cudaMalloc((void**)&d_a, bufsize);
+    cudaMalloc((void**)&d_b, bufsize);
+    cudaMalloc((void**)&d_c, bufsize);
+
+    // create list of operation elements
+    Operator_with_priority *ls_operator = new Operator_with_priority[num_operator];
+
+    // Get Priority range
+    int priority_low, priority_high;
+    cudaDeviceGetStreamPriorityRange(&priority_low, &priority_high);
+    printf("Priority Range: low(%d), high(%d)\n", priority_low, priority_high);
+
+    // start to measure the execution time
+    sdkStartTimer(&timer);
+    
+    // execute each operator collesponding data
+    // priority setting for each CUDA stream
+    for (int i = 0; i < num_operator; i++) {
+        // int offset = i * size / num_operator;
+        ls_operator[i].set_index(i);
+        if (i + 1 == num_operator)
+            ls_operator[i].set_priority(priority_high);
+        else
+            ls_operator[i].set_priority(priority_low);
+    }
+
+    // operation (copy(H2D), kernel execution, copy(D2H))
+    for (int i = 0; i < num_operator; i++) {
+        int offset = i * size / num_operator;
+        ls_operator[i].async_operation(&h_c[offset], &h_a[offset], &h_b[offset],
+                                       &d_c[offset], &d_a[offset], &d_b[offset],
+                                       size / num_operator, bufsize / num_operator);
+    }
+
+    // synchronize all the stream operation
+    cudaDeviceSynchronize();
+
+    // stop to measure the execution time    
+    sdkStopTimer(&timer);
+
+    // print each cuda stream execution time
+    for (int i = 0; i < num_operator; i++)
+        ls_operator[i].print_kernel_time(); 
+
+    // print out the result
+    int print_idx = 256;
+    printf("compared a sample result...\n");
+    printf("host: %.6f, device: %.6f\n",  h_a[print_idx] + h_b[print_idx], h_c[print_idx]);
+
+    // Compute and print the performance
+    float elapsed_time_msed = sdkGetTimerValue(&timer);
+    float bandwidth = 3 * bufsize * sizeof(float) / elapsed_time_msed / 1e6;
+    printf("Time= %.3f msec, bandwidth= %f GB/s\n", elapsed_time_msed, bandwidth);
+
+    // delete timer
+    sdkDeleteTimer(&timer);
+
+    // terminate operators
+    delete [] ls_operator;
+
+    // terminate device memories
+    cudaFree(d_a);
+    cudaFree(d_b);
+    cudaFree(d_c);
+
+    // terminate host memories
+    cudaFreeHost(h_a);
+    cudaFreeHost(h_b);
+    cudaFreeHost(h_c);
+    
+    return 0;
+}
+
+__global__ void
+vecAdd_kernel(float *c, const float* a, const float* b)
+{
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+
+    for (int i = 0; i < 500; i++)
+        c[idx] = a[idx] + b[idx];
+}
+
+void init_buffer(float *data, const int size)
+{
+    for (int i = 0; i < size; i++) 
+        data[i] = rand() / (float)RAND_MAX;
+}
+```
+
+* 程序输出结果：
+
+```sh
+Priority Range: low(0), high(-1)
+stream 0 - elapsed 11.348 ms
+stream
+3 - elapsed 19.435 ms
+stream 1 - elapsed 22.707 ms
+stream 2 - elapsed 35.768 ms
+kernel in stream 0 - elapsed 6.052 ms
+kernel in stream 1 - elapsed 14.820 ms
+kernel in stream 2 - elapsed 17.461 ms
+kernel in stream 3 - elapsed 6.190 ms
+compared a sample result...
+host: 1.523750, device: 1.523750
+Time= 35.993 msec, bandwidth= 22.373972 GB/s
+```
+
+{% hint style="info" %}
+如果在代码中包含了`cudaEventSynchronize(stop);`，那么在该语句处会发生同步操作，即等待与`stop`事件相关联的CUDA流中的所有操作完成。这意味着在主机端的代码将会等待直到与`stop`事件相关联的CUDA流中的所有操作都完成后才会继续执行。因此，在此处包含`cudaEventSynchronize(stop);`将会导致主机端的代码在确认与CUDA流相关联的所有操作都已完成后才会继续执行，而不会提前继续执行。
+{% endhint %}
+
+### 使用OpenMP的调度操作
+
+在使用OpenMP的同时使用CUDA，不仅可以提高便携性和生产效率，而且还可以提 高主机代码的性能。在之前的例子中，我们使用了一个循环调度操作，与此不同， 我们使用了OpenMP线程调度操作到不同的流中，具体方法如下所示：
+
+```c
+omp_set_num_threads(num_operator);
+    #pragma omp parallel
+    {
+        int i = omp_get_thread_num();
+        int offset = i * size / num_operator;
+        ls_operator[i].set_index(i);
+        ls_operator[i].async_operation(&h_c[offset], &h_a[offset], &h_b[offset],
+                                    &d_c[offset], &d_a[offset], &d_b[offset],
+                                    size / num_operator, bufsize / num_operator);
+    }
+```
+
+程序输出结果如下：
+
+```bash
+stream 0 - elapsed 10.734 ms
+stream 2 - elapsed 16.153 ms
+stream 3 - elapsed 21.968 ms
+stream 1 - elapsed 27.668 ms
+compared a sample result...
+host: 1.523750, device: 1.523750
+Time= 27.836 msec, bandwidth= 28.930389GB/s
+```
+
+每当执行该程序时，你会发现每个数据流完成工作的顺序都不一样。此外，每个流显示的时间也不同。这是因为 OpenMP 可以创建多个线程，而操作是在运行时确定的。
+
+为了解其运行情况，让我们对应用程序进行剖析。
+
+<figure><img src="broken-reference" alt=""><figcaption></figcaption></figure>
 
