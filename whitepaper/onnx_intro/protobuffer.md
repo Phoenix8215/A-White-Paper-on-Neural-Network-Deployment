@@ -53,8 +53,6 @@ onnx的各类proto的定义需要看官方文档([https://github.com/onnx/onnx/t
 
 #### onnx中的AttributeProto
 
-<figure><img src="broken-reference" alt=""><figcaption></figcaption></figure>
-
 
 
 
