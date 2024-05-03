@@ -767,17 +767,242 @@ host: 1.523750, device: 1.523750
 Time= 29.771 msec, bandwidth= 27.050028 GB/
 ```
 
-可以看出流回调函数可以直接预测核函数的执行时间，由于存在`overlap`，会导致靠后的CUDA流执行时间比较长
+可以看出流回调函数可以直接预测核函数的执行时间，但是由于存在`overlap`，会导致靠后的CUDA流执行时间比较长
 
 <figure><img src="../../.gitbook/assets/图片 (90).png" alt=""><figcaption></figcaption></figure>
 
+### 流的优先级
 
+我们从 Operator 类中创建一个派生类，它将处理流的优先级。因此，我们将成员变量 stream 的保护级别从私有成员改为受保护成员。此外，构造函数可以选择性地创建流，因为这可以由派生类完成。完整代码如下：
 
+```c
+#include <cstdio>
+#include <helper_timer.h>
 
+using namespace std;
 
+__global__ void vecAdd_kernel(float *c, const float* a, const float* b);
+void init_buffer(float *data, const int size);
 
+class Operator
+{
+private:
+    int _index;
+    StopWatchInterface *p_timer;
 
+    static void CUDART_CB Callback(cudaStream_t stream, cudaError_t status, void* userData);
+    void print_time();
 
+protected:
+    cudaStream_t stream = nullptr;
 
+public:
+    Operator(bool create_stream = true) {
+        if (create_stream)
+            cudaStreamCreate(&stream);
+        sdkCreateTimer(&p_timer);
+    }
 
+    ~Operator() {
+        if (stream != nullptr)
+            cudaStreamDestroy(stream);
+        sdkDeleteTimer(&p_timer);
+    }
+
+    void set_index(int index) { _index = index; }
+    void async_operation(float *h_c, const float *h_a, const float *h_b,
+                          float *d_c, float *d_a, float *d_b,
+                          const int size, const int bufsize);
+
+}; // Operator
+
+void Operator::CUDART_CB Callback(cudaStream_t stream, cudaError_t status, void* userData) {
+    Operator* this_ = (Operator*) userData;
+    this_->print_time();
+}
+
+void Operator::print_time() {
+    // end timer
+    sdkStopTimer(&p_timer);
+    float elapsed_time_msed = sdkGetTimerValue(&p_timer);
+    printf("stream %2d - elapsed %.3f ms \n", _index, elapsed_time_msed);
+}
+
+void Operator::async_operation(float *h_c, const float *h_a, const float *h_b,
+                          float *d_c, float *d_a, float *d_b,
+                          const int size, const int bufsize)
+{
+    // start timer
+    sdkStartTimer(&p_timer);
+
+    // copy host -> device
+    cudaMemcpyAsync(d_a, h_a, bufsize, cudaMemcpyHostToDevice, stream);
+    cudaMemcpyAsync(d_b, h_b, bufsize, cudaMemcpyHostToDevice, stream);
+
+    // launch cuda kernel
+    dim3 dimBlock(256);
+    dim3 dimGrid(size / dimBlock.x);
+    vecAdd_kernel<<< dimGrid, dimBlock, 0, stream >>>(d_c, d_a, d_b);
+
+    // copy device -> host
+    cudaMemcpyAsync(h_c, d_c, bufsize, cudaMemcpyDeviceToHost, stream);
+
+    // register callback function
+    cudaStreamAddCallback(stream, Operator::Callback, this, 0);
+}
+
+class Operator_with_priority: public Operator {
+public:
+    Operator_with_priority() : Operator(false) {}
+
+    void set_priority(int priority) {
+        // 用于创建一个新的 CUDA 流（stream），并且为这个流设置一个优先级
+        cudaStreamCreateWithPriority(&stream, cudaStreamNonBlocking, priority);
+    }
+};
+
+int main(int argc, char* argv[])
+{
+    float *h_a, *h_b, *h_c;
+    float *d_a, *d_b, *d_c;
+    int size = 1 << 24;
+    int bufsize = size * sizeof(float);
+    int num_operator = 4;
+
+    if (argc != 1)
+        num_operator = atoi(argv[1]);
+
+    // check the current device supports CUDA stream's prority
+    cudaDeviceProp prop;
+    cudaGetDeviceProperties(&prop, 0); 
+    if (prop.streamPrioritiesSupported == 0) {
+        printf("This device does not support priority streams");
+        return 1;
+    }
+
+    // initialize timer
+    StopWatchInterface *timer;
+    sdkCreateTimer(&timer);
+
+    // allocate host memories
+    cudaMallocHost((void**)&h_a, bufsize);
+    cudaMallocHost((void**)&h_b, bufsize);
+    cudaMallocHost((void**)&h_c, bufsize);
+
+    // initialize host values
+    srand(2019);
+    init_buffer(h_a, size);
+    init_buffer(h_b, size);
+    init_buffer(h_c, size);
+
+    // allocate device memories
+    cudaMalloc((void**)&d_a, bufsize);
+    cudaMalloc((void**)&d_b, bufsize);
+    cudaMalloc((void**)&d_c, bufsize);
+
+    // create list of operation elements
+    Operator_with_priority *ls_operator = new Operator_with_priority[num_operator];
+
+    // Get Priority range
+    int priority_low, priority_high;
+    cudaDeviceGetStreamPriorityRange(&priority_low, &priority_high);
+    printf("Priority Range: low(%d), high(%d)\n", priority_low, priority_high);
+
+    // start to measure the execution time
+    sdkStartTimer(&timer);
+    
+    // execute each operator corresponding data
+    // priority setting for each CUDA stream
+    for (int i = 0; i < num_operator; i++) {
+        // int offset = i * size / num_operator;
+        ls_operator[i].set_index(i);
+        if (i + 1 == num_operator)
+            ls_operator[i].set_priority(priority_high);
+        else
+            ls_operator[i].set_priority(priority_low);
+    }
+
+    // operation (copy(H2D), kernel execution, copy(D2H))
+    for (int i = 0; i < num_operator; i++) {
+        int offset = i * size / num_operator;
+        ls_operator[i].async_operation(&h_c[offset], &h_a[offset], &h_b[offset],
+                                       &d_c[offset], &d_a[offset], &d_b[offset],
+                                       size / num_operator, bufsize / num_operator);
+    }
+
+    // synchronize all the stream operation
+    cudaDeviceSynchronize();
+
+    // stop to measure the execution time    
+    sdkStopTimer(&timer);
+
+    // print out the result
+    int print_idx = 256;
+    printf("compared a sample result...\n");
+    printf("host: %.6f, device: %.6f\n",  h_a[print_idx] + h_b[print_idx], h_c[print_idx]);
+
+    // Compute and print the performance
+    float elapsed_time_msed = sdkGetTimerValue(&timer);
+    float bandwidth = 3 * bufsize * sizeof(float) / elapsed_time_msed / 1e6;
+    printf("Time= %.3f msec, bandwidth= %f GB/s\n", elapsed_time_msed, bandwidth);
+
+    // delete timer
+    sdkDeleteTimer(&timer);
+
+    // terminate operators
+    delete [] ls_operator;
+
+    // terminate device memories
+    cudaFree(d_a);
+    cudaFree(d_b);
+    cudaFree(d_c);
+
+    // terminate host memories
+    cudaFreeHost(h_a);
+    cudaFreeHost(h_b);
+    cudaFreeHost(h_c);
+    
+    return 0;
+}
+
+__global__ void
+vecAdd_kernel(float *c, const float* a, const float* b)
+{
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+
+    for (int i = 0; i < 500; i++)
+        c[idx] = a[idx] + b[idx];
+}
+
+void init_buffer(float *data, const int size)
+{
+    for (int i = 0; i < size; i++) 
+        data[i] = rand() / (float)RAND_MAX;
+}
+```
+
+* 程序输出结果如下：
+
+```bash
+Priority Range: low(0), high(-1)
+stream 0 - elapsed 11.119 ms
+stream 3 - elapsed 19.126 ms
+stream 1 - elapsed 23.327 ms
+stream 2 - elapsed 29.422 ms
+compared a sample result...
+host: 1.523750, device: 1.523750
+Time= 29.730 msec, bandwidth= 27.087332 GB/s
+```
+
+<figure><img src="../../.gitbook/assets/图片 (91).png" alt=""><figcaption></figcaption></figure>
+
+在本截图中，优先级最高的 CUDA 流（流 21）抢占了第二个 CUDA 流（本例中为流 19）的位置，因此流 21 可以在流 19 执行完毕前完成工作。<mark style="color:red;">请注意，数据传输顺序不会因优先级而改变。</mark>
+
+### 使用事件估计核函数执行的时间
+
+之前的 GPU 运行时间估算有一个局限性，那就是无法测量内核的执行时间。这是因为我们在主机端使用了定时 API。因此，我们需要主机和 GPU 同步才能测量内核执行时间，考虑到时间开销和对应用程序性能的影响，这种做法在实际工作中是不现实的。
+
+这可以使用 CUDA 事件来解决。CUDA 事件与 CUDA 数据流一起记录 GPU 端事件。CUDA 事件可以是基于 GPU 状态的事件，并记录相关时间。利用这一点，我们可以估算内核执行时间
+
+CUDA 事件由 `cudaEvent_t` 句柄管理。我们可以使用 `cudaEventCreate()` 创建一个 CUDA 事件句柄，并使用 `cudaEventDestroy()` 终止它。要记录事件时间，可以使用 `cudaEventRecord()`。然后，CUDA 事件句柄会记录 GPU 的事件时间。该函数还接受 CUDA 流，这样我们就能枚举出特定 CUDA 流的事件时间。获得内核执行的开始和结束事件后，就可以使用<mark style="color:red;">以毫秒为单位</mark>的 `cudaEventElapsedTime()` 来获得经过时间。
 
