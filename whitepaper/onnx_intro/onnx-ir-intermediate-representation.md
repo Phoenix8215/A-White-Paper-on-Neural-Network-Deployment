@@ -49,15 +49,15 @@ onnx的各类proto的定义需要看官方文档([https://github.com/onnx/onnx/t
 
 ​
 
-<figure><img src="../../.gitbook/assets/image-20240407130648541 (1).png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image-20240407130648541 (1) (1).png" alt="" width="563"><figcaption></figcaption></figure>
 
-<figure><img src="../../.gitbook/assets/image-20240407130708914.png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image-20240407130708914 (1).png" alt="" width="563"><figcaption></figcaption></figure>
 
 一般用来定义一个`node`的属性。比如说`kernel size`，比较常见的方式就是把`(key, value)`传入`Proto`，之后 `name = key` ,`i = value` 。
 
 #### onnx中的GraphProto
 
-<figure><img src="../../.gitbook/assets/image-20240407131258053.png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image-20240407131258053 (1).png" alt="" width="563"><figcaption></figcaption></figure>
 
 一般用来定义一个网络。包括 ：`input/output` ，`initializer`，`initializer`: 在onnx中一般表示权重信息。 `node`是`repeated`，所以是数组，`initializer`是`repeated`，所以是数组，`input/output`是`repeated`，所以是数组。
 
