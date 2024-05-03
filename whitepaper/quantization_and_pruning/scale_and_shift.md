@@ -27,7 +27,7 @@ DNN模型的大小，几乎在以每年10倍的FLOPs在增长
 
 所以一般来说我们会对conv或者linear这些计算密集型算子进行量化
 
-<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 量化的意义
 
@@ -53,11 +53,11 @@ torch.onnx.export(model, input, "resnet50-1.onnx")
 
 使用`netron`进行查看
 
-<figure><img src="../../.gitbook/assets/图片 (4) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (4) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 FP32->FP16几乎是无损的(CUDA中使用`float2half`直接进行转换)，不需要`calibrator`去校正、更不需要`retrain`。而且FP16的精度下降对于大部分任务影响不是很大，甚至有些任务会提升。NVIDIA对于FP16有专门的Tensor Cores可以进行矩阵运算，相比FP32来说吞吐量直接提升一倍，提速效果明显！
 
-<figure><img src="../../.gitbook/assets/图片 (3) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (3) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 实际点来说，**量化就是将我们训练好的模型，不论是权重、还是计算op，都转换为低精度去计算**。因为FP16的量化很简单，所以实际中我们谈论的量化更多的是**INT8的量化**，当然也有3-bit、4-bit的量化，不过目前来说比较常见比较实用的，也就是INT8量化了。
 
@@ -65,7 +65,7 @@ FP32->FP16几乎是无损的(CUDA中使用`float2half`直接进行转换)，不�
 
 fp32某个区间内的数值等于量化后int8上的一个点
 
-<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../.gitbook/assets/图片 (23).png" alt=""><figcaption></figcaption></figure>
 
