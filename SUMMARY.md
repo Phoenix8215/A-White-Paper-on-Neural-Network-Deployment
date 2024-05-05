@@ -8,6 +8,7 @@
   * [😷 CUDA流和事件](whitepaper/cuda/stream\_event.md)
 * [😄 ONNX](whitepaper/onnx\_intro/README.md)
   * [😉 ONNX中的各类Proto](whitepaper/onnx\_intro/protobuffer.md)
+  * [onnx->torch](whitepaper/onnx\_intro/onnx2torch.md)
   * [🥳 0x00自定义算子](whitepaper/onnx\_intro/0x00.md)
   * [😕 0x01自定义算子](whitepaper/onnx\_intro/0x01.md)
   * [😆 ONNX中的一些概念](whitepaper/onnx\_intro/onnxconcepts.md)
