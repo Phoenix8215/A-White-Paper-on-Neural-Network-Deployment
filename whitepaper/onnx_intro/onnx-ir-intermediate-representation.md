@@ -4,7 +4,7 @@
 
 ONNX是一种神经网络的格式，采用Protobuf二进制形式进行序列化模型。 Protobuf会根据用于定义的数据结构来进行序列化存储 同理，我们可以根据官方提供的数据结构信息，去修改或者创建onnx。
 
-<figure><img src="../../.gitbook/assets/图片 (5) (1) (1) (1) (1).png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (5) (1) (1) (1) (1) (1).png" alt="" width="563"><figcaption></figcaption></figure>
 
 onnx的各类proto的定义需要看官方文档([https://github.com/onnx/onnx/tree/main](https://github.com/onnx/onnx/tree/main)) 。这里面的`onnx/onnx.in.proto`定义了所有onnx的Proto。有关onnx的IR(`intermediate representation`)信息，看这里([https://github.com/onnx/onnx/blob/main/docs/IR.md](https://github.com/onnx/onnx/blob/main/docs/IR.md))
 

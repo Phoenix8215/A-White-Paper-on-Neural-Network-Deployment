@@ -138,7 +138,7 @@ int main()
 }
 ```
 
-<figure><img src="../../.gitbook/assets/图片 (4) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (4) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ```c
 #include <cstdio>
@@ -177,7 +177,7 @@ int main()
 }
 ```
 
-<figure><img src="../../.gitbook/assets/图片 (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (2) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 <mark style="color:red;">从上图可以看到，数据传输操作虽然分布在不同的流中，但是并没有并发执行。这是由一 个共享资源导致的：PCIe总线。虽然从编程模型的角度来看这些操作是独立的，但是因为它们共享一个相同的硬件资源，所以它们的执行必须是串行的。</mark>
@@ -228,7 +228,7 @@ int main()
 
 内核操作的并发性将因同步而消失
 
-<figure><img src="../../.gitbook/assets/图片 (3) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (3) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 可以看到，所有内核执行都没有重叠点，尽管它们是以不同的流执行的。利用这一特性，我们可以让主机等待某一流操作返回的结果。
 
@@ -238,7 +238,7 @@ int main()
 
 > In general, when an operation is issued to the NULL stream, the CUDA context waits on all operations previously issued to all blocking streams before starting that operation. Also, any operations issued to blocking streams will wait on preceding operations in the NULL stream to complete before executing.
 
-<figure><img src="../../.gitbook/assets/图片 (4) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (4) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 相关代码如下(只需要改循环启动核函数那块代码)：
 
@@ -263,7 +263,7 @@ for (int i = 0; i < n_stream; i++)
 
 当我们执行内核函数时，需要将数据从主机传输到 GPU。 然后，再将结果从 GPU 传输回主机。下图显示了在主机和内核之间传输数据的过程：
 
-<figure><img src="../../.gitbook/assets/图片 (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 然而，内核执行基本上是异步的，主机和 GPU 可以同时运行。如果主机和 GPU 之间的数据传输具有相同的特性，我们就可以重叠执行。
 
