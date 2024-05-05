@@ -4,6 +4,7 @@
 
 * [🤠 CUDA](README.md)
   * [🤑 CPU|GPU程序执行流程](whitepaper/cuda/quitstart.md)
+  * [QiuckLearnFromPicture](whitepaper/cuda/qiucklearnfrompicture.md)
   * [🤒 GPU编程模型](whitepaper/cuda/gpu\_programing\_model.md)
   * [😷 CUDA流和事件](whitepaper/cuda/stream\_event.md)
 * [😄 ONNX](whitepaper/onnx\_intro/README.md)
