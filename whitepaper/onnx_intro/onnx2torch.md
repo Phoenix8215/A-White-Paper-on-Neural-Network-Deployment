@@ -5,7 +5,7 @@ description: >-
   open-mmlab for their contribution to AI education.
 ---
 
-# onnx->torch
+# 🤔 onnx->torch
 
 ### **计算图导出方法**
 
@@ -61,7 +61,7 @@ for model, model_name in zip(models, model_names):
 
 <mark style="color:red;">而用记录法的话，最终的 ONNX 模型用 Loop 节点来表示循环。这样哪怕对于不同的 n，ONNX 模型也有同样的结构。</mark>
 
-<mark style="color:red;">由于推理引擎对静态图的支持更好，通常我们在模型部署时不需要显式地把 PyTorch 模型转成 TorchScript 模型，直接把 PyTorch 模型用 torch.onnx.export 跟踪导出即可。</mark>了解这部分的知识主要是为了在模型转换报错时能够更好地定位问题是否发生在 PyTorch 转 TorchScript 阶段。
+<mark style="color:red;">由于推理引擎对静态图的支持更好，通常我们在模型部署时不需要显式地把 PyTorch 模型转成 TorchScript 模型，直接把 PyTorch 模型用</mark> <mark style="color:red;"></mark><mark style="color:red;">`torch.onnx.export`</mark> <mark style="color:red;"></mark><mark style="color:red;">跟踪导出即可。</mark>了解这部分的知识主要是为了在模型转换报错时能够更好地定位问题是否发生在 PyTorch 转 TorchScript 阶段。
 
 ### **参数讲解**
 
@@ -302,7 +302,7 @@ ONNX 算子的定义情况，都可以在**官方的算子文档**中查看。�
 
 <figure><img src="../../.gitbook/assets/图片 (99).png" alt=""><figcaption></figcaption></figure>
 
-其中，symbolic\_opset{n}.py（符号表文件）即表示 PyTorch 在支持第 n 版 ONNX 算子集时新加入的内容。我们之前讲过， bicubic 插值是在第 11 个版本开始支持的。我们以它为例来看看如何查找算子的映射情况。
+其中，`symbolic_opset{n}.py`（符号表文件）即表示 PyTorch 在支持第 n 版 ONNX 算子集时新加入的内容。我们之前讲过， bicubic 插值是在第 11 个版本开始支持的。我们以它为例来看看如何查找算子的映射情况。
 
 首先，使用搜索功能，在 torch/onnx 文件夹搜索 "bicubic"，可以发现这个这个插值在第 11 个版本的定义文件中：
 

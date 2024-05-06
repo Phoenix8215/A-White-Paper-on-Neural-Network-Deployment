@@ -367,7 +367,7 @@ if __name__ == "__main__":
 
 ```
 
-虽然onnx官方提供了而一些python API来修改onnx，但是推荐大家使用TensorRT下的`onnxsurgeon`，更加方便快捷。
+虽然`onnx`官方提供了而一些python API来修改onnx，但是推荐大家使用TensorRT下的`onnxsurgeon`，更加方便快捷。
 
 * example 3
 
@@ -438,18 +438,3 @@ if __name__ == "__main__":
 ### reference
 
 * [https://github.com/open-mmlab/mmdeploy/blob/main/docs/zh\_cn/tutorial/01\_introduction\_to\_model\_deployment.md](https://github.com/open-mmlab/mmdeploy/blob/main/docs/zh\_cn/tutorial/01\_introduction\_to\_model\_deployment.md)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
