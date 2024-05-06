@@ -16,7 +16,7 @@
 
 <figure><img src="../../.gitbook/assets/p13.png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../.gitbook/assets/图片 (11) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (11) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 * Per-tensor量化&#x20;
   * &#x20;优点：低延迟: 一个tensor共享同一个量化参数&#x20;

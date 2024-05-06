@@ -52,7 +52,7 @@
   * [🌴 C++11智能指针](whitepaper/cpp/ptr.md)
   * [🌲 C++11右值引用和移动语义](whitepaper/cpp/move\_forward.md)
   * [🥬 C++11多线程](whitepaper/cpp/thread.md)
-* [🩷 实战](whitepaper/action/README.md)
+* [🩷 部署实战](whitepaper/action/README.md)
   * [❤️ yolov8Multitask](whitepaper/action/yolov8multitask.md)
   * [💚 yolov5](whitepaper/action/yolov5.md)
   * [🧡 pointpillars](whitepaper/action/pointpillars.md)
