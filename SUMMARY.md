@@ -61,3 +61,4 @@
   * [💜 BEVfusion](whitepaper/action/bevfusion.md)
   * [💙 BEVLane](whitepaper/action/bevlane.md)
   * [🖤 Occupancy](whitepaper/action/occupancy.md)
+* [☯️ 重点参考书籍](whitepaper/reference\_book.md)
