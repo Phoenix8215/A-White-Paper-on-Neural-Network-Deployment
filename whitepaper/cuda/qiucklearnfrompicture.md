@@ -1,4 +1,4 @@
-# QiuckLearnFromPicture
+# 🤗 QiuckLearnFromPicture
 
 ### GPU 加速应用程序与 CPU 应用程序对比
 

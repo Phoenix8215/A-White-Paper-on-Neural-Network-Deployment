@@ -155,7 +155,7 @@ dynamic_axes_0 = {
 }
 ```
 
-<mark style="color:red;">由于 ONNX 要求每个动态维度都有一个名字</mark>，这样写的话会引出一条 UserWarning，警告我们通过列表的方式设置动态维度的话系统会自动为它们分配名字。一种显式添加动态维度名字的方法如下：
+<mark style="color:red;">由于 ONNX 要求每个动态维度都有一个名字，这样写的话会引出一条 UserWarning，警告我们通过列表的方式设置动态维度的话系统会自动为它们分配名字。一种显式添加动态维度名字的方法如下：</mark>
 
 ```python
 dynamic_axes_0 = {
