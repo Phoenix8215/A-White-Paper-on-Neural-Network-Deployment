@@ -22,7 +22,7 @@
 
 ### Nsight compute
 
-1. roofline analysis 对核函数进行roofline analysis， 并且根据base line进行优化比较
+1. roofline analysis 对核函数进行roofline analysis， 并且根据baseline进行优化比较
 
 <figure><img src="../../.gitbook/assets/图片 (3).png" alt=""><figcaption></figcaption></figure>
 
