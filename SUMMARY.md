@@ -8,6 +8,7 @@
   * [🤗 QiuckLearnFromPicture](whitepaper/cuda/qiucklearnfrompicture.md)
   * [🤒 GPU编程模型](whitepaper/cuda/gpu\_programing\_model.md)
   * [😷 CUDA流和事件](whitepaper/cuda/stream\_event.md)
+  * [🫣 Nsight system和Nsight compute](whitepaper/cuda/nsight.md)
 * [😄 ONNX](whitepaper/onnx\_intro/README.md)
   * [😉 ONNX中的各类Proto](whitepaper/onnx\_intro/protobuffer.md)
   * [🤔 onnx->torch](whitepaper/onnx\_intro/onnx2torch.md)
