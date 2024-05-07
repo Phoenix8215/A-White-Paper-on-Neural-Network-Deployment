@@ -10,7 +10,7 @@ NVIDIA公司在1999年发布Geforce 256图形处理芯片时首先提出GPU的�
 
 最早的GPU是专门为了渲染设计的，那么他也就只能做渲染的那些事情。渲染这个过程具体来说就 是几何点、位置和颜色的计算，这些计算在数学上都是用四维向量和变换矩阵的乘法，因此GPU也 就被设计为专门适合做类似运算的专用处理器了。但随着GPU的发展，GPU的功能也越来越多， 比如现在很多GPU还支持了硬件编解码。
 
-全球GPU巨头：NVIDIA(英伟达)AMD(超威半导体)。
+全球GPU巨头：NVIDIA(英伟达)，AMD(超威半导体)。
 
 <figure><img src="../../.gitbook/assets/图片 (2) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt="" width="563"><figcaption></figcaption></figure>
 
@@ -18,10 +18,17 @@ NVIDIA公司在1999年发布Geforce 256图形处理芯片时首先提出GPU的�
 
 GPU采用流式并行计算模式，可对每个数据行独立的并行计算。&#x20;
 
-1. CPU基于低延时设计，由运算器（ALU，Arithmetic and Logic Unit 算术逻辑单元）和控制器 （CU,Control Unit），以及若干个寄存器和高速缓冲存储器组成，功能模块较多，擅长逻辑控制，**串行运算。**&#x20;
+1. CPU基于低延时设计，由运算器（ALU，Arithmetic and Logic Unit 算术逻辑单元）和控制器 （CU，Control Unit），以及若干个寄存器和高速缓冲存储器组成，功能模块较多，擅长逻辑控制，**串行运算。**&#x20;
 2. GPU基于大吞吐量设计，拥有更多的ALU用于数据处理，适合对密集数据进行并行处理，擅长大规模并发计算，因此GPU也被应用于AI训练等需要大规模**并发计算**场景。
 
 <figure><img src="../../.gitbook/assets/图片 (76).png" alt="" width="563"><figcaption></figcaption></figure>
+
+### GPU分类
+
+* 独立GPU：独立GPU一般封装在独立的显卡电路板上，使用专用的显示存储器，独立显卡性能由GPU性能与显存 带宽共同决定。一般来讲，独立GPU的性能更高，但因此系统功耗、发热量较大。&#x20;
+* 集成GPU：集成GPU常和CPU共用一个Die，共享系统内存。集成GPU的制作由CPU厂家完成，因此兼容性较强， 并且功耗低、发热量小。但如果显卡运行需要占用大量内存，整个系统运行会受限，此外系统内存的频率通常 比独立显卡的显存低很多，因此一般集成GPU的性能比独立GPU更低。
+
+<figure><img src="../../.gitbook/assets/图片 (153).png" alt=""><figcaption></figcaption></figure>
 
 ### 串行处理与并行处理的区别
 
