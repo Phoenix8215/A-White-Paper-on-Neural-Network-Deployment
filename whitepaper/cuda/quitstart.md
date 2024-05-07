@@ -36,7 +36,7 @@ GPU采用流式并行计算模式，可对每个数据行独立的并行计算�
 
 * 指令/代码块依次执行&#x20;
 * 前一条指令执行结束以后才能执行下一条语句&#x20;
-* 一般来说,当程序有数据依赖or分支等这些情况下需要串行
+* 一般来说，当程序有数据依赖or分支等这些情况下需要串行
 * 使用场景: 复杂的逻辑计算(比如:操作系统)
 
 <figure><img src="../../.gitbook/assets/图片 (14) (1).png" alt=""><figcaption></figcaption></figure>
@@ -70,7 +70,7 @@ statement 5 可以在 statement 4 彻底执行结束前就知道所依赖的结�
 
 * 把没有数据依赖的代码分配到各个core各自执行 (schedule, 调度)&#x20;
 * 把一个大的loop循环给分割成多个小代码，分配到各个core执行(loop optimization)&#x20;
-* 在一个指令彻底执行完以前，如果已经得到了想要得到的数据，可以提前执行下 一个指令(pipeling, 流水线）&#x20;
+* 在一个指令彻底执行完以前，如果已经得到了想要得到的数据，可以提前执行下 一个指令(pipeline, 流水线）&#x20;
 
 我们管这一系列的行为，称作parallelization (并行化)。我们得到的可以充分利用多 核多线程的程序叫做parallelized program(并行程序）
 
@@ -93,14 +93,14 @@ statement 5 可以在 statement 4 彻底执行结束前就知道所依赖的结�
 
 "并行"与"并发"的区别
 
-* 并行(parallel) 物理意义上同时执行
+* 并行(parallel) -物理意义上同时执行
 * 并发(concurrent) -逻辑意义上同时执行
 
 <figure><img src="../../.gitbook/assets/图片 (68).png" alt="" width="563"><figcaption></figcaption></figure>
 
 “进程”与“线程”的关系
 
-* 线程是进程的子集。一个进程可以有多个线程
+* 线程是进程的子集，一个进程可以有多个线程
 
 "多核"与"加速比"的关系&#x20;
 
@@ -128,9 +128,11 @@ CPU/GPU从memory获取数据所需要的等待时间
 
 如果数据不在cache里，那么就需要往下级 memory中寻找数据，然而访问下级memory是很耗时的。
 
-<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 不同memory在latency上的比较
+
+<figure><img src="../../.gitbook/assets/图片.png" alt=""><figcaption></figcaption></figure>
 
 ### CPU是如何进行优化的？
 
@@ -163,7 +165,7 @@ CPU/GPU从memory获取数据所需要的等待时间
 {% hint style="info" %}
 * 当程序中出现 branch的话，如何进行pre-fetch?
 
-如果预先知道计算A结束后就执行计算B的话，可以预先(pre)把计算B所需要的指令和 数据取出来(fetch)，放入到cache中 (hiding memory latency
+如果预先知道计算A结束后就执行计算B的话，可以预先(pre)把计算B所需要的指令和数据取出来(fetch)，放入到cache中 (`hiding memory latency`)
 {% endhint %}
 
 * `Branch-prediction`(分支预测)
@@ -185,9 +187,9 @@ while(i < 100) {
 
 充分利用计算资源的一种技术 ，让因为数据依赖或者`cache miss`而`stall`的`core`去做一些其他的事情 ，提高throughput的一种技术。
 
-由于CPU处理的大多数都是一些复杂逻辑的计算，有大量的分支以及难以预测的分支方向，所以增加core的数 量，增加线程数而带来的throughput的收益往往并不是那么高。
+由于CPU处理的大多数都是一些复杂逻辑的计算，有大量的分支以及难以预测的分支方向，所以增加`core`的数 量，增加线程数而带来的`throughput`的收益往往并不是那么高。
 
-去掉复杂的逻辑计算，去掉分支，把大量的简单运算放在一起的话，是不是就可以最大化的提高throughput呢？ 答案是yes，这个就是GPU所做的事情。
+去掉复杂的逻辑计算，去掉分支，把大量的简单运算放在一起的话，是不是就可以最大化的提高`throughput`呢？ 答案是yes，这个就是GPU所做的事情。
 
 ### 基础GPU架构
 

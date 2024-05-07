@@ -64,7 +64,7 @@ Cuda compilation tools, release 10.1, V10.1.243
 
 官网[CUDA 深度神经网络库 (cuDNN) | NVIDIA Developer](https://developer.nvidia.com/zh-cn/cudnn)，下载`tar`
 
-<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1) (1) (1).png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1) (1) (1) (1).png" alt="" width="563"><figcaption></figcaption></figure>
 
 ```shell
 tar -xvf cudnn-linux-x86_64-8.x.x.x_cudaX.Y-archive.tar.xz
