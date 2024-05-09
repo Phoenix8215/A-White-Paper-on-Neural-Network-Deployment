@@ -101,8 +101,6 @@ int main()
 
 #### 线程封装
 
-见范例1-thread2-pack zero\_thread.h
-
 **zero\_thread.h**
 
 ```cpp
@@ -280,7 +278,7 @@ int main()
 
 ### 互斥量
 
-mutex又称互斥量，C++ 11中与 mutex相关的类（包括锁类型）和函数都声明在 头文件中，所以如果 你需要使用 std::mutex，就必须包含\*\*`#include<mutex>`\*\*头文件。
+mutex又称互斥量，C++ 11中与 mutex相关的类（包括锁类型）和函数都声明在 头文件中，所以如果 你需要使用 std::mutex，就必须包含`#include<mutex>`头文件。
 
 C++11提供如下4种语义的互斥量（mutex）
 
@@ -309,7 +307,6 @@ C++11提供如下4种语义的互斥量（mutex）
   * 如果当前互斥量被当前调用线程锁住，则会产生死锁(deadlock)。
 
 ```cpp
-//1-2-mutex1
 #include <iostream> // std::cout
 #include <thread> // std::thread
 #include <mutex> // std::mutex
@@ -349,7 +346,6 @@ int main()
 递归锁允许同一个线程多次获取该互斥锁，可以用来解决同一线程需要多次获取互斥量时死锁的问题。
 
 ```cpp
-//死锁范例1-2-mutex2-dead-lock
 #include <iostream>
 #include <thread>
 #include <mutex>
@@ -387,7 +383,6 @@ int main(void)
 使用递归锁
 
 ```cpp
-//递归锁1-2-recursive_mutex1
 #include <iostream>
 #include <thread>
 #include <mutex>
@@ -434,7 +429,6 @@ int main(void)
 std::timed\_mutex比std::mutex多了两个超时获取锁的接口：try\_lock\_for和try\_lock\_until
 
 ```cpp
-//1-2-timed_mutex
 #include <iostream>
 #include <thread>
 #include <mutex>
@@ -580,7 +574,7 @@ int main() {
 
 ### 条件变量
 
-互斥量是多线程间同时访问某一共享变量时，保证变量可被安全访问的手段。但单靠互斥量无法实现线 程的同步。线程同步是指线程间需要按照预定的先后次序顺序进行的行为。C++11对这种行为也提供了 有力的支持，这就是条件变量。条件变量位于\*\*头文件`condition_variable`\*\*下。 http://www.cplusplus.com/reference/condition\_variable/condition\_variable
+互斥量是多线程间同时访问某一共享变量时，保证变量可被安全访问的手段。但单靠互斥量无法实现线 程的同步。线程同步是指线程间需要按照预定的先后次序顺序进行的行为。C++11对这种行为也提供了 有力的支持，这就是条件变量。条件变量位于头文件`condition_variable`下。 [http://www.cplusplus.com/reference/condition\_variable/condition\_variable](http://www.cplusplus.com/reference/condition\_variable/condition\_variable)
 
 条件变量使用过程：
 
@@ -662,10 +656,9 @@ void notify_all() noexcept;
 
 #### 范例
 
-使用条件变量实现一个同步队列，同步队列作为一个线程安全的数据共享区，经常用于线程之间数据读 取。 代码范例：同步队列的实现1-3-condition-sync-queue sync\_queue.h
+使用条件变量实现一个同步队列，同步队列作为一个线程安全的数据共享区，经常用于线程之间数据读 取。&#x20;
 
 ```cpp
-//同步队列的实现1-3-condition-sync-queue
 #ifndef SYNC_QUEUE_H
 #define SYNC_QUEUE_H
 #include<list>
@@ -806,7 +799,7 @@ _notFull.wait(_mutex， [this] {return !IsFull();});
 
 这里需要注意的是，wait函数中会释放mutex，而lock\_guard这时还拥有mutex，它只会在出了作用域 之后才会释放mutex，所以这时它并不会释放，但执行wait时会提取释放mutex。 从语义上看这里使用lock\_guard会产生矛盾，但是实际上并不会出问题，因为wait提前释放锁之后会处 于等待状态，在被notify\_one或者notify\_all唤醒后会先获取mutex，这相当于lock\_guard的mutex在 释放之后又获取到了，因此，在出了作用域之后lock\_guard自动释放mutex不会有问题。 这里应该用unique\_lock，因为unique\_lock不像lock\_guard一样只能在析构时才释放锁，它可以随时释 放锁，因此在wait时让unique\_lock释放锁从语义上更加准确。
 
-使用unique\_lock和condition\_variable\_variable改写1-3-condition-sync-queue，改写为用等待一个判 断式的方法来实现一个简单的队列。 范例：1-3-condition-sync-queue2
+使用unique\_lock和condition\_variable\_variable改写上面的代码，用等待一个判 断式的方法来实现一个简单的队列。&#x20;
 
 ```cpp
 #ifndef SIMPLE_SYNC_QUEUE_H
@@ -891,7 +884,7 @@ int main(void)
 
 ### 原子变量
 
-具体参考：http://www.cplusplus.com/reference/atomic/atomic/ 范例：1-4-atomic
+具体参考：http://www.cplusplus.com/reference/atomic/atomic/&#x20;
 
 ```cpp
 // atomic::load/store example
@@ -999,7 +992,6 @@ std::future期待一个返回，从一个异步调用的角度来说，future更
 std::future是一个模板，例如std::future，模板参数就是期待返回的类型，虽然future被用于线程间通 信，但其本身却并不提供同步访问，热门必须通过互斥元或其他同步机制来保护访问。 future使用的时机是当你不需要立刻得到一个结果的时候，你可以开启一个线程帮你去做一项任务，并 期待这个任务的返回，但是std::thread并没有提供这样的机制，这就需要用到std::async和std::future （都在头文件中声明） std::async返回一个std::future对象，而不是给你一个确定的值（所以当你不需要立刻使用此值的时候才 需要用到这个机制）。当你需要使用这个值的时候，对future使用get()，线程就会阻塞直到future就 绪，然后返回该值。
 
 ```cpp
-//1-6-future
 #include <iostream>
 #include <future>
 #include <thread>
