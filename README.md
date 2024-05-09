@@ -24,11 +24,25 @@
 
 ### 主要内容
 
-神经网络部署白皮书(以下简称白皮书)仍在全力更新中，目前只更新了大概30%，后面将添加更多进阶内容，以及大量的实战案例。由于笔者平时有科研任务，所以更新的进度可能不会太快。😶‍🌫️
+神经网络部署白皮书(以下简称白皮书)仍在全力更新中，目前只更新了大概30%，后面将添加更多进阶内容，以及大量的实战案例。由于笔者平时也有其他科研任务，所以更新的进度可能不会太快。😶‍🌫️
 
 白皮书的部分内容为韩博提供的资料，这是他的`github`主页[https://github.com/kalfazed](https://github.com/kalfazed)， [https://github.com/kalfazed/tensorrt\_starter](https://github.com/kalfazed/tensorrt\_starter)这个是韩博写的一个开源项目，后面也会对这部分代码进行解读。
 
 白皮书主要分为以下几个板块，CUDA，ONNX，TensorRT，C++，实战内容，还有一些不属于以上各类的文章我就放到杂文里边去了。
 
-* CUDA板块：主要介绍了GPU,CPU硬件的大致结构以及程序执行的流程，介绍了一些基本概念：CUDA线程，块，网格，CUDA流，CUDA事件
+* CUDA板块：。。。。。。
+
+
+
+
+
+### 贡献
+
+本开源书仍在持续更新之中，欢迎参与本项目，一同为读者提供更优质的学习内容。
+
+我的邮箱`fengzhe8215@outlook.com`，也可以知乎私信我，我的知乎[https://www.zhihu.com/people/fengzhe\_love](https://www.zhihu.com/people/fengzhe\_love)
+
+### License
+
+The texts, code, images, photos, and videos in this repository are licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
 

@@ -11,7 +11,7 @@ description: >-
 
 TorchScript 是一种序列化和优化 PyTorch 模型的格式，在优化过程中，一个torch.nn.Module 模型会被转换成 TorchScript 的 torch.jit.ScriptModule 模型。现在， TorchScript 也被常当成一种中间表示使用。
 
-torch.onnx.export 中需要的模型实际上是一个 torch.jit.ScriptModule。而要把普通 PyTorch 模型转一个这样的 TorchScript 模型，有跟踪（trace）和记录（script）两种导出计算图的方法。如果给 torch.onnx.export 传入了一个普通 PyTorch 模型（torch.nn.Module)，那么这个模型会默认使用跟踪的方法导出。这一过程如下图所示：
+torch.onnx.export 中需要的模型实际上是一个 torch.jit.ScriptModule。<mark style="color:red;">而要把普通 PyTorch 模型转一个这样的 TorchScript 模型，有跟踪（trace）和记录（script）两种导出计算图的方法。</mark>如果给 torch.onnx.export 传入了一个普通 PyTorch 模型（torch.nn.Module)，那么这个模型会默认使用跟踪的方法导出。这一过程如下图所示：
 
 <figure><img src="../../.gitbook/assets/图片 (94).png" alt=""><figcaption></figcaption></figure>
 

@@ -4,7 +4,7 @@
 
 ### std::thread
 
-在 `#include<thread>`头文件中声明，因此使用 std::thread 时需要包含\*\*`#include<thread>`\*\* 头文件。
+在 `#include<thread>`头文件中声明，因此使用 std::thread 时需要包含`#include<thread>` 头文件。
 
 ### 语法
 
