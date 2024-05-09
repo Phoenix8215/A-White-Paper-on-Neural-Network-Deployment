@@ -125,7 +125,7 @@ $$
 * **内存带宽**：$$760.32 GB/s = 760.32 × 10^9 bytes/s$$
 
 $$
-[ \text{计算密度}_{\text{FP16}} = \frac{119 \times 10^{12}}{760.32 \times 10^{9}} , \text{FLOPS/byte} ]
+[ \text{计算密度}_{\text{INT8}} = \frac{238 \times 10^{12}}{760.32 \times 10^{9}} \, \text{OPS/byte} ]
 $$
 
 RTX 3080的计算密度如下：
