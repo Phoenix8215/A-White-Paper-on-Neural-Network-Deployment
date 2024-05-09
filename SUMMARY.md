@@ -42,6 +42,7 @@
   * [🤞 pytorch-quantization使用文档](whitepaper/quantization\_and\_pruning/pytorch\_quantization.md)
   * [✌️ Polygraphy-Cheatsheet](whitepaper/quantization\_and\_pruning/polygraphy-cheatsheet.md)
 * [🤺 杂文不杂](whitepaper/essay/README.md)
+  * [😾 Roofline\_model](whitepaper/essay/roofline\_model.md)
   * [🤖 模型部署的几大误区](whitepaper/essay/mistake.md)
   * [😽 手算Ampere架构各个精度的Throughout](whitepaper/essay/ampere.md)
   * [😻 Tensor Core VS CUDA Core](whitepaper/essay/tensor\_or\_cuda.md)
