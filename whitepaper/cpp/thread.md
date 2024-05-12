@@ -6,7 +6,7 @@
 
 在 `#include<thread>`头文件中声明，因此使用 std::thread 时需要包含`#include<thread>` 头文件。
 
-### 语法
+### 基本语法
 
 #### 构造函数
 
@@ -23,10 +23,9 @@ thread() _NOEXCEPT
 * **初始化构造函数**
 
 ```cpp
-//创建std::thread执行对象，该thread对象可被joinable，新产生的线程会调用threadFun函数，该函
-数的参数由 args 给出
-    template<class Fn, class... Args>
-        explicit thread(Fn&& fn, Args&&... args);
+//创建std::thread执行对象，该thread对象可被joinable，新产生的线程会调用threadFun函数，该函数的参数由 args 给出
+template<class Fn, class... Args>
+explicit thread(Fn&& fn, Args&&... args);
 ```
 
 * **拷贝构造函数**
@@ -40,8 +39,7 @@ thread(const thread&) = delete;
 
 ```cpp
 //move 构造函数，调用成功之后 x 不代表任何 thread 执行对象。
-//注意：可被 joinable 的 thread 对象必须在他们销毁之前被主线程 join 或者将其设置为
-detached。
+//注意：可被 joinable 的 thread 对象必须在他们销毁之前被主线程 join 或者将其设置为detached。
 thread(thread&& x)noexcept
 ```
 
@@ -68,22 +66,40 @@ thread(thread&& x)noexcept
 #include <iostream>
 #include <thread>
 using namespace std;
+
 void func1()
 {
     cout << "func1 into" << endl;
 }
+
 void func2(int a, int b)
 {
     cout << "func2 a + b = " << a+b << endl;
 }
+
 class A
 {
-    public:
+public:
     static void fun3(int a)
     {
         cout << "a = " << a << endl;
     }
 };
+
+class A
+{
+public:
+    void showMsg(string name, int age)
+    {
+        cout << "name: " << name << ", age: " << age << endl;
+    }
+
+    static void fun3(int a)
+    {
+        cout << "a = " << a << endl;
+    }
+};
+
 int main()
 {
     std::thread t1(func1); // 只传递函数
@@ -94,6 +110,9 @@ int main()
     t2.join();
     std::thread t3(&A::fun3, 1); // 绑定类静态函数
     t3.join();
+    A a;
+    thread t4(&A::showMsg, a, "Mike1", 19); // 绑定类的成员函数
+    t4.join();
     return 0;
 }
 
@@ -107,9 +126,10 @@ int main()
 #ifndef ZERO_THREAD_H
 #define ZERO_THREAD_H
 #include <thread>
+
 class ZERO_Thread
 {
-    public:
+public:
     ZERO_Thread(); // 构造函数
     virtual ~ZERO_Thread(); // 析构函数
     bool start();
@@ -120,10 +140,10 @@ class ZERO_Thread
     void join(); // 等待当前线程结束, 不能在当前线程上调用
     void detach(); //能在当前线程上调用
     static size_t CURRENT_THREADID();
-    protected:
+protected:
     static void threadEntry(ZERO_Thread *pThread); // 静态函数, 线程入口
     virtual void run() = 0; // 运行
-    protected:
+protected:
     bool _running; //是否在运行
     std::thread *_th;
 };
@@ -137,8 +157,8 @@ class ZERO_Thread
 #include <sstream>
 #include <iostream>
 #include <exception>
-ZERO_Thread::ZERO_Thread():
-_running(false), _th(NULL)
+
+ZERO_Thread::ZERO_Thread():_running(false), _th(NULL)
 {
 }
 ZERO_Thread::~ZERO_Thread()
@@ -230,6 +250,7 @@ void ZERO_Thread::threadEntry(ZERO_Thread *pThread)
 #include <iostream>
 #include <chrono>
 #include "zero_thread.h"
+
 using namespace std;
 class A: public ZERO_Thread
 {
@@ -276,6 +297,143 @@ int main()
 
 ```
 
+`thread`线程类还提供了一个静态方法，用于获取当前计算机的CPU核心数，根据这个结果在程序中创建出数量相等的线程，每个线程独自占有一个CPU核心，这些线程就不用分时复用CPU时间片，此时程序的并发效率是最高的。
+
+```cpp
+#include <iostream>
+#include <thread>
+using namespace std;
+
+int main()
+{
+    int num = thread::hardware_concurrency();
+    cout << "CPU number: " << num << endl;
+}
+```
+
+### 命名空间 - `this_thread`
+
+在C++11中不仅添加了线程类，还添加了一个关于线程的命名空间`std::this_thread`，在这个命名空间中提供了四个公共的成员函数，通过这些成员函数就可以对当前线程进行相关的操作了。
+
+#### get\_id() <a href="#id-1-get-id" id="id-1-get-id"></a>
+
+```c
+#include <iostream>
+#include <thread>
+using namespace std;
+
+void func()
+{
+    cout << "子线程: " << this_thread::get_id() << endl;
+}
+
+int main()
+{
+    cout << "主线程: " << this_thread::get_id() << endl;
+    thread t(func);
+    t.join();
+}
+```
+
+程序启动，开始执行`main()`函数，此时只有一个线程也就是主线程。当创建了子线程对象`t`之后，指定的函数`func()`会在子线程中执行，这时通过调用`this_thread::get_id()`就可以得到当前线程的线程ID了。
+
+#### sleep\_for() <a href="#id-2-sleep-for" id="id-2-sleep-for"></a>
+
+同样地线程被创建后也有这五种状态：`创建态`，`就绪态`，`运行态`，`阻塞态(挂起态)`，`退出态(终止态)` ，关于状态之间的转换是一样的，请参考进程，在此不再过多的赘述。
+
+线程和进程的执行有很多相似之处，在计算机中启动的多个线程都需要占用CPU资源，但是CPU的个数是有限的并且每个CPU在同一时间点不能同时处理多个任务。`为了能够实现并发处理，多个线程都是分时复用CPU时间片，快速的交替处理各个线程中的任务。因此多个线程之间需要争抢CPU时间片，抢到了就执行，抢不到则无法执行`（因为默认所有的线程优先级都相同，内核也会从中调度，不会出现某个线程永远抢不到CPU时间片的情况）。
+
+命名空间`this_thread`中提供了一个休眠函数`sleep_for()`，调用这个函数的线程会马上从`运行态`变成`阻塞态`并在这种状态下休眠一定的时长，因为阻塞态的线程已经让出了CPU资源，代码也不会被执行，所以线程休眠过程中对CPU来说没有任何负担。
+
+```cpp
+#include <iostream>
+#include <thread>
+#include <chrono>
+using namespace std;
+
+void func()
+{
+    for (int i = 0; i < 10; ++i)
+    {
+        this_thread::sleep_for(chrono::seconds(1));
+        cout << "子线程: " << this_thread::get_id() << ", i = " << i << endl;
+    }
+}
+
+int main()
+{
+    thread t(func);
+    t.join();
+}
+```
+
+在`func()`函数的`for`循环中使用了`this_thread::sleep_for(chrono::seconds(1));`之后，每循环一次程序都会阻塞1秒钟，也就是说每隔1秒才会进行一次输出。<mark style="color:red;">需要注意的是：程序休眠完成之后，会从阻塞态重新变成就绪态，就绪态的线程需要再次争抢CPU时间片，抢到之后才会变成运行态，这时候程序才会继续向下运行。</mark>
+
+#### sleep\_until() <a href="#id-3-sleep-until" id="id-3-sleep-until"></a>
+
+命名空间`this_thread`中提供了另一个休眠函数`sleep_until()`，和`sleep_for()`不同的是它的参数类型不一样
+
+* `sleep_until()`：指定线程阻塞到某一个指定的时间点`time_point`类型，之后解除阻塞
+* `sleep_for()`：指定线程阻塞一定的时间长度`duration`类型，之后解除阻塞
+
+```cpp
+#include <iostream>
+#include <thread>
+#include <chrono>
+using namespace std;
+
+void func()
+{
+    for (int i = 0; i < 10; ++i)
+    {
+        // 获取当前系统时间点
+        auto now = chrono::system_clock::now();
+        // 时间间隔为2s
+        chrono::seconds sec(2);
+        // 当前时间点之后休眠两秒
+        this_thread::sleep_until(now + sec);
+        cout << "子线程: " << this_thread::get_id() << ", i = " << i << endl;
+    }
+}
+
+int main()
+{
+    thread t(func);
+    t.join();
+}
+```
+
+`sleep_until()`和`sleep_for()`函数的功能是一样的，只不过前者是基于时间点去阻塞线程，后者是基于时间段去阻塞线程，项目开发过程中根据实际情况选择最优的解决方案即可。
+
+#### yield() <a href="#id-4-yield" id="id-4-yield"></a>
+
+命名空间`this_thread`中提供了一个非常绅士的函数`yield()`，在线程中调用这个函数之后，处于运行态的线程会主动让出自己已经抢到的CPU时间片，最终变为就绪态，这样其它的线程就有更大的概率能够抢到CPU时间片了。<mark style="color:red;">使用这个函数的时候需要注意一点，线程调用了yield()之后会主动放弃CPU资源，但是这个变为就绪态的线程会马上参与到下一轮CPU的抢夺战中，不排除它能继续抢到CPU时间片的情况，这是概率问题。</mark>
+
+```cpp
+#include <iostream>
+#include <thread>
+using namespace std;
+
+void func()
+{
+    for (int i = 0; i < 100000000000; ++i)
+    {
+        cout << "子线程: " << this_thread::get_id() << ", i = " << i << endl;
+        this_thread::yield();
+    }
+}
+
+int main()
+{
+    thread t(func);
+    thread t1(func);
+    t.join();
+    t1.join();
+}
+```
+
+在上面的程序中，执行`func()`中的`for`循环会占用大量的时间，在极端情况下，如果当前线程占用CPU资源不释放就会导致其他线程中的任务无法被处理，或者该线程每次都能抢到CPU时间片，导致其他线程中的任务没有机会被执行。<mark style="color:red;">解决方案就是每执行一次循环，让该线程主动放弃CPU资源，重新和其他线程再次抢夺CPU时间片，如果其他线程抢到了CPU时间片就可以执行相应的任务了。</mark>
+
 ### 互斥量
 
 mutex又称互斥量，C++ 11中与 mutex相关的类（包括锁类型）和函数都声明在 头文件中，所以如果 你需要使用 std::mutex，就必须包含`#include<mutex>`头文件。
@@ -287,6 +445,10 @@ C++11提供如下4种语义的互斥量（mutex）
 * std::recursive\_mutex，递归互斥量，不带超时功能。
 * std::recursive\_timed\_mutex，带超时的递归互斥量。
 
+{% hint style="info" %}
+<mark style="color:red;">多线程中有多少个共享资源就申请多少个互斥量</mark>
+{% endhint %}
+
 #### 独占互斥量std::mutex
 
 **std::mutex 介绍**
@@ -295,7 +457,7 @@ C++11提供如下4种语义的互斥量（mutex）
 
 **std::mutex 的成员函数**
 
-* 构造函数，std::mutex不允许拷贝构造，也不允许 move 拷贝，最初产生的 mutex 对象是处于 unlocked 状态的。
+* <mark style="color:red;">构造函数，std::mutex不允许拷贝构造，也不允许 move 拷贝，最初产生的 mutex 对象是处于 unlocked 状态的。</mark>
 * lock()，调用线程将锁住该互斥量。线程调用该函数会发生下面 3 种情况：
   * 如果该互斥量当前没 有被锁住，则调用线程将该互斥量锁住，直到调用 unlock之前，该线程一直拥有该锁。
   * 如果当 前互斥量被其他线程锁住，则当前的调用线程被阻塞住。
@@ -310,6 +472,7 @@ C++11提供如下4种语义的互斥量（mutex）
 #include <iostream> // std::cout
 #include <thread> // std::thread
 #include <mutex> // std::mutex
+
 volatile int counter(0); // non-atomic counter
 std::mutex mtx; // locks access to counter
 void increases_10k()
@@ -335,8 +498,7 @@ int main()
     for (int i=0; i<10; ++i)
         threads[i] = std::thread(increases_10k);
     for (auto& th : threads) th.join();
-    std::cout << " successful increases of the counter " << counter <<
-        std::endl;
+    std::cout << " successful increases of the counter " << counter << std::endl;
     return 0;
 }
 ```
@@ -433,6 +595,7 @@ std::timed\_mutex比std::mutex多了两个超时获取锁的接口：try\_lock\_
 #include <thread>
 #include <mutex>
 #include <chrono>
+
 std::timed_mutex mutex;
 void work()
 {
@@ -919,12 +1082,13 @@ int main ()
 
 ### call\_once和once\_flag使用
 
-具体：https://www.apiref.com/cpp-zh/cpp/thread/call\_once.html 在多线程中，有一种场景是某个任务只需要执行一次，可以用C++11中的std::call\_once函数配合 std::once\_flag来实现。多个线程同时调用某个函数，std::call\_once可以保证多个线程对该函数只调用一 次。
+具体：https://www.apiref.com/cpp-zh/cpp/thread/call\_once.html 在多线程中，有一种场景是某个任务只需要执行一次，可以用C++11中的`std::call_once`函数配合 `std::once_flag`来实现。多个线程同时调用某个函数，`std::call_once`可以保证多个线程对该函数只调用一 次。
 
 ```cpp
 #include <iostream>
 #include <thread>
 #include <mutex>
+
 std::once_flag flag1, flag2;
 void simple_do_once()
 {
@@ -968,6 +1132,71 @@ int main()
     t4.join();
 }
 
+```
+
+再看看单例模式下的应用：
+
+```cpp
+#include <iostream>
+#include <mutex>
+#include <thread>
+using namespace std;
+
+
+once_flag g_flag;
+// 编写一个单例模式的类-->懒汉模式：在第一次调用getInstance()方法时，才会创建对象
+// 多线程环境下，懒汉模式是线程不安全的，多个线程同时调用getInstance()方法时，会创建多个对象
+// 解决方案：加锁，但是效率低
+// 解决方案：C++11之后，使用call_once()函数，保证线程安全
+class Base
+{
+public:
+    Base(const Base& obj) = delete;
+    Base& operator=(const Base& obj) = delete;
+    static Base* getInstance()
+    {
+        call_once(g_flag, [&]()
+            {
+                obj = new Base;
+                cout << "Base实例来也!!!" << endl;
+            });
+        return obj;
+    }
+
+    void setName(string name)
+    {
+        this->name = name;
+    }
+
+    string getName()
+    {
+        return name;
+    }
+private:
+    Base() {};
+    static Base* obj;
+    string name;
+};
+Base* Base::obj = nullptr;
+
+void myFunc(string name)
+{
+    Base::getInstance()->setName(name);
+    cout << "my name is: " << Base::getInstance()->getName() << endl;
+}
+
+int main()
+{
+    thread t1(myFunc, "Mike");
+    thread t2(myFunc, "Conan");
+    thread t3(myFunc, "Like");
+    thread t4(myFunc, "Nini");
+    t1.join();
+    t2.join();
+    t3.join();
+    t4.join();
+    return 0;
+}
 ```
 
 ### 异步操作
