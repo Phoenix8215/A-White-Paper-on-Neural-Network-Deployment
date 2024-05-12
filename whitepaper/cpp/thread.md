@@ -745,7 +745,7 @@ int main() {
 2. 循环检查某个条件，如果条件不满足则阻塞直到条件满足；如果条件满足则向下执行；
 3. 某个线程满足条件执行完之后调用notify\_one或notify\_all唤醒一个或者所有等待线程。 条件变量提供了两类操作：wait和notify。这两类操作构成了多线程同步的基础。
 
-条件变量提供了两类操作：wait和notify。这两类操作构成了多线程同步的基础。
+> 条件变量存放了被阻塞线程的线程ID
 
 #### 成员函数
 
@@ -756,14 +756,18 @@ int main() {
 ```cpp
 void wait (unique_lock<mutex>& lck);
 template <class Predicate>
-    void wait (unique_lock<mutex>& lck, Predicate pred);
+void wait (unique_lock<mutex>& lck, Predicate pred);
 ```
 
 包含两种重载，第一种只包含unique\_lock对象，另外一个Predicate 对象（等待条件），这里必须使用 unique\_lock，因为wait函数的工作原理：
 
-* 当前线程调用wait()后将被阻塞并且函数会解锁互斥量，直到另外某个线程调用notify\_one或者 notify\_all唤醒当前线程；一旦当前线程获得通知(notify)，wait()函数也是自动调用lock()，同理不 能使用lock\_guard对象。
-* 如果wait没有第二个参数，第一次调用默认条件不成立，直接解锁互斥量并阻塞到本行，直到某一 个线程调用notify\_one或notify\_all为止，被唤醒后，wait重新尝试获取互斥量，如果得不到，线程 会卡在这里，直到获取到互斥量，然后无条件地继续进行后面的操作。
-* 如果wait包含第二个参数，如果第二个参数不满足，那么wait将解锁互斥量并堵塞到本行，直到某 一个线程调用notify\_one或notify\_all为止，被唤醒后，wait重新尝试获取互斥量，如果得不到，线程会卡在这里，直到获取到互斥量，然后继续判断第二个参数，如果表达式为false，wait对互斥 量解锁，然后休眠，如果为true，则进行后面的操作。
+* 当前线程调用wait()后将被阻塞并且函数会解锁互斥量，直到另外某个线程调用notify\_one或者 notify\_all唤醒当前线程；<mark style="color:red;">一旦当前线程获得通知(notify)，wait()函数也是自动调用lock()，同理不能使用lock\_guard对象。</mark>
+* 如果wait没有第二个参数，<mark style="color:red;">第一次调用默认条件不成立，直接解锁互斥量并阻塞到本行</mark>，直到某一 个线程调用notify\_one或notify\_all为止，被唤醒后，wait重新尝试获取互斥量，如果得不到，线程会卡在这里，直到获取到互斥量，然后无条件地继续进行后面的操作。
+* 如果wait包含第二个参数，如果第二个参数不满足，那么wait将解锁互斥量并堵塞到本行，直到某 一个线程调用notify\_one或notify\_all为止，被唤醒后，wait重新尝试获取互斥量，如果得不到，线程会卡在这里，直到获取到互斥量，然后继续判断第二个参数，如果表达式为false，wait对互斥量解锁，然后休眠，如果为true，则进行后面的操作。
+
+{% hint style="info" %}
+<mark style="color:red;">wait阻塞之前会解锁，解除阻塞之后加锁</mark>
+{% endhint %}
 
 **wait\_for函数**
 
@@ -771,12 +775,13 @@ template <class Predicate>
 
 ```cpp
 template <class Rep, class Period>
-    cv_status wait_for (unique_lock<mutex>& lck,
-                        const chrono::duration<Rep,Period>& rel_time);
+cv_status wait_for (unique_lock<mutex>& lck,
+         const chrono::duration<Rep,Period>& rel_time);
+         
 template <class Rep, class Period, class Predicate>
-    bool wait_for (unique_lock<mutex>& lck,
-                   const chrono::duration<Rep,Period>& rel_time, Predicate
-                   pred);
+bool wait_for (unique_lock<mutex>& lck,
+    const chrono::duration<Rep,Period>& rel_time, Predicate
+    pred);
 
 ```
 
@@ -788,12 +793,13 @@ template <class Rep, class Period, class Predicate>
 
 ```cpp
 template <class Clock, class Duration>
-    cv_status wait_until (unique_lock<mutex>& lck,
-                          const chrono::time_point<Clock,Duration>& abs_time);
+cv_status wait_until (unique_lock<mutex>& lck,
+    const chrono::time_point<Clock,Duration>& abs_time);
+                          
 template <class Clock, class Duration, class Predicate>
-    bool wait_until (unique_lock<mutex>& lck,
-                     const chrono::time_point<Clock,Duration>& abs_time,
-                     Predicate pred);
+bool wait_until (unique_lock<mutex>& lck,
+    const chrono::time_point<Clock,Duration>& abs_time,
+    Predicate pred);
 
 ```
 
@@ -801,9 +807,8 @@ template <class Clock, class Duration, class Predicate>
 
 函数原型：
 
-```cpp
-void notify_one() noexcept;
-```
+<pre class="language-cpp"><code class="lang-cpp"><strong>void notify_one() noexcept;
+</strong></code></pre>
 
 解锁正在等待当前条件的线程中的一个，如果没有线程在等待，则函数不执行任何操作，如果正在等待 的线程多余一个，则唤醒的线程是不确定的。
 
@@ -817,9 +822,15 @@ void notify_all() noexcept;
 
 解锁正在等待当前条件的所有线程，如果没有正在等待的线程，则函数不执行任何操作。
 
+{% hint style="info" %}
+<mark style="color:red;">两个方法所产生的结果是一样的，每次都只会有一个线程工作</mark>
+{% endhint %}
+
 #### 范例
 
-使用条件变量实现一个同步队列，同步队列作为一个线程安全的数据共享区，经常用于线程之间数据读 取。&#x20;
+使用条件变量实现一个同步队列，同步队列作为一个线程安全的数据共享区，经常用于线程之间数据读 取。
+
+`sync_queue.h`
 
 ```cpp
 #ifndef SYNC_QUEUE_H
@@ -829,10 +840,11 @@ void notify_all() noexcept;
 #include<thread>
 #include<condition_variable>
 #include <iostream>
+
 template<typename T>
 class SyncQueue
 {
-    private:
+private:
     bool IsFull() const
     {
         return _queue.size() == _maxSize;
@@ -841,7 +853,7 @@ class SyncQueue
     {
         return _queue.empty();
     }
-    public:
+public:
     SyncQueue(int maxSize) : _maxSize(maxSize)
     {
     }
@@ -859,6 +871,8 @@ class SyncQueue
     void Take(T& x)
     {
         std::lock_guard<std::mutex> locker(_mutex);
+        //如果只有一个任务，但是唤醒了多个消费者线程，
+        //则需要消费者线程wait后判断队列是不是空的，解决方法就是将if empty改为while empty
         while (IsEmpty())
         {
             std::cout << "empty wait.." << std::endl;
@@ -887,7 +901,7 @@ class SyncQueue
     {
         return _queue.size();
     }
-    private:
+private:
     std::list<T> _queue; //缓冲区
     std::mutex _mutex; //互斥量和条件变量结合起来使用
     std::condition_variable_any _notEmpty;//不为空的条件变量
@@ -895,11 +909,9 @@ class SyncQueue
     int _maxSize; //同步队列最大的size
 };
 #endif // SYNC_QUEUE_H
-
-
 ```
 
-main.cpp
+`main.cpp`
 
 ```cpp
 #include <iostream>
@@ -907,6 +919,7 @@ main.cpp
 #include <thread>
 #include <iostream>
 #include <mutex>
+
 using namespace std;
 SyncQueue<int> syncQueue(5);
 void PutDatas()
@@ -936,7 +949,6 @@ int main(void)
     std::cout << "main finish\n";
     return 0;
 }
-
 ```
 
 代码中用到了std::lock\_guard，它利用RAII机制可以保证安全释放mutex。
@@ -955,12 +967,11 @@ while (IsFull())
 ```cpp
 std::lock_guard<std::mutex> locker(_mutex);
 _notFull.wait(_mutex， [this] {return !IsFull();});
-
 ```
 
 两种写法效果是一样的，但是后者更简洁，条件变量会先检查判断式是否满足条件，如果满足条件则重 新获取mutex，然后结束wait继续往下执行；如果不满足条件则释放mutex，然后将线程置为waiting状 态继续等待。
 
-这里需要注意的是，wait函数中会释放mutex，而lock\_guard这时还拥有mutex，它只会在出了作用域 之后才会释放mutex，所以这时它并不会释放，但执行wait时会提取释放mutex。 从语义上看这里使用lock\_guard会产生矛盾，但是实际上并不会出问题，因为wait提前释放锁之后会处 于等待状态，在被notify\_one或者notify\_all唤醒后会先获取mutex，这相当于lock\_guard的mutex在 释放之后又获取到了，因此，在出了作用域之后lock\_guard自动释放mutex不会有问题。 这里应该用unique\_lock，因为unique\_lock不像lock\_guard一样只能在析构时才释放锁，它可以随时释 放锁，因此在wait时让unique\_lock释放锁从语义上更加准确。
+<mark style="color:red;">这里需要注意的是，wait函数中会释放mutex，而lock\_guard这时还拥有mutex，它只会在出了作用域 之后才会释放mutex，所以这时它并不会释放，但执行wait时会提取释放mutex。 从语义上看这里使用lock\_guard会产生矛盾，但是实际上并不会出问题，因为wait提前释放锁之后会处 于等待状态，在被notify\_one或者notify\_all唤醒后会先获取mutex，这相当于lock\_guard的mutex在 释放之后又获取到了，因此，在出了作用域之后lock\_guard自动释放mutex不会有问题。 这里应该用unique\_lock，因为unique\_lock不像lock\_guard一样只能在析构时才释放锁，它可以随时释 放锁，因此在wait时让unique\_lock释放锁从语义上更加准确。</mark>
 
 使用unique\_lock和condition\_variable\_variable改写上面的代码，用等待一个判 断式的方法来实现一个简单的队列。&#x20;
 
@@ -972,10 +983,11 @@ _notFull.wait(_mutex， [this] {return !IsFull();});
 #include <mutex>
 #include <list>
 #include <iostream>
+
 template<typename T>
 class SimpleSyncQueue
 {
-    public:
+public:
     SimpleSyncQueue(){}
     void Put(const T& x)
     {
@@ -1000,13 +1012,12 @@ class SimpleSyncQueue
         std::lock_guard<std::mutex> locker(_mutex);
         return _queue.size();
     }
-    private:
+private:
     std::list<T> _queue;
     std::mutex _mutex;
     std::condition_variable _notEmpty;
 };
 #endif // SIMPLE_SYNC_QUEUE_H
-
 ```
 
 ```cpp
@@ -1312,7 +1323,6 @@ int main()
 从字面意思上理解promise代表一个承诺。promise比std::packaged\_task抽象层次低。 std::promise提供了一种设置值的方式，它可以在这之后通过相关联的std::future对象进行读取。换种 说法，之前已经说过std::future可以读取一个异步函数的返回值了，那么这个std::promise就提供一种 方式手动让future就绪。
 
 ```cpp
-//1-6-promise
 #include <future>
 #include <string>
 #include <thread>
