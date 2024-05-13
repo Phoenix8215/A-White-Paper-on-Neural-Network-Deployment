@@ -54,7 +54,7 @@
   * [🌴 智能指针](whitepaper/cpp/ptr.md)
   * [🌲 右值引用和移动语义](whitepaper/cpp/move\_forward.md)
   * [🥬 多线程|互斥锁|条件变量](whitepaper/cpp/thread.md)
-  * [🥒 原子变量|异步操作](whitepaper/cpp/atomic.md)
+  * [🥒 原子变量|CAS|memory order|异步操作](whitepaper/cpp/atomic.md)
 * [🩷 部署实战](whitepaper/action/README.md)
   * [❤️ yolov8Multitask](whitepaper/action/yolov8multitask.md)
   * [💚 yolov5](whitepaper/action/yolov5.md)
