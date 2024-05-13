@@ -1,4 +1,4 @@
-# 🥒 原子变量|CAS|memory order|异步操作
+# 🥒 原子变量|CAS|异步操作
 
 ### 原子变量
 
@@ -221,14 +221,6 @@ compare\_exchange\_strong() 只有在原子的当前值由于争用而不再是�
 
 <figure><img src="../../.gitbook/assets/1 ZLd19SxR4tdPYK4fs-KeeQ.png" alt=""><figcaption></figcaption></figure>
 
-
-
-
-
-
-
-
-
 ### 异步操作
 
 * std::future
@@ -304,6 +296,10 @@ void wait() const;
 
 如果当前线程`wait()`方法就会死等，直到子线程任务执行完毕将返回值写入到`future`对象中，调用`wait_for()`只会让线程阻塞一定的时长，但是这样并不能保证对应的那个子线程中的任务已经执行完毕了。
 
+{% hint style="info" %}
+`get()` 既有等待又有获取结果的功能，而 `wait()` 只有等待的功能。
+{% endhint %}
+
 `wait_until()`和`wait_for()`函数功能是差不多，前者是阻塞到某一指定的时间点，后者是阻塞一定的时长。
 
 ```cpp
@@ -316,11 +312,7 @@ std::future_status wait_until( const std::chrono::time_point<Clock,Duration>& ti
 
 当`wait_until()`和`wait_for()`函数返回之后，并不能确定子线程当前的状态，因此我们需要判断函数的返回值，这样就能知道子线程当前的状态了：
 
-| 常量                                                                                   | 解释                     |
-| ------------------------------------------------------------------------------------ | ---------------------- |
-| [`future_status::deferred`](https://zh.cppreference.com/w/cpp/thread/future\_status) | 子线程中的任务函仍未启动           |
-| [`future_status::ready`](https://zh.cppreference.com/w/cpp/thread/future\_status)    | 子线程中的任务已经执行完毕，结果已就绪    |
-| [`future_status::timeout`](https://zh.cppreference.com/w/cpp/thread/future\_status)  | 子线程中的任务正在执行中，指定等待时长已用完 |
+<table><thead><tr><th width="283">常量</th><th>解释</th></tr></thead><tbody><tr><td><a href="https://zh.cppreference.com/w/cpp/thread/future_status"><code>future_status::deferred</code></a></td><td>子线程中的任务函仍未启动</td></tr><tr><td><a href="https://zh.cppreference.com/w/cpp/thread/future_status"><code>future_status::ready</code></a></td><td>子线程中的任务已经执行完毕，结果已就绪</td></tr><tr><td><a href="https://zh.cppreference.com/w/cpp/thread/future_status"><code>future_status::timeout</code></a></td><td>子线程中的任务正在执行中，指定等待时长已用完</td></tr></tbody></table>
 
 ### std::promise
 
@@ -467,11 +459,25 @@ int main()
 }
 ```
 
+```c
+do {
+    status = f.wait_for(chrono::seconds(1));
+    if (status == future_status::deferred) {
+        cout << "线程还没有执行..." << endl;
+        f.wait();
+    } else if (status == future_status::ready) {
+        cout << "子线程返回值: " << f.get() << endl;
+    } else if (status == future_status::timeout) {
+        cout << "任务还未执行完毕, 继续等待..." << endl;
+    }
+} while (status != future_status::ready);
+```
+
 ### std::packaged\_task
 
-如果说std::async和std::feature还是分开看的关系的话，那么std::packaged\_task就是将任务和feature 绑定在一起的模板，是一种封装，对任务的封装。 `The class template std::packaged_task wraps any Callable target (function, lambda expression, bind expression, or another function object) so that it can be invoked asynchronously. Its return value or exception thrown is stored in a shared state which can be accessed through std::future objects.`
+&#x20;`The class template std::packaged_task wraps any Callable target (function, lambda expression, bind expression, or another function object) so that it can be invoked asynchronously. Its return value or exception thrown is stored in a shared state which can be accessed through std::future objects.`
 
-可以通过std::packaged\_task对象获取任务相关联的feature，调用get\_future()方法可以获得 std::packaged\_task对象绑定的函数的返回值类型的future。std::packaged\_task的模板参数是函数签 名。 PS：例如int add(int a, intb)的函数签名就是int(int, int)
+可以通过std::packaged\_task对象获取任务相关联的future，调用get\_future()方法可以获得 std::packaged\_task对象绑定的函数的返回值类型的future。std::packaged\_task的模板参数是函数签 名。 PS：例如int add(int a, intb)的函数签名就是int(int, int)
 
 ```cpp
 #include <future>
@@ -543,17 +549,120 @@ int main() {
 
 ```
 
+### `std::promise`、`std::packaged_task`和`std::future`的关系
 
+至此, 我们介绍了std::async相关的几个对象std::future、std::promise和std::packaged\_task，其中 std::promise和std::packaged\_task的结果最终都是通过其内部的future返回出来的，不知道读者有没有搞糊涂，为什么有 这么多东西出来，他们之间的关系到底是怎样的？且听我慢慢道来，<mark style="color:red;">std::future提供了一个访问异步操作结果的机制，它和线程是一个级别的，属于低层次的对象，在它之上高一层的是std::packaged\_task和std::promise，他们内部都有future以便访问异步操作结果，std::packaged\_task包装的是一个异步操作，而std::promise包装的是一个值，都是为了方便异步操作的，因为有时我需要获取线程中的某个值，这时就用std::promise，而有时我需要获一个异步操作的返回值，这时就用std::packaged\_task。</mark>
 
+### **`std::async`**
 
+std::async是为了让用户的少费点脑子的，它让std::future、std::promise和std::packaged\_task这三个对象默契的工作。大概的工作过程是这样的：std::async先将异步操作用std::packaged\_task包装起来，然后将异步操作的结果放到std::promise中，这个过程就是创造future()的过程。外面再通过future.get()/wait()来获取future()的结果，你不用再想到底该怎么用std::future、std::promise和 std::packaged\_task了，std::async已经帮你搞定一切了！
 
+现在来看看std::async的原型async(std::launch::async | std::launch::deferred, f, args...)，第一个参数是线程的创建策略，有两种策略，默认的策略是立即创建线程：
 
+* std::launch::async：在调用async就开始创建线程。
+* std::launch::deferred：延迟加载方式创建线程。调用async时不创建线程，直到调用了future()的get()或者wait()时才创建线程。
 
+第二个参数是线程函数，第三个参数是线程函数的参数，函数返回值是一个`future`对象。
 
+> <mark style="color:red;">`get()`</mark> <mark style="color:red;"></mark><mark style="color:red;">既有等待又有获取结果的功能，而</mark> <mark style="color:red;"></mark><mark style="color:red;">`wait()`</mark> <mark style="color:red;"></mark><mark style="color:red;">只有等待的功能。</mark>
 
+关于`std::async()`函数的使用，对应的示例代码如下：
 
+* **调用async()函数直接创建线程执行任务**
 
+```c
+#include <iostream>
+#include <thread>
+#include <future>
+using namespace std;
 
+int main()
+{
+    cout << "主线程ID: " << this_thread::get_id() << endl;
+    // 调用函数直接创建线程执行任务
+    future<int> f = async([](int x) {
+        cout << "子线程ID: " << this_thread::get_id() << endl;
+        this_thread::sleep_for(chrono::seconds(5));
+        return x += 100;
+    }, 100);
 
+    future_status status;
+    do {
+        status = f.wait_for(chrono::seconds(1));
+        if (status == future_status::deferred)
+        {
+            cout << "线程还没有执行..." << endl;
+            f.wait();
+        }
+        else if (status == future_status::ready)
+        {
+            cout << "子线程返回值: " << f.get() << endl;
+        }
+        else if (status == future_status::timeout)
+        {
+            cout << "任务还未执行完毕, 继续等待..." << endl;
+        }
+    } while (status != future_status::ready);
 
+    return 0;
+}
+```
 
+示例程序输出的结果为：
+
+```bash
+主线程ID: 8904
+子线程ID: 25036
+任务还未执行完毕, 继续等待...
+任务还未执行完毕, 继续等待...
+任务还未执行完毕, 继续等待...
+任务还未执行完毕, 继续等待...
+任务还未执行完毕, 继续等待...
+子线程返回值: 200
+```
+
+调用`async()`函数时不指定策略就是直接创建线程并执行任务，示例代码的主线程中做了如下操作`status = f.wait_for(chrono::seconds(1));`其实直接调用`f.get()`(get本身就有等待，没必要多此一举)就能得到子线程的返回值。这里为了给大家演示`wait_for()`的使用，所以写的复杂了些。
+
+* **调用async()函数不创建线程执行任务**
+
+```c
+#include <iostream>
+#include <thread>
+#include <future>
+using namespace std;
+
+int main()
+{
+    cout << "主线程ID: " << this_thread::get_id() << endl;
+    // 调用函数直接创建线程执行任务
+    future<int> f = async(launch::deferred, [](int x) {
+        cout << "子线程ID: " << this_thread::get_id() << endl;
+        return x += 100;
+    }, 100);
+
+    this_thread::sleep_for(chrono::seconds(5));
+    cout << f.get();
+
+    return 0;
+}
+```
+
+示例程序输出的结果：
+
+```bash
+主线程ID: 24760
+主线程开始休眠5秒...
+子线程ID: 24760
+200
+```
+
+由于指定了`launch::deferred` 策略，因此调用`async()`函数并不会创建新的线程执行任务，当使用`future`类对象调用了`get()`或者`wait()`方法后才开始执行任务（此处一定要注意调用wait\_for()函数是不行的）。
+
+通过测试程序输出的结果可以看到，两次输出的线程ID是相同的，任务函数是在主线程中被延迟（主线程休眠了5秒）调用了。
+
+### reference
+
+* [https://subingwen.cn/cpp/atomic/](https://subingwen.cn/cpp/atomic/)
+* [https://subingwen.cn/cpp/async/](https://subingwen.cn/cpp/async/)
+* [https://www.cnblogs.com/chengyuanchun/p/5394843.html](https://www.cnblogs.com/chengyuanchun/p/5394843.html)
+* [https://ryonaldteofilo.medium.com/atomics-in-c-compare-and-swap-and-memory-order-part-2-64e127847e00](https://ryonaldteofilo.medium.com/atomics-in-c-compare-and-swap-and-memory-order-part-2-64e127847e00)
