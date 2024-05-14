@@ -205,7 +205,7 @@ int main()
 
 #### **使用流将复制和计算进行重叠**
 
-通过使用默认流，典型的三步式 CUDA 程序会顺次执行 HtoD 复制、计算和 DtoH 复制（为便于演示，下面的图片中使用简略代码），如下图：
+通过使用默认流，典型的三步式 CUDA 程序会顺次执行 HtoD 复制、计算和 DtoH 复制，如下图：
 
 <figure><img src="../../.gitbook/assets/图片 (11).png" alt=""><figcaption></figcaption></figure>
 
@@ -249,8 +249,8 @@ cudaMalloc(&data_gpu, N)
 ```c
 num_streams = 2
 for stream_i in num_streams
-	cudaStreamCreate(stream)
-	streams[stream_i] = stream
+    cudaStreamCreate(stream)
+    streams[stream_i] = stream
 ```
 
 3. 每个数据块的大小取决于数据条目的数量以及流的数量；
@@ -270,9 +270,9 @@ for stream_i in num_streams
 
 ```c
 cudaMemcpyAsync(
-	data_cpu+lower,
-	data_gpu+lower, 	sizeof(uint64_t)*chunk_size, 	cudaMemcpyHostToDevice,
-	streams[stream_i]
+    data_cpu+lower,
+    data_gpu+lower, sizeof(uint64_t)*chunk_size, cudaMemcpyHostToDevice,
+    streams[stream_i]
 )
 ```
 

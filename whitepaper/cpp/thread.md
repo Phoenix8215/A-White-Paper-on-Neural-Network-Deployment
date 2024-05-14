@@ -311,7 +311,7 @@ int main()
 }
 ```
 
-### 命名空间 - `this_thread`
+### 命名空间 ： `this_thread`
 
 在C++11中不仅添加了线程类，还添加了一个关于线程的命名空间`std::this_thread`，在这个命名空间中提供了四个公共的成员函数，通过这些成员函数就可以对当前线程进行相关的操作了。
 
@@ -460,7 +460,7 @@ C++11提供如下4种语义的互斥量（mutex）
 * <mark style="color:red;">构造函数，std::mutex不允许拷贝构造，也不允许 move 拷贝，最初产生的 mutex 对象是处于 unlocked 状态的。</mark>
 * lock()，调用线程将锁住该互斥量。线程调用该函数会发生下面 3 种情况：
   * 如果该互斥量当前没 有被锁住，则调用线程将该互斥量锁住，直到调用 unlock之前，该线程一直拥有该锁。
-  * 如果当 前互斥量被其他线程锁住，则当前的调用线程被阻塞住。
+  * <mark style="color:red;">如果当 前互斥量被其他线程锁住，则当前的调用线程被阻塞住。</mark>
   * 如果当前互斥量被当前调用线程锁 住，则会产生死锁(deadlock)。
 * unlock()， 解锁，释放对互斥量的所有权。
 * try\_lock()，尝试锁住互斥量，如果互斥量被其他线程占有，则当前线程也不会被阻塞。线程调用该 函数也会出现下面 3 种情况，
@@ -479,8 +479,7 @@ void increases_10k()
 {
     for (int i=0; i<10000; ++i) {
         // 1. 使用try_lock的情况
-        // if (mtx.try_lock()) { // only increase if currently not
-        locked:
+        // if (mtx.try_lock()) { // only increase if currently not locked:
         // ++counter;
         // mtx.unlock();
         // }
@@ -492,6 +491,7 @@ void increases_10k()
         }
     }
 }
+
 int main()
 {
     std::thread threads[10];
@@ -511,6 +511,7 @@ int main()
 #include <iostream>
 #include <thread>
 #include <mutex>
+
 struct Complex
 {
     std::mutex mutex;
@@ -632,24 +633,25 @@ int main(void)
 
 ```
 
-#### lock\_guard和unique\_lock的使用和区别
+#### <mark style="color:red;">lock\_guard和unique\_lock的使用和区别</mark>
 
-相对于手动lock和unlock，我们可以使用RAII(通过类的构造析构)来实现更好的编码方式。 这里涉及到unique\_lock,lock\_guard的使用。 ps: C++相较于C引入了很多新的特性, 比如可以在代码中抛出异常, 如果还是按照以前的加锁解锁的话代 码会极为复杂繁琐
+相对于手动lock和unlock，我们可以使用RAII(通过类的构造析构)来实现更好的编码方式。 这里涉及到unique\_lock,lock\_guard的使用。 ps: C++相较于C引入了很多新的特性, 比如可以在代码中抛出异常, 如果还是按照以前的加锁解锁的话，代码会极为复杂繁琐
 
 ```cpp
 #include <iostream> // std::cout
 #include <thread> // std::thread
 #include <mutex> // std::mutex, std::lock_guard
 #include <stdexcept> // std::logic_error
+
 std::mutex mtx;
 void print_even (int x) {
     if (x%2==0) std::cout << x << " is even\n";
     else throw (std::logic_error("not even"));
 }
+
 void print_thread_id (int id) {
     try {
-        // using a local lock_guard to lock mtx guarantees unlocking on
-        destruction / exception:
+        // using a local lock_guard to lock mtx guarantees unlocking on destruction / exception:
         std::lock_guard<std::mutex> lck (mtx);
         print_even(id);
     }
@@ -657,6 +659,7 @@ void print_thread_id (int id) {
         std::cout << "[exception caught]\n";
     }
 }
+
 int main ()
 {
     std::thread threads[10];
@@ -671,8 +674,8 @@ int main ()
 
 这里的lock\_guard换成unique\_lock是一样的。 unique\_lock,lock\_guard的区别
 
-* unique\_lock与lock\_guard都能实现自动加锁和解锁，但是前者更加灵活，能实现更多的功能。
-* unique\_lock可以进行临时解锁和再上锁，如在构造对象之后使用lck.unlock()就可以进行解锁， lck.lock()进行上锁，而不必等到析构时自动解锁。
+* <mark style="color:red;">unique\_lock与lock\_guard都能实现自动加锁和解锁，但是前者更加灵活，能实现更多的功能。</mark>
+* <mark style="color:red;">unique\_lock可以进行临时解锁和再上锁，如在构造对象之后使用lck.unlock()就可以进行解锁， lck.lock()进行上锁，而不必等到析构时自动解锁。</mark>
 
 ```cpp
 #include <iostream>
@@ -681,9 +684,11 @@ int main ()
 #include <mutex>
 #include <condition_variable>
 #include <unistd.h>
+
 std::deque<int> q;
 std::mutex mu;
 std::condition_variable cond;
+
 void fun1() {
     while (true) {
         std::unique_lock<std::mutex> locker(mu);
@@ -693,6 +698,7 @@ void fun1() {
         sleep(10);
     }
 }
+
 void fun2() {
     while (true) {
         std::unique_lock<std::mutex> locker(mu);
@@ -703,6 +709,7 @@ void fun2() {
         std::cout << "thread2 get value form thread1: " << data << std::endl;
     }
 }
+
 int main() {
     std::thread t1(fun1);
     std::thread t2(fun2);
@@ -710,10 +717,9 @@ int main() {
     t2.join();
     return 0;
 }
-
 ```
 
-条件变量的目的就是为了，在没有获得某种提醒时长时间休眠; 如果正常情况下, 我们需要一直循环 (+sleep), 这样的问题就是CPU消耗+时延问题，条件变量的意思是在cond.wait这里一直休眠直到 cond.notify\_one唤醒才开始执行下一句; 还有cond.notify\_all()接口用于唤醒所有等待的线程。
+条件变量的目的就是为了，在没有获得某种提醒时长时间休眠; 如果正常情况下, 我们需要一直循环 (`++sleep`), 这样的问题就是CPU消耗+时延问题，条件变量的意思是在cond.wait这里一直休眠直到 cond.notify\_one唤醒才开始执行下一句; 还有cond.notify\_all接口用于唤醒所有等待的线程。
 
 **那么为什么必须使用unique\_lock呢?**
 
@@ -745,7 +751,13 @@ int main() {
 2. 循环检查某个条件，如果条件不满足则阻塞直到条件满足；如果条件满足则向下执行；
 3. 某个线程满足条件执行完之后调用notify\_one或notify\_all唤醒一个或者所有等待线程。 条件变量提供了两类操作：wait和notify。这两类操作构成了多线程同步的基础。
 
-> 条件变量存放了被阻塞线程的线程ID
+> * 条件变量存放了被阻塞线程的线程ID
+> * condition\_variable：需要配合std::unique\_lock\<std::mutex>进行wait操作，也就是阻塞线程的操作。
+> * &#x20;condition\_variable\_any：可以和任意带有lock()、unlock()语义的mutex搭配使用，也就是说有四种：&#x20;
+>   * std::mutex：独占的非递归互斥锁&#x20;
+>   * std::timed\_mutex：带超时的独占非递归互斥锁&#x20;
+>   * std::recursive\_mutex：不带超时功能的递归互斥锁&#x20;
+>   * std::recursive\_timed\_mutex：带超时的递归互斥锁
 
 #### 成员函数
 
@@ -1055,6 +1067,10 @@ int main(void)
 }
 
 ```
+
+> 在多线程环境中，当使用固定大小的队列（如基于数组的队列）时，我们通常需要两个条件变量：一个用于同步队列非空（`not_empty`），另一个用于同步队列未满（`not_full`）。这是因为固定大小的队列在满了之后不能再添加新元素，否则会发生溢出；同样，空了之后就不能移除元素，否则会发生下标越界。
+>
+> 然而，`std::list` 是一个动态数据结构，它不基于连续的内存分配，而是通过指针链接各个元素。这意味着 `std::list` 可以动态地增长和缩减，没有固定的最大容量限制（除了系统内存的大小）。因此，除非自己实现了某种形式的容量限制逻辑，否则 `std::list` 本身不会因添加元素而“溢出”。
 
 ### call\_once和once\_flag使用
 

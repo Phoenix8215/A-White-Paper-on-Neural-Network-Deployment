@@ -2,7 +2,7 @@
 
 ### Nsight systems
 
-1. 对kernel执行和memory进行timeline分 析，尝试寻找是否可以优化&#x20;
+1. 对kernel执行和memory进行timeline分析，尝试寻找是否可以优化&#x20;
 
 * 隐藏memory access&#x20;
 * 多流调度&#x20;
@@ -77,5 +77,5 @@
 * L1 cache/shared memory, L2 cache, global memory中的memory access scheduling&#x20;
 * 设置baseline，来进行核函数的优化前后的效率对比&#x20;
 
-<mark style="color:red;">整体上能够得到一个针对某一个kernel的非常精确的profiling，源码级别的性能捕捉，以及优化推荐</mark>&#x20;
+<mark style="color:red;">整体上能够得到一个针对某一个kernel的非常精确的profiling，源码级别的性能捕捉，以及优化推荐。</mark>
 

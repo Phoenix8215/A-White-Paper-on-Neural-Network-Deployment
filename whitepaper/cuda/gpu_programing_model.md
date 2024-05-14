@@ -457,6 +457,8 @@ block idx: (  0,   0,   0), thread idx:   3
 
 4. `print_thread_idx_per_grid_kernel()`
 
+同样的，我们也可以在grid维度下寻找对 应的thread。可以感觉到，在grid中按照 这样的方式寻找thread的一维地址有点麻 烦
+
 <pre class="language-c"><code class="lang-c">// 在grid空间中打印每个thread一维连续的线性索引
 __global__ void print_thread_idx_per_grid_kernel(){
 <strong>    int bSize  = blockDim.z * blockDim.y * blockDim.x;
@@ -475,10 +477,6 @@ __global__ void print_thread_idx_per_grid_kernel(){
          bIndex, tIndex, index);
 }
 </code></pre>
-
-{% hint style="info" %}
-使用CUDA 在图像中进行寻找坐标的时候推荐这么使用
-{% endhint %}
 
 <figure><img src="../../.gitbook/assets/图片 (84).png" alt="" width="563"><figcaption></figcaption></figure>
 
@@ -517,6 +515,8 @@ block idx:   0, thread idx in block:   3, thread idx:   3
 ```
 
 5. `print_cord_kernel()`
+
+一般来说推荐这样寻找坐标，使用CUDA 在图像中进行寻找坐标的时候推荐这么使用
 
 ```bash
 __global__ void print_cord_kernel(){

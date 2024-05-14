@@ -2,20 +2,18 @@
 
 ### 流和事件的概述
 
-CUDA流是一系列异步的CUDA操作，这些操作按照主机代码确定的顺序在设备上执行。流能封装这些操作，保持操作的顺序，允许操作在流中排队，并使它们在先前的所有 操作之后执行，并且可以查询排队操作的状态。这些操作包括在主机与设备间进行数据传 输，内核启动以及大多数由主机发起但由设备处理的其他命令。流中操作的执行相对于主 机总是异步的。CUDA运行时决定何时可以在设备上执行操作。<mark style="color:red;">我们的任务是使用CUDA 的API来确保一个异步操作在运行结果被使用之前可以完成。在同一个CUDA流中的操作 有严格的执行顺序，而在不同CUDA流中的操作在执行顺序上不受限制。</mark>使用多个流同时 启动多个内核，可以实现网格级并发。
+CUDA流是一系列异步的CUDA操作，这些操作按照主机代码确定的顺序在设备上执行。流能封装这些操作，保持操作的顺序，允许操作在流中排队，并使它们在先前的所有 操作之后执行，并且可以查询排队操作的状态。这些操作包括在主机与设备间进行数据传 输，内核启动以及大多数由主机发起但由设备处理的其他命令。流中操作的执行相对于主 机总是异步的。`CUDA runtime`决定何时可以在设备上执行操作。<mark style="color:red;">我们的任务是使用CUDA 的API来确保一个异步操作在运行结果被使用之前可以完成。在同一个CUDA流中的操作 有严格的执行顺序，而在不同CUDA流中的操作在执行顺序上不受限制。</mark>使用多个流同时 启动多个内核，可以实现网格级并发。
 
 因为所有在CUDA流中排队的操作都是异步的，所以在主机与设备系统中可以重叠执 行其他操作。在同一时间内将流中排队的操作与其他有用的操作一起执行，可以隐藏执行 那些操作的开销。
 
-**CUDA编程的一个典型模式是以下形式：**
+**CUDA编程的一个典型模式：**
 
 1. 将输入数据从主机移到设备上。&#x20;
 2. 在设备上执行一个内核。&#x20;
 3. 将结果从设备移回主机中。
 
-在许多情况下，执行内核比传输数据耗时更多。在这些情况下，可以完全隐藏CPU和 GPU之间的通信延迟。<mark style="color:red;">通过将内核执行和数据传输调度到不同的流中，这些操作可以重叠，程序的总运行时间将被缩短</mark>。
-
 {% hint style="info" %}
-从软件的角度来看，CUDA操作在不同的流中并发运行；而从硬件上来看，不一定总 是如此。根据PCIe总线争用或每个SM资源的可用性，完成不同的CUDA流可能仍然需要 互相等待。
+从软件的角度来看，CUDA操作在不同的流中并发运行；而从硬件上来看，不一定总 是如此。根据PCIe总线争用或每个SM资源的可用性，完成不同的CUDA流仍然需要互相等待。
 {% endhint %}
 
 ### CUDA流
@@ -28,7 +26,7 @@ CUDA流是一系列异步的CUDA操作，这些操作按照主机代码确定的
 
 * 显式声明的流（非空流）&#x20;
 
-非空流可以被显式地创建和管理。如果想要重叠不同的CUDA操作，必须 使用非空流。
+非空流可以被显式地创建和管理。<mark style="color:red;">如果想要重叠不同的CUDA操作，必须使用非空流。</mark>
 
 <mark style="color:red;">基于流的异步的内核启动和数据传输支持以下类型的粗粒度并发：</mark>&#x20;
 
@@ -53,25 +51,25 @@ cudaMemcpy(..., cudaMemcpyDeviceToHost);
 cudaError_t cudaMemcpyAsync(void* dst, constvoid* src, size_t count, cudaMemcpyKind kind, cudaStream t stream =0)
 ```
 
-请注意附加的流标识符作为第五个参数。默认情况下，流标识符被设置为默认流。这 个函数与主机是异步的，所以调用发布后，控制权将立即返回到主机。将复制操作和非空 流进行关联是很容易的，但是首先需要使用如下代码创建一个非空流：
+请注意附加的流标识符作为第五个参数。默认情况下，流标识符被设置为默认流。这 个函数与主机是异步的，所以调用后，控制权将立即返回到主机。将数据传输操作和非空流进行关联是很容易的，但是首先需要使用如下代码创建一个非空流：
 
 ```c
 cudaError_t cudaStreamCreate(cudaStream_t* pStream)
 ```
 
-cudaStreamCreate创建了一个可以显式管理的非空流。之后，返回到pStream中的流就 可以被当作流参数供cudaMemcpyAsync和其他异步CUDA的API函数来使用。在使用异步 CUDA函数时，常见的疑惑在于，它们可能会从先前启动的异步操作中返回错误代码。
+cudaStreamCreate创建了一个可以显式管理的非空流。之后，返回到pStream中的流就 可以被当作流参数供cudaMemcpyAsync和其他异步CUDA的API来使用。<mark style="color:red;">在使用异步 CUDA函数时，它们可能会从先前启动的异步操作中返回错误代码。</mark>
 
-当执行异步数据传输时，必须使用固定（或非分页的）主机内存。可以使用cuda MallocHost函数或cudaHostAlloc函数分配固定内存：
+当执行异步数据传输时，必须使用固定（或非分页的）主机内存。可以使用`cudaMallocHost`函数或`cudaHostAlloc`函数分配固定内存：
 
 ```c
 cudaError t cudaMallocHost(void **ptr, sizet size);
 cudaError_t cudaHostAlloc(void **pHost, size_t ssize, unsigned int flags);
 ```
 
-在主机虚拟内存中固定分配，可以确保其在CPU内存中的物理位置在应用程序的整个 生命周期中保持不变。否则，操作系统可以随时自由改变主机虚拟内存的物理位置。如果 在没有固定主机内存的情况下执行一个异步CUDA转移操作，操作系统可能会在物理层面 上移动数组，这样会导致未定义的行为。
+<mark style="color:red;">在主机虚拟内存中进行固定分配，可以确保其在CPU内存中的物理位置在应用程序的整个 生命周期中保持不变。否则，操作系统可以随时自由改变主机虚拟内存的物理位置。在没有固定主机内存的情况下执行一个异步CUDA转移操作，操作系统可能会在物理层面 上移动数组，这样会导致未定义的行为。</mark>
 
 {% hint style="info" %}
-* `cudaMalloc`分配的是页锁定内存，也称为固定内存。
+* `cudaMallocHost`分配的是页锁定内存，也称为固定内存。
 * 页锁定内存不会被分页到磁盘，因此对于GPU访问非常高效。
 * 在某些情况下，人们更喜欢直接使用`cudaMallocHost`来分配页锁定内存，因为它更容易使用。
 {% endhint %}
@@ -79,7 +77,7 @@ cudaError_t cudaHostAlloc(void **pHost, size_t ssize, unsigned int flags);
 在非默认流中启动内核，必须在内核执行配置中提供一个流标识符作为第四个参数：
 
 ```c
-kernel name<<<grid, block, sharedMemSize,stream>>>(argument list);
+kernel name<<<grid, block, sharedMemSize, stream>>>(argument list);
 ```
 
 一个非默认流声明如下：
@@ -109,7 +107,7 @@ cudaError_t cudaStreamSynchronize(cudaStream_(t stream)
 cudaError t cudaStreamQuery(cudaStream_t sttream);
 ```
 
-**cudaStreamSynchronize强制阻塞主机，直到在给定流中所有的操作都完成了。cudaStreamQuery会检查流中所有操作是否都已经完成，但在它们完成前不会阻塞主机。**当所有操作都完成时cudaStreamQuery函数会返回cudaSuccess，当一个或多个操作仍在执行或等待执行时返回cudaErrorNotReady。
+<mark style="color:red;">**cudaStreamSynchronize强制阻塞主机，直到在给定流中所有的操作都完成了。cudaStreamQuery会检查流中所有操作是否都已经完成，但在它们完成前不会阻塞主机。**</mark><mark style="color:red;">当所有操作都完成时cudaStreamQuery函数会返回cudaSuccess，当一个或多个操作仍在执行或等待执行时返回cudaErrorNotReady。</mark>
 
 来看几个简单的编程示例：
 
@@ -234,7 +232,7 @@ int main()
 
 ### 默认流的使用
 
-要同时运行多个流，我们应该使用显式创建的流，因为所有流操作都与默认流同步：
+要同时运行多个流，我们应该使用显式创建的流，因为_<mark style="color:red;">**所有流操作都与默认流同步**</mark>_：
 
 > In general, when an operation is issued to the NULL stream, the CUDA context waits on all operations previously issued to all blocking streams before starting that operation. Also, any operations issued to blocking streams will wait on preceding operations in the NULL stream to complete before executing.
 
@@ -259,6 +257,8 @@ for (int i = 0; i < n_stream; i++)
 
 多数据流的主要优势之一是数据传输与内核执行重叠。通过重叠内核操作和数据传输，我们可以隐藏数据传输开销，提高整体性能。
 
+> 这里的重叠具体说的是：将大的数据块拆分成小块，将多个H2D->Kernel->D2H操作放到多个非默认流中执行。
+
 #### GPU 流水线概念
 
 当我们执行内核函数时，需要将数据从主机传输到 GPU。 然后，再将结果从 GPU 传输回主机。下图显示了在主机和内核之间传输数据的过程：
@@ -275,7 +275,7 @@ for (int i = 0; i < n_stream; i++)
 
 <figure><img src="../../.gitbook/assets/图片 (87).png" alt="" width="563"><figcaption></figcaption></figure>
 
-要实现这种流水线操作，有三个条件：
+<mark style="color:red;">要实现这种流水线操作，有三个条件：</mark>
 
 1. 主机内存应被分配为`pinned memory`(cudaMallocHost() 函数和 cudaFreeHost() 函数)。
 2. 在主机和 GPU 之间传输数据而不阻塞主机进程(cudaMemcpyAsync() 函数)。
@@ -412,7 +412,7 @@ int main(int argc, char* argv[])
     cudaMallocHost((void**)&h_c, bufsize);
 
     // initialize host values
-    srand(2019);
+    srand(8215);
     init_buffer(h_a, size);
     init_buffer(h_b, size);
     init_buffer(h_c, size);
@@ -508,7 +508,7 @@ vecAdd_kernel(float *c, const float* a, const float* b)
 
 在内核函数执行之间，我们可以发现，虽然它们属于不同的 CUDA 流，但是存在征用窗口期。这是因为 GPU 调度器首先为第一个请求提供服务。不过，当任务完成后，流式多处理器就为另一个 CUDA 流中的内核提供服务。
 
-在所有的 CUDA 流操作结束后，我们需要同步主机和 GPU，以确认 GPU 上的所有 CUDA 操作都已完成。为此，我们在循环之后使用了 `cudaDeviceSynchronize()`。该函数可以在函数调用处同步所有的 GPU 操作。
+在所有的 CUDA 流操作结束后，我们需要同步主机和 GPU设备，以确认 GPU 上的所有 CUDA 操作都已完成。为此，我们在循环之后使用了 `cudaDeviceSynchronize()`。该函数可以在函数调用处同步所有的 GPU 操作。
 
 <mark style="color:red;">对于同步任务，我们可以用下面的代码替换</mark> <mark style="color:red;"></mark><mark style="color:red;">`cudaDeviceSynchronize()`</mark><mark style="color:red;">函数。为此，我们还必须将私有成员</mark> <mark style="color:red;"></mark><mark style="color:red;">`_stream`</mark> <mark style="color:red;"></mark><mark style="color:red;">改为公有</mark>：
 
@@ -518,9 +518,9 @@ vecAdd_kernel(float *c, const float* a, const float* b)
  }
 ```
 
-<mark style="color:red;">如果程序设计得依赖于在每个流操作完成后立即执行一些特定的CPU操作，那么这种设计可能会导致不必要的同步点，从而影响程序的整体性能。这是因为即使某些流的操作已经完成，CPU上的后续操作可能仍然需要等待其他流的操作完成才能开始。(这个问题可以通过流回调函数的方式比较完美的解决)</mark>
+<mark style="color:red;">如果每个流操作完成后立即执行一些特定的CPU操作，那么这种设计可能会导致不必要的同步点，从而影响程序的整体性能。这是因为即使某些流的操作已经完成，CPU上的后续操作可能仍然需要等待其他流的操作完成才能开始。(这个问题可以通过流回调函数的方式比较完美的解决)</mark>
 
-如果在循环中使用 `cudaStreamSynchronize()` 这将无法重叠核函数的执行与数据的传输。
+如果在函数`async_operation`中使用 `cudaStreamSynchronize()` 这将无法重叠核函数的执行与数据的传输。
 
 ```c
 void Operator::async_operation(float *h_c, const float *h_a, const float *h_b,
