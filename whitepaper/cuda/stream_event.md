@@ -136,7 +136,7 @@ int main()
 }
 ```
 
-<figure><img src="../../.gitbook/assets/图片 (4) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (4) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ```c
 #include <cstdio>
@@ -175,7 +175,7 @@ int main()
 }
 ```
 
-<figure><img src="../../.gitbook/assets/图片 (2) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (2) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 <mark style="color:red;">从上图可以看到，数据传输操作虽然分布在不同的流中，但是并没有并发执行。这是由一 个共享资源导致的：PCIe总线。虽然从编程模型的角度来看这些操作是独立的，但是因为它们共享一个相同的硬件资源，所以它们的执行必须是串行的。</mark>
@@ -226,7 +226,7 @@ int main()
 
 内核操作的并发性将因同步而消失
 
-<figure><img src="../../.gitbook/assets/图片 (3) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (3) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 可以看到，所有内核执行都没有重叠点，尽管它们是以不同的流执行的。利用这一特性，我们可以让主机等待某一流操作返回的结果。
 
@@ -236,7 +236,7 @@ int main()
 
 > In general, when an operation is issued to the NULL stream, the CUDA context waits on all operations previously issued to all blocking streams before starting that operation. Also, any operations issued to blocking streams will wait on preceding operations in the NULL stream to complete before executing.
 
-<figure><img src="../../.gitbook/assets/图片 (4) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (4) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 相关代码如下(只需要改循环启动核函数那块代码)：
 
@@ -263,7 +263,7 @@ for (int i = 0; i < n_stream; i++)
 
 当我们执行内核函数时，需要将数据从主机传输到 GPU。 然后，再将结果从 GPU 传输回主机。下图显示了在主机和内核之间传输数据的过程：
 
-<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 然而，内核执行基本上是异步的，主机和 GPU 可以同时运行。如果主机和 GPU 之间的数据传输具有相同的特性，我们就可以重叠执行。
 
@@ -551,7 +551,7 @@ void Operator::async_operation(float *h_c, const float *h_a, const float *h_b,
 
 ### 流回调函数
 
-CUDA 回调函数是由 GPU 上下文执行的可调用主机函数。利用它，程序员可以在 GPU 操作结束之后调用所需的主机操作。
+<mark style="color:red;">CUDA 回调函数是由 GPU 上下文执行的可调用主机函数。利用它，程序员可以在 GPU 操作结束之后调用所需的主机操作。</mark>
 
 CUDA 回调函数有一个名为 `CUDART_CB` 的特殊数据类型。使用这种类型，程序员可以指定由哪个 CUDA 流启动该函数、传递 GPU 错误状态并提供用户数据。
 
@@ -755,12 +755,9 @@ void init_buffer(float *data, const int size)
 程序输出结果如下：
 
 ```bash
-stream
-stream
-stream
-0 - elapsed 11.136 ms
-1 - elapsed 16.998 ms
-2 - elapsed 23.283 ms
+stream 0 - elapsed 11.136 ms
+stream 1 - elapsed 16.998 ms
+stream 2 - elapsed 23.283 ms
 stream 3 - elapsed 29.487 ms
 compared a sample result...
 host: 1.523750, device: 1.523750
@@ -996,7 +993,7 @@ Time= 29.730 msec, bandwidth= 27.087332 GB/s
 
 <figure><img src="../../.gitbook/assets/图片 (91).png" alt=""><figcaption></figcaption></figure>
 
-在本截图中，优先级最高的 CUDA 流（流 21）抢占了第二个 CUDA 流（本例中为流 19）的位置，因此流 21 可以在流 19 执行完毕前完成工作。<mark style="color:red;">请注意，数据传输顺序不会因优先级而改变。</mark>
+可以看到，优先级最高的 CUDA 流（流 21）抢占了第二个 CUDA 流（本例中为流 19）的位置，因此流 21 可以在流 19 执行完毕前完成工作。<mark style="color:red;">请注意，数据传输顺序不会因优先级而改变。</mark>
 
 ### 使用事件估计核函数执行的时间
 
@@ -1132,11 +1129,11 @@ void init_buffer(float *data, const int size)
 
 由上图可知CUDA 事件能提供准确的结果。
 
-使用 CUDA 事件的另一个好处是，我们可以在多个 CUDA 流中同时测量多个内核的执行时间。
+<mark style="color:red;">使用 CUDA 事件的另一个好处是，我们可以在多个 CUDA 流中同时测量多个内核的执行时间。</mark>
 
-#### 多流估计
+### 多流估计
 
-`cudaEventRecord()`函数与主机是异步的。要实现事件与主机的同步，我们需要使用 `cudaEventSynchronize()`。
+<mark style="color:red;">`cudaEventRecord()`</mark><mark style="color:red;">函数与主机是异步的。要实现事件与主机的同步，我们需要使用</mark> <mark style="color:red;"></mark><mark style="color:red;">`cudaEventSynchronize()`</mark><mark style="color:red;">。</mark>
 
 ```c
 #include <cstdio>
@@ -1425,7 +1422,5 @@ Time= 27.836 msec, bandwidth= 28.930389GB/s
 ```
 
 每当执行该程序时，你会发现每个数据流完成工作的顺序都不一样。此外，每个流显示的时间也不同。这是因为 OpenMP 可以创建多个线程，而操作是在运行时确定的。
-
-为了解其运行情况，让我们对应用程序进行剖析。
 
 <figure><img src="../../.gitbook/assets/图片 (93).png" alt=""><figcaption></figcaption></figure>

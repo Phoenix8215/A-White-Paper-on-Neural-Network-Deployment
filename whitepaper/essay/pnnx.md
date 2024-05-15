@@ -178,7 +178,7 @@ PACK(struct end_of_central_directory_record {// 中央目录记录尾部区
 
 Zip格式结构图总览
 
-<figure><img src="../../.gitbook/assets/图片 (13) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (13) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### CRC循环冗余校验
 
@@ -219,7 +219,7 @@ static uint32_t CRC32_buffer(const unsigned char* data, int len)
 
 CRC 算法的基本思想是将传输的数据当做一个位数很长的数。将这个数除以另一个数。得到的余数作为校验数据附加到原数据后面。
 
-<figure><img src="../../.gitbook/assets/图片 (14) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (14) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 实际应用时，发送方和接收方按以下方式通信：
 
@@ -229,7 +229,7 @@ CRC 算法的基本思想是将传输的数据当做一个位数很长的数。�
 
 * 示例 假设要传输的原始数据为1101011011B，发送方和接收方在通信前约定好的除数为10011B。由于除数10011B是五位数（5bit），那么假设余数（即CRC码）为四位数（4bit）。因为现在余数未知，所以在进行模二除法运算前先将余数设为0000B，即待发送的数据为11010110110000B。下面开始进行模二除法运算来确定余数（即CRC码）：
 
-<figure><img src="../../.gitbook/assets/图片 (15) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (15) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 可见余数（即CRC码）为1110B，因此发送方实际发送的是11010110111110B。接收方在接收后需要将其模二除以10011B来进行CRC校验：
 

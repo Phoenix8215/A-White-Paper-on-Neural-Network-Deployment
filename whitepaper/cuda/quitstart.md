@@ -12,7 +12,7 @@ NVIDIA公司在1999年发布Geforce 256图形处理芯片时首先提出GPU的�
 
 全球GPU巨头：NVIDIA(英伟达)，AMD(超威半导体)。
 
-<figure><img src="../../.gitbook/assets/图片 (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt="" width="563"><figcaption></figcaption></figure>
 
 ### GPU与CPU的区别
 
@@ -39,7 +39,7 @@ GPU采用流式并行计算模式，可对每个数据行独立的并行计算�
 * 一般来说，当程序有数据依赖or分支等这些情况下需要串行
 * 使用场景: 复杂的逻辑计算(比如:操作系统)
 
-<figure><img src="../../.gitbook/assets/图片 (14) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (14) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 data dependency的种类&#x20;
@@ -52,11 +52,11 @@ data dependency的种类&#x20;
 
 看一个简单的案例：statement 2 依赖 statement 1 ，statement 5 依赖 statement 4 ，statement 3 是一个 循环，跟所有的statement没有任何关系 ，有四个core可以使用，如果是串行需要多少个时钟周期呢？
 
-<figure><img src="../../.gitbook/assets/图片 (15) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (15) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 一共用时46个时钟周期，改进下，没有任何依赖关系的statement让他们并行执行：
 
-<figure><img src="../../.gitbook/assets/图片 (7) (1) (1).png" alt="" width="508"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (7) (1) (1) (1).png" alt="" width="508"><figcaption></figcaption></figure>
 
 statement3的循环可以分割成多个子代码执行(每个子代码快 5cycles)，进一步可以优化：
 
@@ -122,17 +122,17 @@ CPU/GPU从memory获取数据所需要的等待时间
 
 <figure><img src="../../.gitbook/assets/图片 (70).png" alt="" width="481"><figcaption></figcaption></figure>
 
-<figure><img src="../../.gitbook/assets/图片 (3) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (3) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 `cache miss` 这个时候，CPU core由于没有数据，所以 在等待数据的到来。这个状态叫做`stall`，
 
 如果数据不在cache里，那么就需要往下级 memory中寻找数据，然而访问下级memory是很耗时的。
 
-<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 不同memory在latency上的比较
 
-<figure><img src="../../.gitbook/assets/图片 (9).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (9) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### CPU是如何进行优化的？
 
@@ -140,7 +140,7 @@ CPU/GPU从memory获取数据所需要的等待时间
 
 提高throughput的一种优化
 
-<figure><img src="../../.gitbook/assets/图片 (11) (1).png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (11) (1) (1).png" alt="" width="563"><figcaption></figcaption></figure>
 
 * IF: `Instruction fetch` 把指令从memory中取出来&#x20;
 * ID: `Instruction decode` 把取出来的指令给解码成机器可以识别的信号&#x20;
@@ -148,7 +148,7 @@ CPU/GPU从memory获取数据所需要的等待时间
 * EX: `Execution` 使用ALU(负责运算的unit)来进行计算
 * WB: `write back` 把计算完的结果写回register
 
-<figure><img src="../../.gitbook/assets/图片 (13) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (13) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../.gitbook/assets/图片 (75).png" alt="" width="563"><figcaption></figcaption></figure>
 
@@ -179,7 +179,7 @@ while(i < 100) {
 }
 ```
 
-<figure><img src="../../.gitbook/assets/图片 (9) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (9) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 因为循环判断条件一直都是true，所以预测下一次 循环也是true，那么先把数据取出来进行 pipeline。如果预测失败，rollback回去就好了。
 
@@ -226,12 +226,12 @@ Tensor core:&#x20;
 
 类似于SIMD的一种概念 ，将一条指令分给大量的thread去执行，thread间的调度是由warp来负责管理 • GPU体系架构中有一个warp schedular，专门负责管理线程调度的。Warp schedular是GPU体系 架构中特有的概念，CPU中 没有这个。
 
-<figure><img src="../../.gitbook/assets/图片 (4) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (4) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 * 由于`throughput`非常的高，所以相比与`CPU`，`cache miss`所产生的`latency`对性能的影响比较小&#x20;
 * `GPU`主要负责的任务是大规模计算(图像处理、深度学习等等)，所以一旦`fetch`好了数据以后，就会一直连续 处理，并且很少`cache miss`
 
-<figure><img src="../../.gitbook/assets/图片 (6) (1) (1) (1).png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (6) (1) (1) (1) (1).png" alt="" width="563"><figcaption></figcaption></figure>
 
 ### summary
 
