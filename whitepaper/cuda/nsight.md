@@ -14,17 +14,17 @@
 
 2. 分析DRAM以及PCIe带宽的使用率 ，可以从中分析到哪些带宽没有被充分利 用，从而进行优化
 
-<figure><img src="../../.gitbook/assets/图片 (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 3. 分析SM中warp的占用率，可以从中知道一个SM中资源是否被用满
 
-<figure><img src="../../.gitbook/assets/图片 (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Nsight compute
 
 1. roofline analysis 对核函数进行roofline analysis， 并且根据baseline进行优化比较
 
-<figure><img src="../../.gitbook/assets/图片 (3) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (3) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 2. occupancy analysis 对核函数的各个指标进 行估算一个warp的占用率的变化
 

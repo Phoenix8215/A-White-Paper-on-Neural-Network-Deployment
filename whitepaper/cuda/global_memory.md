@@ -27,11 +27,11 @@ description: >-
 
 为了最大化全局内存吞吐量，为了组织内存操作进行对齐合并是很重要的。下图描述了 对齐与合并内存的加载操作。在这种情况下，只需要一个128字节的内存事务从设备内存 中读取数据。
 
-<figure><img src="../../.gitbook/assets/图片.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (4).png" alt=""><figcaption></figcaption></figure>
 
 下图展示了非对齐和未合并的内存访问。在这种情况下，可能需要3个128 字节的内存事务来从设备内存中读取数据：<mark style="color:red;">一个在偏移量为0的地方开始，读取连续地址 之后的数据；一个在偏移量为256的地方开始，读取连续地址之前的数据；</mark>另一个在偏移 量为128的地方开始读取大量的数据。Note that most of the bytes fetched by the lower and upper memory transactions will not be used, leading to wasted bandwidth.
 
-<figure><img src="../../.gitbook/assets/图片 (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 <mark style="color:red;">一般来说，需要优化内存事务效率：用最少的事务次数满足最多的内存请求。事务数 量和吞吐量的需求随设备的计算能力变化。</mark>
 
@@ -54,15 +54,15 @@ description: >-
 
 下图所示为理想情况：对齐与合并内存访问。线程束中所有线程请求的地址都在128 字节的缓存行范围内。完成内存加载操作只需要一个128字节的事务。总线的使用率为100%，在这个事务中没有未使用的数据。
 
-<figure><img src="../../.gitbook/assets/图片 (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 下图所示为另一种情况：访问是对齐的，引用的地址不是连续的线程ID，而是128 字节范围内的随机值。由于线程束中线程请求的地址仍然在一个缓存行范围内，所以只需 要一个128字节的事务来完成这一内存加载操作，总线利用率仍然是100%。
 
-<figure><img src="../../.gitbook/assets/图片 (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (3) (1).png" alt=""><figcaption></figcaption></figure>
 
 下图也说明了一种情况：线程束请求32个连续4个字节的非对齐数据元素。在全局 内存中线程束的线程请求的地址落在两个128字节段范围内。因为当启用一级缓存时，由 SM执行的物理加载操作必须在128个字节的界线上对齐，所以要求有两个128字节的事务 来执行这段内存加载操作。总线利用率为50%，并且在这两个事务中加载的字节有一半是未使用的。
 
-<figure><img src="../../.gitbook/assets/图片 (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (4) (1).png" alt=""><figcaption></figcaption></figure>
 
 下图说明了一种情况：线程束中所有线程请求相同的地址。因为被引用的字节落在 一个缓存行范围内，所以只需请求一个内存事务，但总线利用率非常低。如果加载的值是4字节的，则总线利用率是4字节请求/128字节加载＝3.125%。
 
