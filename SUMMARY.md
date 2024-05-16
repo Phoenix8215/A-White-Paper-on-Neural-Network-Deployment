@@ -7,6 +7,7 @@
   * [🤑 CPU|GPU程序执行流程](whitepaper/cuda/quitstart.md)
   * [🤗 QiuckLearnFromPicture](whitepaper/cuda/qiucklearnfrompicture.md)
   * [🤒 GPU编程模型](whitepaper/cuda/gpu\_programing\_model.md)
+  * [🫣 线程束和线程束分化](whitepaper/cuda/xian-cheng-shu-he-xian-cheng-shu-fen-hua.md)
   * [🤔 全局内存(Global Memory)访问模式](whitepaper/cuda/global\_memory.md)
   * [😷 CUDA流和事件](whitepaper/cuda/stream\_event.md)
   * [🫣 Nsight system和Nsight compute](whitepaper/cuda/nsight.md)
