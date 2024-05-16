@@ -1,3 +1,9 @@
+---
+description: >-
+  source from 《Professional CUDA C Programming》By Max Grossman&Ty McKercher.I
+  made some changes according to my own understanding.
+---
+
 # 🤔 全局内存(Global Memory)访问模式
 
 大多数设备端数据访问都是从全局内存开始的，并且多数GPU应用程序容易受内存带 宽的限制。为了在读写数据时达到最佳的性能，内存访问操作必须满足一定的条件。CUDA执行 模型的显著特征之一就是指令必须以线程束为单位进行发布和执行。存储操作也是同样。 在执行内存指令时，线程束中的每个线程都提供了一个正在加载或存储的内存地址。根据线程束中内存地址的分布，内存访问可以被分成不 同的模式。
