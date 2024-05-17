@@ -12,7 +12,7 @@ using namespace nvinfer1;
 
 <mark style="color:red;">TensorRT C++ API 中的接口类以前缀</mark><mark style="color:red;">`I`</mark><mark style="color:red;">开头，例如</mark><mark style="color:red;">`ILogger`</mark> <mark style="color:red;"></mark><mark style="color:red;">、</mark> <mark style="color:red;"></mark><mark style="color:red;">`IBuilder`</mark><mark style="color:red;">等。</mark>
 
-CUDA 上下文会在 TensorRT 第一次调用 CUDA 时自动创建，如果在该点之前不存在。通常最好在第一次调用 TensoRT 之前自己创建和配置 CUDA 上下文。 <mark style="color:red;">为了说明对象的生命周期，本章中的代码不使用智能指针。</mark>
+CUDA 上下文会在 TensorRT 第一次调用 CUDA 时自动创建，通常最好在第一次调用 TensoRT 之前自己创建和配置 CUDA 上下文。 <mark style="color:red;">为了说明对象的生命周期，本章中的代码不使用智能指针。</mark>
 
 ## The Build Phase
 
@@ -72,7 +72,7 @@ parser->parseFromFile(modelFile,
     static_cast<int32_t>(ILogger::Severity::kWARNING));
 for (int32_t i = 0; i < parser.getNbErrors(); ++i)
 {
-std::cout << parser->getError(i)->desc() << std::endl;
+    std::cout << parser->getError(i)->desc() << std::endl;
 }
 ```
 
