@@ -64,7 +64,7 @@
 
 使用 trtexec 工具对模型的编译工作，内容如下：
 
-🚀**写一个静态的 onnx**
+### 🚀转换**静态维度的 onnx**
 
 * 基本的模型导出和编译
 * `trtexec --onnx=static.onnx --saveEngine=static.engine`
@@ -73,7 +73,7 @@
 * `trtexec --loadEngine=static.engine --duration=1000`
 * `watch -n 0.1 nvidia-smi (Linux) nvidia-smi -l 1 (Windows)` 查看是否运行
 
-🚀**写一个动态的 onnx**
+### 🚀转换**动态维度的 onnx**
 
 * 基本的模型导出
 * 编译模型，设置动态 shape 参数
@@ -134,7 +134,7 @@ trtexec --onnx=${1} \
 
 * `build_layer_info.log`可以观察到**CBR合并成一个layer**了
 
-```tex
+```sh
 [
   { "count" : 41400 }
 , { "name" : "/conv1/Conv + /act1/Relu", "timeMs" : 1160.78, "averageMs" : 0.0280382, "medianMs" : 0.027872, "percentage" : 100 }
@@ -200,7 +200,7 @@ bash tools/profile.sh build/engines/sample-cbr-fp32.engine
 
 `tools/profile.sh`文件内容如下：
 
-```c
+```sh
 #!/bin/bash
 # how to use:
 #   bash tools/profile.sh ${input.engine} 
@@ -240,15 +240,19 @@ nsys profile \
 
 打开`CUDA HW`(Hardware)查看相关的信息
 
+<figure><img src="../../.gitbook/assets/image-20240222144949366.png" alt=""><figcaption></figcaption></figure>
 
+<figure><img src="../../.gitbook/assets/image-20240222145049600-1.png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../.gitbook/assets/image-20240222145159245.png" alt=""><figcaption></figcaption></figure>
 
 * 根据日志查看已经注册好的插件
 
-![image-20240408110145123](https://vscode-vfs+github-002b7b2276223a312c22726566223a7b2274797065223a342c226964223a226d61696e227d7d.vscode-resource.vscode-cdn.net/Phoenix8215/EscapeDeployment/7.trtexec-analysis/assets/image-20240408110145123.png)
+<figure><img src="../../.gitbook/assets/image-20240408110145123.png" alt=""><figcaption></figcaption></figure>
 
 * 使用Myelin对模型结构进行图优化：层融合，删除部分节点…
 
-![image-20240408110642110](https://vscode-vfs+github-002b7b2276223a312c22726566223a7b2274797065223a342c226964223a226d61696e227d7d.vscode-resource.vscode-cdn.net/Phoenix8215/EscapeDeployment/7.trtexec-analysis/assets/image-20240408110642110.png)
+<figure><img src="../../.gitbook/assets/image-20240408110642110.png" alt=""><figcaption></figcaption></figure>
 
 ### reference <a href="#reference" id="reference"></a>
 
