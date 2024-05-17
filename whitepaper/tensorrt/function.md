@@ -54,7 +54,7 @@ TensorRT 执行阶段的最高级别接口是`Runtime`（ [C++](https://docs.nvi
 
 ## Plugins
 
-TensorRT 有一个`Plugin`接口，允许应用程序提供 TensorRT 本身不支持的算子的实现。在转换网络时，ONNX 解析器可以找到使用 TensorRT 的`PluginRegistry`创建和注册的插件。
+TensorRT 有一个`Plugin`接口，允许应用程序实现 TensorRT 本身不支持的算子。在转换网络时，ONNX 解析器可以找到使用 TensorRT 的`PluginRegistry`创建和注册的插件。
 
 TensorRT 附带一个插件库，其中许多插件和一些附加插件的源代码可以在此处找到。
 
