@@ -2,7 +2,7 @@
 
 ### TensorRT 生态系统
 
-TensorRT 是一个庞大而灵活的项目。它可以处理各种转换和部署工作流程，哪种工作流程最合适取决于具体用例和问题设置。
+TensorRT 是一个庞大而灵活的项目。它可以处理各种转换和部署工作流程，哪种工作流程最合适取决于具体用例。
 
 #### TensorRT 基本工作流程
 
@@ -25,7 +25,7 @@ TensorRT 生态系统分为两个部分：
 
 对于 TensorFlow 模型的转换，TensorFlow 集成（TF-TRT）提供了模型转换和高级runtime API，并能在 TensorRT 不支持特定算子时返回到 TensorFlow 中去实现运行。
 
-使用 ONNX 进行转换是一种性能更高的模型部署方式。TensorRT 支持使用 TensorRT API 或trtexec从 ONNX 文件中进行自动转换。使用ONNX 转换意味着模型中的所有操作都必须有 TensorRT 的支实现（或者必须为不支持的操作提供自定义插件）。ONNX 转换的结果是一个单一的 TensorRT 引擎，比使用 TF-TRT 的开销更少。
+使用 ONNX 进行转换是一种性能更高的模型部署方式。TensorRT 支持使用 TensorRT API 或trtexec从 ONNX 文件中进行自动转换。使用ONNX 转换意味着模型中的所有操作都必须有 TensorRT 的实现（或者必须为不支持的操作提供自定义插件）。ONNX 转换的结果是一个单一的 TensorRT 引擎，比使用 TF-TRT 的开销更少。
 
 为了尽可能提高性能和可定制性，还可以使用 TensorRT 网络定义 API 手动构建 TensorRT 引擎。用 TensorRT 创建网络，只需导出模型的权重，然后将权重加载到网络中即可。
 
@@ -36,9 +36,9 @@ TensorRT 生态系统分为两个部分：
 
 使用 TensorRT 部署模型有三种选择：
 
-* 在 TensorFlow 中部署
-* 使用独立的 TensorRT runtime API
-* 使用英伟达 Triton 推理服务器
+* <mark style="color:red;">在 TensorFlow 中部署</mark>
+* <mark style="color:red;">使用独立的 TensorRT runtime API</mark>
+* <mark style="color:red;">使用英伟达 Triton 推理服务器</mark>
 
 TF-TRT 转换模型的结果是一个插入了 TensorRT 操作的 TensorFlow 图。这意味着您可以像使用其他 TensorFlow 模型一样使用 Python 来运行 TF-TRT 模型。
 
@@ -84,19 +84,19 @@ TensorRT 根据文件类型不同提供了两种不同的文件转换方式：
 
 #### batchsize的选择
 
-batchsize会对模型的优化将产生很大影响。一般来说，在推理时，当我们想优先考虑延迟时，我们会选择较小的batchsize，而当我们想优先考虑吞吐量时，我们会选择较大的batchsize。较大的batchsize需要更长的处理时间，但可以减少每个样本的平均处理时间。
+batchsize会对模型的优化将产生很大影响。<mark style="color:red;">一般来说，在推理时，当我们想优先考虑延迟时，我们会选择较小的batchsize，而当我们想优先考虑吞吐量时，我们会选择较大的batchsize。较大的batchsize需要更长的处理时间，但可以减少每个样本的平均处理时间。</mark>
 
-如果在运行前不知道需要多大的batchsize，TensorRT 可以动态处理batchsize大小。也就是说，固定的batchsize会让 TensorRT 进行额外的优化(a fixed batch size allows TensorRT to make additional optimizations.)。在本示例中，我们使用的固定batchsize为 64。
+如果在运行前不知道需要多大的batchsize，TensorRT 可以动态处理batchsize大小。也就是说，固定的batchsize会让 TensorRT 进行额外的优化<mark style="color:red;">(a fixed batch size allows TensorRT to make additional optimizations.)</mark>。在本示例中，我们使用的固定batchsize为 64。
 
-```
+```cpp
 BATCH_SIZE=64
 ```
 
 #### 精度的选择
 
-推理所需的数字精度通常低于训练所需的精度。较低的精度可以加快计算速度，降低内存消耗，而不会牺牲任何精度。TensorRT 支持 TF32、FP32、FP16 和 INT8 精度。FP32 是大多数框架的默认训练精度，因此我们将首先使用 FP32 进行推理
+<mark style="color:red;">推理所需的数字精度通常低于训练所需的精度。较低的精度可以加快计算速度，降低内存消耗，而不会牺牲任何精度。</mark>TensorRT 支持 TF32、FP32、FP16 和 INT8 精度。FP32 是大多数框架的默认训练精度，因此我们将首先使用 FP32 进行推理
 
-```
+```python
 import numpy as np
 PRECISION = np.float32
 ```
@@ -111,7 +111,7 @@ ONNX 转换为 TensorRT 引擎是最通用、性能最好的方式之一。它�
 
 我们可以按以下方式运行转换
 
-```
+```bash
 trtexec --onnx=resnet50/model.onnx --saveEngine=resnet_engine.trt
 ```
 
@@ -119,12 +119,12 @@ trtexec --onnx=resnet50/model.onnx --saveEngine=resnet_engine.trt
 
 *   要告诉trtexec在哪里找到我们的 ONNX 模型
 
-    ```
+    ```bash
     --onnx=resnet50/model.onnx
     ```
 *   要告诉trtexec保存优化后的 TensorRT 引擎的位置
 
-    ```
+    ```bash
     --saveEngine=resnet_engine_intro.trt
     ```
 
@@ -132,7 +132,7 @@ trtexec --onnx=resnet50/model.onnx --saveEngine=resnet_engine.trt
 
 成功创建 TensorRT 引擎后，我们如何使用 TensorRT 运行它。
 
-TensorRT runtime有两种类型：一种是与 C++ 和 Python 绑定的独立runtime，另一种与 TensorFlow 集成的 API。在本节中，我们将生成一批随机的 "假 "数据，并使用ONNXClassifierWrapper这个类在该批数据上运行推理。
+TensorRT runtime有两种类型：一种是与 C++ 和 Python 绑定的独立runtime，另一种与 TensorFlow 集成的 API。在本节中，我们将生成一批随机的 "假 "数据，并使用ONNXClassifierWrapper这个类在该批数据上进行推理。
 
 1.  设置ONNXClassifierWrapper
 
@@ -143,23 +143,25 @@ TensorRT runtime有两种类型：一种是与 C++ 和 Python 绑定的独立run
     ```
 2.  设置模型的输入
 
-    ```
+    ```python
     BATCH_SIZE=32 
     dummy_input_batch = np.zeros((BATCH_SIZE, 224, 224, 3), dtype = PRECISION)
     ```
 3.  向引擎输入一批数据，然后得到预测结果。
 
-    ```
+    ```python
     predictions = trt_model.predict(dummy_input_batch)
     ```
 
-请注意，在运行第一个batch之前，ONNXClassifierWrapper不会加载和初始化引擎，因此该batch处理通常需要比较长的一段时间。
+{% hint style="info" %}
+<mark style="color:red;">请注意，在运行第一个batch之前，ONNXClassifierWrapper不会加载和初始化引擎，因此第一个batch处理通常需要比较长的一段时间。</mark>
+{% endhint %}
 
 ### 使用 TensorRT runtime API
 
 在模型转换和部署方面，使用 TensorRT runtime API是性能最好、最可定制的选择之一，该程序接口有 C++ 和 Python 版本。
 
-TensorRT 包含一个带有 C++ 和 Python 绑定的独立运行时，与使用 TF-TRT 集成相比，其性能和可定制性通常更高。C++ API 的开销较低，但 Python API 与 Python 数据加载器以及 NumPy 和 SciPy 等库配合良好，更易于用于原型设计、调试和测试。
+TensorRT 包含一个带有 C++ 和 Python 绑定的独立runtime API，与使用 TF-TRT 集成相比，其性能和可定制性通常更高。C++ API 的开销较低，但 Python API 与 Python 数据加载器以及 NumPy 和 SciPy 等库配合良好，更易于用于原型设计、调试和测试。
 
 下面的教程说明了如何使用 TensorRT C++ 和 Python API 对图像进行语义分割。该任务使用了一个以 ResNet-101 为骨干的全卷积模型。该模型可接受任意大小的图像，并为每个像素生成相应的预测结果。
 
@@ -254,7 +256,7 @@ trtexec --onnx=fcn-resnet101.onnx --fp16 --workspace=64 --minShapes=input:1x3x25
 trtexec --shapes=input:1x3x1026x1282 --loadEngine=fcn-resnet101.engine
 ```
 
-其中，--shapes为用于推理的动态形状输入设置输入大小。
+其中，--shapes为用于推理的输入大小。
 
 如果成功，您应该会看到类似下面的内容
 
@@ -295,13 +297,22 @@ trtexec --shapes=input:1x3x1026x1282 --loadEngine=fcn-resnet101.engine
     auto output_size = util::getMemorySize(output_dims, sizeof(int32_t));
     ```
 
-    > 注意：网络 I/O 的绑定索引可按名称查询。
+    > <mark style="color:red;">注意：网络 I/O 的绑定索引可按名称查询。</mark>
 3.  在准备推理时，会为所有输入和输出数据分配 CUDA 设备内存，image data is processed and copied into input memory, and a list of engine bindings is generated.
 
-    对于语义分割，输入图像数据的处理方法是拟合到\[0, 1]范围内，并使用均值 \[0.485, 0.456, 0.406]和stddeviation\[0.229, 0.224, 0.225] 进行归一化。请参阅[此处](https://github.com/pytorch/vision/blob/main/docs/source/models.rst) torchvision模型的预处理要求。该操作由类RGBImageReader 抽象出来。
+    对于语义分割，输入图像数据的处理方法是拟合到\[0, 1]范围内，并使用均值 \[0.485, 0.456, 0.406]和标准差\[0.229, 0.224, 0.225] 进行归一化。请参阅[此处](https://github.com/pytorch/vision/blob/main/docs/source/models.rst) torchvision模型的预处理要求。该操作由类RGBImageReader 抽象出来。
 
-    ```
-    void* input_mem{nullptr}; cudaMalloc(&input_mem, input_size); void* output_mem{nullptr}; cudaMalloc(&output_mem, output_size); const std::vector<float> mean{0.485f, 0.456f, 0.406f}; const std::vector<float> stddev{0.229f, 0.224f, 0.225f}; auto input_image{util::RGBImageReader(input_filename, input_dims, mean, stddev)}; input_image.read(); auto input_buffer = input_image.process(); cudaMemcpyAsync(input_mem, input_buffer.get(), input_size, cudaMemcpyHostToDevice, stream)；
+    ```cpp
+    void* input_mem{nullptr}; 
+    cudaMalloc(&input_mem, input_size); 
+    void* output_mem{nullptr}; 
+    cudaMalloc(&output_mem, output_size); 
+    const std::vector<float> mean{0.485f, 0.456f, 0.406f}; 
+    const std::vector<float> stddev{0.229f, 0.224f, 0.225f}; 
+    auto input_image{util::RGBImageReader(input_filename, input_dims, mean, stddev)}; 
+    input_image.read(); 
+    auto input_buffer = input_image.process(); 
+    cudaMemcpyAsync(input_mem, input_buffer.get(), input_size, cudaMemcpyHostToDevice, stream)；
     ```
 4.  推理执行是通过上下文的executeV2或enqueueV2方法启动的。执行完成后，我们会将结果拷贝回主机缓冲区，并释放所有设备内存分配。
 
@@ -319,7 +330,7 @@ trtexec --shapes=input:1x3x1026x1282 --loadEngine=fcn-resnet101.engine
     ```
 5.  对预测结果进行可视化
 
-    ```
+    ```cpp
     const int num_classes{21};
     const std::vector<int> palette{(0x1 << 25) - 1, (0x1 << 15) - 1, (0x1 << 21) - 1};
     auto output_image{util::ArgmaxImageWriter(output_filename, output_dims, palette, num_classes)};
@@ -345,25 +356,6 @@ trtexec --shapes=input:1x3x1026x1282 --loadEngine=fcn-resnet101.engine
     ```
 3. 打开[tutorial-runtime.ipynb](https://github.com/NVIDIA/TensorRT/blob/main/quickstart/SemanticSegmentation/tutorial-runtime.ipynb)笔记本并按其步骤操作。
 
+{% hint style="info" %}
 TensorRT Python runtime API 与 C++ runtime API一一映射。
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+{% endhint %}

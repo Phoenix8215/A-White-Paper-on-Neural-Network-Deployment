@@ -27,6 +27,7 @@
   * [🥸 概述](whitepaper/onnx\_intro/gai-shu.md)
 * [🐶 TensorRT](whitepaper/tensorrt/README.md)
   * [🐱 TensorRT快速入门指南](whitepaper/tensorrt/tensorrt-quickstart.md)
+  * [🐼 trtexec的使用](whitepaper/tensorrt/trtexec.md)
   * [🐭 文档简介](whitepaper/tensorrt/note.md)
   * [🐹 TensorRT的功能](whitepaper/tensorrt/function.md)
   * [🐰 TensorRT的C++接口解析](whitepaper/tensorrt/tensorrt-cpp.md)
