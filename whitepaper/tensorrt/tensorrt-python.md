@@ -70,7 +70,7 @@ if not success:
 
 下一步是创建一个配置，指定 TensorRT 应该如何优化模型：
 
-```cpp
+```python
 config = builder.create_builder_config()
 ```
 

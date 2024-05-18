@@ -6,7 +6,9 @@
 
 TensorRT 的 API 是基于类的，其中一些类充当其他类的工厂。对于用户拥有的对象，工厂对象的生命周期必须跨越它创建的对象的生命周期。例如， `NetworkDefinition`和`BuilderConfig`类是从`Builder`类创建的，这些类的对象应该在`Builder`工厂对象之前销毁。
 
-此规则的一个重要例外是从`Builder`创建`Engine`。创建`Engine`后，您可以销毁`Builder`、`Network`、解析器和`config`并继续使用`Engine`。
+{% hint style="info" %}
+此规则的一个例外是从`Builder`创建`Engine`。创建`Engine`后，您可以销毁`Builder`、`Network`、解析器和`config`并继续使用`Engine`。
+{% endhint %}
 
 ## Error Handling and Logging
 
@@ -14,7 +16,7 @@ TensorRT 的 API 是基于类的，其中一些类充当其他类的工厂。对
 
 对对象的 API 调用将使用与相应接口关联的`Logger`。例如，在对`ExecutionContext::enqueueV3()`的调用中，执行上下文是从引擎创建的，该引擎是从运行时创建的，因此 TensorRT 将使用与该运行时关联的记录器。
 
-错误处理的主要方法是`ErrorRecorde` ( [C++ ](https://docs.nvidia.com/deeplearning/tensorrt/api/c\_api/classnvinfer1\_1\_1\_i\_error\_recorder.html), [Python](https://docs.nvidia.com/deeplearning/tensorrt/api/python\_api/infer/Core/ErrorRecorder.html) ) 接口。可以实现此接口，并将其附加到 API 对象以接收与该对象关联的错误。对象的记录器也将传递给它创建的任何其他记录器 - 例如，如果将错误记录器附加到引擎，并从该引擎创建执行上下文，它将使用相同的记录器。如果随后将新的错误记录器附加到执行上下文，它将仅接收来自该上下文的错误。如果生成错误但没有找到错误记录器，它将通过关联的记录器发出。
+错误处理的主要方法是`ErrorRecord` ( [C++ ](https://docs.nvidia.com/deeplearning/tensorrt/api/c\_api/classnvinfer1\_1\_1\_i\_error\_recorder.html), [Python](https://docs.nvidia.com/deeplearning/tensorrt/api/python\_api/infer/Core/ErrorRecorder.html) ) 接口。可以实现此接口，并将其附加到 API 对象以接收与该对象关联的错误。对象的记录器也将传递给它创建的任何其他记录器 - 例如，如果将错误记录器附加到引擎，并从该引擎创建执行上下文，它将使用相同的记录器。如果随后将新的错误记录器附加到执行上下文，它将仅接收来自该上下文的错误。如果生成错误但没有找到错误记录器，它将通过关联的记录器发出。
 
 <mark style="color:red;">请注意，CUDA 错误通常是</mark><mark style="color:red;">**异步**</mark><mark style="color:red;">的 - 因此，当执行多个推理或其他 CUDA 流在单个 CUDA 上下文中异步工作时，可能会在与生成它的执行上下文不同的上下文中观察到异步 GPU 错误。</mark>
 
@@ -24,7 +26,7 @@ TensorRT 使用大量设备内存，即 GPU 可直接访问的内存，而不是
 
 ### The Build Phase
 
-在构建期间，TensorRT 为时序层实现分配设备内存。一些实现可能会消耗大量临时内存，尤其是在使用大张量的情况下。可以通过构建器的`maxWorkspace`属性控制最大临时内存量。这默认为设备全局内存的大小，但可以在必要时进行限制。如果构建器发现由于工作空间不足而无法运行内核，它将发出一条日志消息来指示这一点。
+在构建期间，TensorRT 为时序层实现分配设备内存。一些实现可能会消耗大量临时内存，尤其是在使用大张量的情况下。可以通过构建器的`maxWorkspace`属性控制最大临时内存量。这<mark style="color:red;">默认为设备全局内存的大小</mark>，但可以在必要时进行限制。如果构建器发现由于工作空间不足而无法运行内核，它将发出一条日志消息来指示这一点。
 
 然而，即使工作空间相对较小，时序层也需要为输入、输出和权重创建缓冲区。 TensorRT 对操作系统因此类分配而返回内存不足是稳健的，但在某些平台上，操作系统可能会成功提供内存，随后如果`killer`进程观察到系统内存不足，会终止 TensorRT 进程。
 
@@ -51,7 +53,7 @@ TensorRT 使用大量设备内存，即 GPU 可直接访问的内存，而不是
 [08/12/2021-17:39:11] [I] [TRT] Total Scratch Memory: 9970688
 ```
 
-默认情况下，TensorRT 直接从 CUDA 分配设备内存。不过，你可以将 TensorRT 的 `IGpuAllocator`（[C++](https://docs.nvidia.com/deeplearning/tensorrt/api/c\_api/classnvinfer1\_1\_1\_i\_gpu\_allocator.html)、[Python](https://docs.nvidia.com/deeplearning/tensorrt/api/python\_api/infer/Core/GpuAllocator.html)）接口的实现附加到生成器或运行时，然后自己管理设备内存。如果你的应用程序希望控制所有 GPU 内存并将一部分内存分配给 TensorRT，那么这将非常有用。
+默认情况下，TensorRT 直接从 CUDA 分配设备内存。不过，你可以将 TensorRT 的 `IGpuAllocator`（[C++](https://docs.nvidia.com/deeplearning/tensorrt/api/c\_api/classnvinfer1\_1\_1\_i\_gpu\_allocator.html)、[Python](https://docs.nvidia.com/deeplearning/tensorrt/api/python\_api/infer/Core/GpuAllocator.html)）接口的实现附加到Builder或Runtime，然后自己管理设备内存。如果你的应用程序希望控制所有 GPU 内存并将一部分内存分配给 TensorRT，那么这将非常有用。
 
 英伟达 [cuDNN ](https://developer.nvidia.com/cudnn)和英伟达 [cuBLAS ](https://developer.nvidia.com/cublas)会占用大量设备内存。TensorRT 允许通过构建器配置中的 `TacticSources`（[C++](https://docs.nvidia.com/deeplearning/tensorrt/api/c\_api/namespacenvinfer1.html#a999ab7be02c9acfec0b2c9cc3673abb4)、[Python](https://docs.nvidia.com/deeplearning/tensorrt/api/python\_api/infer/Core/BuilderConfig.html?highlight=tactic\_sources#tensorrt.IBuilderConfig.set\_tactic\_sources)）属性来控制是否使用这些库进行推理。某些插件实现需要这些库，因此在排除这些库时，可能无法成功编译网络。如果设置了相应的策略源，则会使用 `IPluginV2Ext::attachToContext()` 将 `cudnnContext` 和 `cublasContext` 的句柄传递给插件。
 
@@ -81,7 +83,7 @@ CUDA lazy loading 是一项 CUDA 功能，可显著降低 TensorRT 的 GPU 和�
 
 <mark style="color:red;">一般来说，TensorRT 对象不是线程安全的。</mark>预期的运行时并发模型是不同的线程将在不同的执行上下文上操作。上下文包含执行期间的网络状态（激活值等），因此在不同线程中同时使用上下文会导致未定义的行为。 以下操作是线程安全的：
 
-* 运行时或引擎上的非修改操作。
+* runtime或engine上的非修改操作。
 * 从 `TensorRT runtime`反序列化引擎。
 * 从引擎创建执行上下文。
 * 注册和注销插件。

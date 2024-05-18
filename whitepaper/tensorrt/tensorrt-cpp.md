@@ -47,7 +47,7 @@ uint32_t flag = 1U <<static_cast<uint32_t>
 INetworkDefinition* network = builder->createNetworkV2(flag);
 ```
 
-为了使用 ONNX 解析器导入模型，需要`kEXPLICIT_BATCH`标志。有关详细信息，请参阅[显式与隐式批处理](https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/index.html#explicit-implicit-batch)部分。
+为了使用 ONNX 解析器导入模型，需要`kEXPLICIT_BATCH`标志(显式的)。有关详细信息，请参阅[显式与隐式批处理](https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/index.html#explicit-implicit-batch)部分。
 
 ### Importing a Model using the ONNX Parser
 
@@ -113,7 +113,9 @@ delete builder;
 delete serializedModel
 ```
 
+{% hint style="info" %}
 #### 注意：序列化引擎不能跨平台或不同 TensorRT 版本之间移植。
+{% endhint %}
 
 ## Deserializing a Plan
 
@@ -140,7 +142,7 @@ IExecutionContext *context = engine->createExecutionContext();
 
 <mark style="color:red;">一个引擎可以有多个执行上下文，允许一组权重用于多个重叠的推理任务。 （一个例外是使用动态形状时，每个优化配置文件只能有一个执行上下文。）</mark>
 
-要执行推理，您必须为输入和输出传递 `TensorRT` 缓冲区，`TensorRT` 要求你通过调用 `setTensorAddress` 来指定这些缓冲区，`setTensorAddress` 接收张量名称和缓冲区地址。您可以使用提供的输入和输出张量名称查询引擎，以找到在数组中位置：：
+要执行推理，您必须为输入和输出传递 `TensorRT`缓冲区，`TensorRT`要求你通过调用 `setTensorAddress` 来指定这些缓冲区，`setTensorAddress`接收张量名称和缓冲区地址。您可以使用提供的输入和输出张量名称查询引擎，以找到在数组中位置：：
 
 ```cpp
 context->setTensorAddress(INPUT_NAME, inputBuffer);
