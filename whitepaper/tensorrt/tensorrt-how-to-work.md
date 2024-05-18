@@ -81,7 +81,7 @@ CUDA lazy loading 是一项 CUDA 功能，可显著降低 TensorRT 的 GPU 和�
 
 ## Threading
 
-<mark style="color:red;">一般来说，TensorRT 对象不是线程安全的。</mark>预期的运行时并发模型是不同的线程将在不同的执行上下文上操作。上下文包含执行期间的网络状态（激活值等），因此在不同线程中同时使用上下文会导致未定义的行为。 以下操作是线程安全的：
+<mark style="color:red;">一般来说，TensorRT 对象不是线程安全的。</mark>预期的运行时并发模型是不同的线程将在不同的执行上下文上操作。上下文包含执行期间的网络状态（激活值等），因此在不同线程中同时使用上下文会导致未定义的行为。 <mark style="color:red;">以下操作是线程安全的：</mark>
 
 * runtime或engine上的非修改操作。
 * 从 `TensorRT runtime`反序列化引擎。
