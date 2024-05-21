@@ -1,4 +1,4 @@
-# 🫣 Nsight system和Nsight compute
+# 🫡 Nsight system和Nsight compute
 
 ### Nsight systems
 
@@ -14,29 +14,29 @@
 
 2. 分析DRAM以及PCIe带宽的使用率 ，可以从中分析到哪些带宽没有被充分利 用，从而进行优化
 
-<figure><img src="../../.gitbook/assets/图片 (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 3. 分析SM中warp的占用率，可以从中知道一个SM中资源是否被用满
 
-<figure><img src="../../.gitbook/assets/图片 (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (2) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Nsight compute
 
 1. roofline analysis 对核函数进行roofline analysis， 并且根据baseline进行优化比较
 
-<figure><img src="../../.gitbook/assets/图片 (3) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (3) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 2. occupancy analysis 对核函数的各个指标进 行估算一个warp的占用率的变化
 
-<figure><img src="../../.gitbook/assets/图片 (5) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (5) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 3. memory bindwidth analysis 针对核函数中对各个memory的数 据传输的带宽进行分析，可以比较 好的理解memory架构
 
-<figure><img src="../../.gitbook/assets/图片 (6) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (6) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 4. shared memory analysis 针对核函数中对shared memory访 问以及使用效率的分析
 
-<figure><img src="../../.gitbook/assets/图片 (7) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (7) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 如何使用(推荐使用ssh远程)
 
@@ -45,7 +45,7 @@
 * 方法三：在remote端通过CUI获取statistics之后传输到 host端进行查看
 * 方法四：在remote端直接使用CUI进行分析
 
-<figure><img src="../../.gitbook/assets/图片 (8) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (8) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 两者的不同
 

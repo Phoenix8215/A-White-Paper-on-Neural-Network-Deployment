@@ -332,19 +332,19 @@ ncu --set roofline -o profile_roofline --target-processes all xxx\python.exe xxx
 
 上述命令执行后将会生成文件profile\_roofline.ncu-rep，通过Nsight Compute软件打开（这里同样用ResNet34，输入大小为（3x32x32）进行测试）
 
-<figure><img src="../../.gitbook/assets/图片.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (12).png" alt=""><figcaption></figcaption></figure>
 
 选择展示Details页面，选择某一个kernel，然后展开GPU Speed Of Light Throughput选项，就可以看到该kernel的详细统计信息（下图中的Double Precision、Half Precision 和Tensor Core Roofline中没有achived value小圆点是因为实际跑的算法模型数据值是单精度的，所以主要使用的是GPU中的FP32 Core，而FP64 Core、Tensor Core就没有使用到）。
 
-<figure><img src="../../.gitbook/assets/图片 (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 从summary中对所有kernel的统计概览来看（下图），各个kernel的计算量和内存使用率之间差别较大。
 
-<figure><img src="../../.gitbook/assets/图片 (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 这里单独从内存占用率最高（73.97%）的一个双击进去为例，roofline模型图如下（peak work、peak traffic可以理解为该kernel运行过程中的最高算力值、最高使用的内存带宽，可见这两个参数的实际值小于官方公布的448.06GB/s），从图上可见实际表现值处于**memory-bound**区域，而稍微处于斜线下方，说明内存带宽上还没有完全利用完，利用率粗略计算为 $$\frac{39.724/0.13}{203.148/0.48}=72.2%$$与73.97%基本一致。
 
-<figure><img src="../../.gitbook/assets/图片 (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (3) (1).png" alt=""><figcaption></figcaption></figure>
 
 这里只是能看单独某一个kernel的roofline模型，要想要整个模型的效果，可以将所有kernel的各项值取平均在进行计算.
 

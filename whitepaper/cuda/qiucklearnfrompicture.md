@@ -177,27 +177,27 @@ int main()
 
 ### 并发 CUDA 流
 
-<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
-
 <figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../.gitbook/assets/图片 (2) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../.gitbook/assets/图片 (3) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (2) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../.gitbook/assets/图片 (4) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (3) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../.gitbook/assets/图片 (6) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (4) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../.gitbook/assets/图片 (7) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (6) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../.gitbook/assets/图片 (8) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (7) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../.gitbook/assets/图片 (9) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (8) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../.gitbook/assets/图片 (9) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 默认流与非默认流中的操作不会发生重叠。
 
-<figure><img src="../../.gitbook/assets/图片 (10) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (10) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 &#x20;<mark style="color:red;">默认流较为特殊。默认流中执行任何操作期间，任何非默认流中皆不可同时执行任何操作，</mark><mark style="color:red;">**默认流将等待非默认流全部执行完毕后再开始运行，而且在其执行完毕后，其他非默认流才能开始执行。**</mark>
@@ -207,11 +207,11 @@ int main()
 
 通过使用默认流，典型的三步式 CUDA 程序会顺次执行 HtoD 复制、计算和 DtoH 复制，如下图：
 
-<figure><img src="../../.gitbook/assets/图片 (11) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (11) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 但是这样明显是不可行的。回忆一下，非默认流中的操作顺序不固定，因此可能会出现这种情况：
 
-<figure><img src="../../.gitbook/assets/图片 (12) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (12) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 在其所需的数据传输到 GPU 之前，计算可能便会开始，
 

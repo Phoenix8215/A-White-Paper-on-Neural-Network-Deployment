@@ -27,11 +27,11 @@ description: >-
 
 为了最大化全局内存吞吐量，为了组织内存操作进行对齐合并是很重要的。下图描述了 对齐与合并内存的加载操作。在这种情况下，只需要一个128字节的内存事务从设备内存 中读取数据。
 
-<figure><img src="../../.gitbook/assets/图片 (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (4) (1).png" alt=""><figcaption></figcaption></figure>
 
 下图展示了非对齐和未合并的内存访问。在这种情况下，可能需要3个128 字节的内存事务来从设备内存中读取数据：<mark style="color:red;">一个在偏移量为0的地方开始，读取连续地址 之后的数据；一个在偏移量为256的地方开始，读取连续地址之前的数据；</mark>另一个在偏移 量为128的地方开始读取大量的数据。Note that most of the bytes fetched by the lower and upper memory transactions will not be used, leading to wasted bandwidth.
 
-<figure><img src="../../.gitbook/assets/图片 (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 <mark style="color:red;">一般来说，需要优化内存事务效率：用最少的事务次数满足最多的内存请求。事务数 量和吞吐量的需求随设备的计算能力变化。</mark>
 
@@ -54,23 +54,23 @@ description: >-
 
 下图所示为理想情况：对齐与合并内存访问。线程束中所有线程请求的地址都在128 字节的缓存行范围内。完成内存加载操作只需要一个128字节的事务。总线的使用率为100%，在这个事务中没有未使用的数据。
 
-<figure><img src="../../.gitbook/assets/图片 (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 下图所示为另一种情况：访问是对齐的，引用的地址不是连续的线程ID，而是128 字节范围内的随机值。由于线程束中线程请求的地址仍然在一个缓存行范围内，所以只需 要一个128字节的事务来完成这一内存加载操作，总线利用率仍然是100%。
 
-<figure><img src="../../.gitbook/assets/图片 (3) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (3) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 下图也说明了一种情况：线程束请求32个连续4个字节的非对齐数据元素。在全局 内存中线程束的线程请求的地址落在两个128字节段范围内。因为当启用一级缓存时，由 SM执行的物理加载操作必须在128个字节的界线上对齐，所以要求有两个128字节的事务 来执行这段内存加载操作。总线利用率为50%，并且在这两个事务中加载的字节有一半是未使用的。
 
-<figure><img src="../../.gitbook/assets/图片 (4) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (4) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 下图说明了一种情况：线程束中所有线程请求相同的地址。因为被引用的字节落在 一个缓存行范围内，所以只需请求一个内存事务，但总线利用率非常低。如果加载的值是4字节的，则总线利用率是4字节请求/128字节加载＝3.125%。
 
-<figure><img src="../../.gitbook/assets/图片 (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (5) (1).png" alt=""><figcaption></figcaption></figure>
 
 下图所示为最坏的情况：线程束中线程请求分散于全局内存中的32个4字节地址。 尽管线程束请求的字节总数仅为128个字节，但地址要占用N个缓存行（0＜N≤32）。完成 一次内存加载操作需要申请N次内存事务。
 
-<figure><img src="../../.gitbook/assets/图片 (6).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (6) (1).png" alt=""><figcaption></figcaption></figure>
 
 * CPU一级缓存和GPU一级缓存之间的差异
 
@@ -80,19 +80,19 @@ description: >-
 
 没有缓存的加载在内存段的粒度上为32个字节，下图为理想情况：对齐与合并内存访问。128个字节请求的地址占用了4个内存 段，总线利用率为100%。
 
-<figure><img src="../../.gitbook/assets/图片 (7).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (7) (1).png" alt=""><figcaption></figcaption></figure>
 
 下图说明了一种情况：线程束请求32个连续的4字节元素但加载没有对齐到128个字 节的边界。请求的地址最多落在5个内存段内，总线利用率至少为80%。与这些类型的请 求缓存加载相比，使用非缓存加载会提升性能，这是因为加载了更少的未请求字节。
 
-<figure><img src="../../.gitbook/assets/图片 (8).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (8) (1).png" alt=""><figcaption></figcaption></figure>
 
 下图说明了一种情况：线程束中所有线程请求相同的数据。地址落在一个内存段 内，总线的利用率是请求的4字节/加载的32字节＝12.5%，在这种情况下，非缓存加载性 能也是优于缓存加载的性能。
 
-<figure><img src="../../.gitbook/assets/图片 (9).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (9) (1).png" alt=""><figcaption></figcaption></figure>
 
 下图说明了最坏的一种情况：线程束请求32个分散在全局内存中的4字节字。由于 请求的128个字节最多落在N个32字节的内存分段内而不是N个128个字节的缓存行内，所 以相比于缓存加载，即便是最坏的情况也有所改善。
 
-<figure><img src="../../.gitbook/assets/图片 (10).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (10) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 非对齐读取的示例
 
@@ -275,11 +275,11 @@ int main(int argc, char** argv){
 
 下图所示为理想情况：内存访问是对齐的，并且线程束里所有的线程访问一个连续 的128字节范围。存储请求由一个四段事务实现。
 
-<figure><img src="../../.gitbook/assets/图片 (11).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (11) (1).png" alt=""><figcaption></figcaption></figure>
 
 下图所示为内存访问是对齐的，但地址分散在一个192个字节范围内的情况。存储 请求由3个一段事务来实现。
 
-<figure><img src="../../.gitbook/assets/图片 (12).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (12) (1).png" alt=""><figcaption></figcaption></figure>
 
 下图所示为内存访问是对齐的，并且地址访问在一个连续的64个字节范围内的情 况。这种存储请求由一个两段事务来完成。
 

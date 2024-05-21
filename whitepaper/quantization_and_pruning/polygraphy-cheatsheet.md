@@ -1184,7 +1184,7 @@ polygraphy inspect diff-tactics --dir replays
 
 在本例中，我们的模型（`./model.onnx`）在 TensorRT 中存在精度问题，模拟故障通过`Mul`节点触发。
 
-<figure><img src="../../.gitbook/assets/图片 (4) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (4) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt="" width="563"><figcaption></figcaption></figure>
 
 1. 对于使用动态输入形状或包含形状算子的模型，应冻结输入形状并折叠形状算子：
 
@@ -1312,15 +1312,15 @@ polygraphy inspect capability model.onnx
 
 * 支持的子图
 
-<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt="" width="563"><figcaption></figcaption></figure>
 
 
 
 * 不支持的子图
 
-<figure><img src="../../.gitbook/assets/图片 (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt="" width="535"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt="" width="535"><figcaption></figcaption></figure>
 
-<figure><img src="../../.gitbook/assets/图片 (3) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt="" width="538"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (3) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt="" width="538"><figcaption></figcaption></figure>
 
 在本例中，model.onnx 包含一个 TensorRT 不支持的 `Fake` 节点。 汇总表显示了不支持的运算符、不支持的原因、在图中出现的次数，以及这些节点在图中的索引范围（例如：一行中有多个不支持的节点）。 该索引遵循"包头不包尾"原则，和python中列表的索引规则是一样的。更多信息和选项，请参阅 `polygraphy inspect capability --help` 。
 
