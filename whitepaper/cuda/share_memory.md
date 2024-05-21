@@ -90,6 +90,10 @@ __global__ void matrix_transpose_shared(int *input, int *output) {
 
 ### Bank conflicts对共享内存的影响
 
+通过Visual Profiler其实可以分析出上述的核函数存在内存访问没有对齐的问题：
+
+<figure><img src="../../.gitbook/assets/图片 (174).png" alt=""><figcaption></figcaption></figure>
+
 为了获得高内存带宽，共享内存被分为32个同样大小的内存模型，它们被称为存储 体(Bank)，它们可以被同时访问。有32个存储体是因为在一个线程束中有32个线程。共享内存是 一个一维地址空间。如果通过线程束发布共享内存加载或存储操作，且在每个存储体 上只访问不多于一个的内存地址，那么该操作可由一个内存事务来完成。否则，该操作由 多个内存事务来完成，这样就降低了内存带宽的利用率。
 
 Volta GPU 有 32 个存储 体，每个存储 体 4 字节宽。如下图所示：
