@@ -1,4 +1,4 @@
-# 🤠 A White Paper on Neural Network Deployment
+# A White Paper on Neural Network Deployment
 
 
 
