@@ -2,7 +2,7 @@
 
 ## ❤️‍🔥 A White Paper on Neural Network Deployment <a href="#whitepaper" id="whitepaper"></a>
 
-* [A White Paper on Neural Network Deployment](README.md)
+* [❤️‍🔥 A White Paper on Neural Network Deployment](README.md)
 * [🤠 CUDA](whitepaper/cuda/README.md)
   * [🤑 CPU|GPU程序执行流程](whitepaper/cuda/quitstart.md)
   * [🤗 QiuckLearnFromPicture](whitepaper/cuda/qiucklearnfrompicture.md)
