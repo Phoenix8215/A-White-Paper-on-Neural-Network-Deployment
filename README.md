@@ -1,15 +1,7 @@
 # ❤️‍🔥 A White Paper on Neural Network Deployment
 
-
-<div style="text-align:center">
-
-|<img align="center" src=".gitbook/assets/DALL·E 2024-05-22 00.53.33 - Generate an isometric 3D icon of an Nvidia logo in the style of UI UX design. The logo should have transparent glass material, with a purple and white.webp" width="250" />|![Top Langs](https://readme-typing-svg.demolab.com/?font=Reenie+Beanie&#x26;size=36&#x26;pause=3000&#x26;color=F7116E&#x26;background=FFFFFFFB&#x26;center=true&#x26;vCenter=true&#x26;random=false&#x26;width=435&#x26;lines=No+performce%2C+No+algorithms!)|
-| ------------- | ------------- |
-
-</div>
-
-
-
+| ![](<.gitbook/assets/DALL·E 2024-05-22 00.53.33 - Generate an isometric 3D icon of an Nvidia logo in the style of UI UX design. The logo should have transparent glass material, with a purple and white.webp>) | ![Top Langs](https://readme-typing-svg.demolab.com/?font=Reenie+Beanie\&size=36\&pause=3000\&color=F7116E\&background=FFFFFFFB\&center=true\&vCenter=true\&random=false\&width=435\&lines=No+performce%2C+No+algorithms!) |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 
 ### 🤖写在前面的话
 
@@ -19,9 +11,11 @@
 
 <mark style="color:red;">⚠️特别强调，本书是开源的，我希望通过共享知识，促进深度学习模型部署领域的发展。我相信，只有在开放的环境下，知识才能不断地被传播、丰富和完善，且知识理应共享！</mark>
 
-本书github地址：[https://github.com/Phoenix8215/A-White-Paper-on-Neural-Network-Deployment](https://github.com/Phoenix8215/A-White-Paper-on-Neural-Network-Deployment)
+🚀github地址：[https://github.com/Phoenix8215/A-White-Paper-on-Neural-Network-Deployment](https://github.com/Phoenix8215/A-White-Paper-on-Neural-Network-Deployment)
 
-若本书对您有所帮助，请在页面右上角点个 Star ⭐ 支持一下，谢谢\~\~\~。
+🚀在线阅读地址：[https://deployment.gitbook.io/love](https://deployment.gitbook.io/love)
+
+若本书对您有所帮助，请在页面右上角点个 Star ⭐ 🌟✨支持一下，谢谢\~\~\~。
 
 ### 👽主要内容
 
@@ -56,4 +50,3 @@ coming soon\~
 ### 😎License
 
 The texts, code, images, photos, and videos in this repository are licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
-
