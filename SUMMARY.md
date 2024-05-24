@@ -34,6 +34,8 @@
   * [🦊 TensorRT的Python接口解析](whitepaper/tensorrt/tensorrt-python.md)
   * [🐻 TensorRT如何工作](whitepaper/tensorrt/tensorrt-how-to-work.md)
   * [🐼 trtexec的使用](whitepaper/tensorrt/trtexec.md)
+  * [🐻‍❄️ 实战:解析onnx模型保存为engine文件|from scratch](whitepaper/tensorrt/onnx2engine.md)
+  * [🐨 实战:加载engine文件并执行推理|from scratch](whitepaper/tensorrt/shi-zhan-jia-zai-engine-wen-jian-bing-zhi-hang-tui-li-from-scratch.md)
 * [🫶 模型量化和剪枝](whitepaper/quantization\_and\_pruning/README.md)
   * [🖕 IEEE754标准](whitepaper/quantization\_and\_pruning/ieee754.md)
   * [🫰 浮点运算产生的误差](whitepaper/quantization\_and\_pruning/float\_error.md)
