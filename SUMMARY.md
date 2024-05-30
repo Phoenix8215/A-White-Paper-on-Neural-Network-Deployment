@@ -63,6 +63,7 @@
   * [🌲 右值引用和移动语义|C++11](whitepaper/cpp/move\_forward.md)
   * [🥬 多线程|互斥锁|条件变量|C++11](whitepaper/cpp/thread.md)
   * [🥒 原子变量|CAS|异步操作|C++11](whitepaper/cpp/atomic.md)
+  * [🌶️ std::variant|C++17](whitepaper/cpp/std\_variant.md)
 * [🩷 部署实战](whitepaper/action/README.md)
   * [❤️ yolov8Multitask](whitepaper/action/yolov8multitask.md)
   * [💚 yolov5](whitepaper/action/yolov5.md)

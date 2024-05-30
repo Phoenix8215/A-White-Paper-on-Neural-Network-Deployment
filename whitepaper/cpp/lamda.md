@@ -1,4 +1,4 @@
-# 🪵 lamda表达式
+# 🪵 lamda表达式|C++11
 
 ### 匿名函数的基本语法
 
@@ -57,7 +57,7 @@ int main() {
 
 在这个示例中，Lambda 表达式的返回类型是 `std::string`。由于函数体内有多个 `return` 语句，编译器无法自动推断出返回类型，因此我们使用 `-> std::string` 明确指定了返回类型。
 
-另一个示例，展示返回不同类型的情况：
+<mark style="color:red;">**另一个示例，展示返回不同类型的情况：**</mark>
 
 ```cpp
 #include <iostream>
