@@ -58,6 +58,7 @@
   * [👾 深度神经网络编译器原理简介](whitepaper/essay/compiler.md)
   * [👽 在WSL2上安装CUDA\_cuDNN\_TensorRT](whitepaper/essay/wsl2.md)
 * [C🌿](whitepaper/cpp/README.md)
+  * [🪵 lamda表达式](whitepaper/cpp/lamda.md)
   * [🌴 智能指针](whitepaper/cpp/ptr.md)
   * [🌲 右值引用和移动语义](whitepaper/cpp/move\_forward.md)
   * [🥬 多线程|互斥锁|条件变量](whitepaper/cpp/thread.md)
