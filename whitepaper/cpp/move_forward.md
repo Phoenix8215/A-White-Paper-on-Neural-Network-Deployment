@@ -1,4 +1,4 @@
-# 🌲 C++11右值引用和移动语义
+# 🌲 右值引用|移动语义|完美转发|C++11
 
 ## 右值引用和移动语义
 
@@ -28,7 +28,7 @@
 
 **通过右值引用的声明，该右值又“重获新生”，其生命周期其生命周期与右值引用类型变量的生命周期一 样，只要该变量还活着，该右值临时量将会一直存活下去。**
 
-在C++中，并不是所有情况下 && 都代表是一个右值引用，具体的场景体现在模板和自动类型推导中，<mark style="color:red;">如果是模板参数需要指定为</mark><mark style="color:red;">`T&&`</mark><mark style="color:red;">，如果是自动类型推导需要指定为</mark><mark style="color:red;">`auto &&`</mark><mark style="color:red;">，在这两种场景下 &&被称作未定的引用类型。</mark>另外还有一点需要额外注意`const T&&`表示一个右值引用，不是未定引用类型。
+<mark style="color:red;">**在C++中，并不是所有情况下 && 都代表是一个右值引用，具体的场景体现在模板和自动类型推导中，如果是模板参数需要指定为**</mark><mark style="color:red;">**`T&&`**</mark><mark style="color:red;">**，如果是自动类型推导需要指定为**</mark><mark style="color:red;">**`auto &&`**</mark><mark style="color:red;">**，在这两种场景下 &&被称作未定的引用类型。另外还有一点需要额外注意**</mark><mark style="color:red;">**`const T&&`**</mark><mark style="color:red;">**表示一个右值引用，不是未定引用类型。**</mark>
 
 先来看第一个例子，在函数模板中使用`&&`:
 
@@ -67,10 +67,10 @@ int main()
 * 第5行中 `auto&&`表示一个整形的右值引用
 * 第6行中`decltype(x)&&`等价于`int&&`是一个右值引用不是未定引用类型，y是一个左值，`不能使用左值初始化一个右值引用类型。`
 
-<mark style="color:red;">由于上述代码中存在</mark><mark style="color:red;">`T&&`</mark><mark style="color:red;">或者</mark><mark style="color:red;">`auto&&`</mark><mark style="color:red;">这种未定引用类型，当它作为参数时，有可能被一个右值引用初始化，也有可能被一个左值引用初始化，在进行类型推导时右值引用类型（&&）会发生变化，这种变化被称为引用折叠。在C++11中引用折叠的规则如下：</mark>
+<mark style="color:red;">由于上述代码中存在</mark><mark style="color:red;">`T&&`</mark><mark style="color:red;">或者</mark><mark style="color:red;">`auto&&`</mark><mark style="color:red;">这种未定引用类型，当它作为参数时，有可能被一个右值引用初始化，也有可能被一个左值引用初始化，在进行类型推导时右值引用类型（&&）会发生变化，这种变化被称为</mark><mark style="color:red;">**引用折叠。**</mark><mark style="color:red;">在C++11中引用折叠的规则如下：</mark>
 
-* <mark style="color:red;">通过右值推导</mark> <mark style="color:red;"></mark><mark style="color:red;">`T&&`</mark> <mark style="color:red;"></mark><mark style="color:red;">或者</mark> <mark style="color:red;"></mark><mark style="color:red;">`auto&&`</mark> <mark style="color:red;"></mark><mark style="color:red;">得到的是一个右值引用类型</mark>
-* 通过非右值（**右值引用**、左值、左值引用、**常量右值引用**、常量左值引用）推导 T&& 或者 auto&& 得到的是一个左值引用类型
+* <mark style="color:red;">**通过右值推导**</mark><mark style="color:red;">** **</mark><mark style="color:red;">**`T&&`**</mark><mark style="color:red;">** **</mark><mark style="color:red;">**或者**</mark><mark style="color:red;">** **</mark><mark style="color:red;">**`auto&&`**</mark><mark style="color:red;">** **</mark><mark style="color:red;">**得到的是一个右值引用类型**</mark>
+* 通过非右值（**右值引用**、左值、左值引用、**常量右值引用**、常量左值引用）推导 `T&&` 或者 `auto&&` 得到的是一个左值引用类型
 
 ```cpp
 int&& a1 = 5;
@@ -140,7 +140,11 @@ l-value: 250
 
 根据测试代码可以得知，编译器会根据传入的参数的类型（左值还是右值）调用对应的重置函数（printValue），函数forward()接收的是一个右值，但是在这个函数中调用函数printValue()时，参数k变成了一个命名对象，编译器会将其当做左值来处理。
 
-看下面这两张图可能更容易理解：
+{% hint style="info" %}
+<mark style="color:red;">**在C++中，右值引用是用来绑定右值的，但一旦右值引用有了名字，它就变成了一个左值。这就是为什么在**</mark><mark style="color:red;">**`forward(int&& k)`**</mark><mark style="color:red;">**函数中，虽然**</mark><mark style="color:red;">**`k`**</mark><mark style="color:red;">**是一个右值引用，但在函数内部，**</mark><mark style="color:red;">**`k`**</mark><mark style="color:red;">**是一个命名对象，因此它被视为左值。**</mark>
+{% endhint %}
+
+看下面这张图可能更容易理解：
 
 <figure><img src="../../.gitbook/assets/图片 (62).png" alt=""><figcaption></figcaption></figure>
 
@@ -149,9 +153,9 @@ l-value: 250
 && 的总结如下：
 
 1. 左值和右值是独立于它们的类型的，右值引用类型可能是左值也可能是右值。
-2. <mark style="color:red;">auto&& 或函数参数类型自动推导的 T&& 是一个未定的引用类型，被称为</mark> <mark style="color:red;"></mark><mark style="color:red;">`universal references`</mark><mark style="color:red;">， 它可能是左值引用也可能是右值引用类型，取决于初始化的值类型。</mark>
-3. 所有的右值引用叠加到右值引用上仍然是一个右值引用，其他引用折叠都为左值引 用。当 T&& 为 模板参数时，输入左值，它会变成左值引用，而输入右值时则变为具名的右 值引用。
-4. 编译器会将已命名的右值引用视为左值，而将未命名的右值引用视为右值。
+2. <mark style="color:red;">`auto&&`</mark> <mark style="color:red;"></mark><mark style="color:red;">或函数参数类型自动推导的</mark> <mark style="color:red;"></mark><mark style="color:red;">`T&&`</mark> <mark style="color:red;"></mark><mark style="color:red;">是一个未定的引用类型，被称为</mark> <mark style="color:red;"></mark><mark style="color:red;">`universal references`</mark><mark style="color:red;">， 它可能是左值引用也可能是右值引用类型，取决于初始化的值类型。</mark>
+3. 所有的右值引用叠加到右值引用上仍然是一个右值引用，其他引用折叠都为左值引 用。当 T&& 为 模板参数时，输入左值，它会变成左值引用，而输入右值时则变为具名的右值引用。
+4. <mark style="color:red;">**编译器会将已命名的右值引用视为左值，而将未命名的右值引用视为右值。**</mark>
 
 ### 右值引用优化性能，避免深拷贝
 
@@ -159,10 +163,12 @@ l-value: 250
 
 ```cpp
 #include <iostream>
+
 using namespace std;
+
 class A
 {
-    public:
+public:
     A() :m_ptr(new int(0)) {
         cout << "constructor A" << endl;
     }
@@ -171,9 +177,10 @@ class A
         delete m_ptr;
         m_ptr = nullptr;
     }
-    private:
+private:
     int* m_ptr;
 };
+
 // 为了避免返回值优化，此函数故意这样写
 A Get(bool flag)
 {
@@ -185,6 +192,7 @@ A Get(bool flag)
     else
         return b;
 }
+
 int main()
 {
     {
@@ -193,6 +201,7 @@ int main()
     cout << "main finish" << endl;
     return 0;
 }
+
 /*
 constructor A 
 constructor A 
@@ -207,9 +216,7 @@ main finish
 在上面的代码中，默认构造函数是浅拷贝，main函数的 a 和Get函数的 b 会指向同一个指针 m\_ptr，在 析构的时候会导致重复删除该指针。
 
 {% hint style="info" %}
-C++中类的拷贝有两种:深拷贝,浅拷贝:当出现类的等号低值时,即会调用拷贝函数&#x20;
-
-两个的区别:在未定义显示拷贝构造函数的情况下,系统会调用默认的拷贝函数--即浅拷贝,它能够完成成员的一一复制。
+<mark style="color:red;">两个的区别:在未定义显示拷贝构造函数的情况下,系统会调用默认的拷贝函数--即浅拷贝,它能够完成成员的一一复制</mark>。
 
 * 当数据成员中没有指针时,浅拷贝是可行的;但当数据成员中有指针时,如果采用简单的浅拷贝,则两类中的两个指针将指向同一个地址,当对象快 结束时,会调用两次析构函数,而导致指针悬挂现象,所以,此时,必须采用深拷贝。&#x20;
 * 深拷贝与浅拷贝的区别就在于深拷贝会在堆内存中另外申请空间来储存数据,从而也就解决了指针悬挂的问题。简而言之,当数据 成员中有指针时,必须要用深拷贝。
@@ -219,10 +226,12 @@ C++中类的拷贝有两种:深拷贝,浅拷贝:当出现类的等号低值时,�
 
 ```cpp
 #include <iostream>
+
 using namespace std;
+
 class A
 {
-    public:
+public:
     A() :m_ptr(new int(0)) {
         cout << "constructor A" << endl;
     }
@@ -234,9 +243,10 @@ class A
         delete m_ptr;
         m_ptr = nullptr;
     }
-    private:
+private:
     int* m_ptr;
 };
+
 // 为了避免返回值优化，此函数故意这样写
 A Get(bool flag)
 {
@@ -248,6 +258,7 @@ A Get(bool flag)
     else
         return b;
 }
+
 int main()
 {
     {
@@ -256,6 +267,7 @@ int main()
     cout << "main finish" << endl;
     return 0;
 }
+
 /*
 constructor A
 constructor A
@@ -272,10 +284,12 @@ main finish
 
 ```cpp
 #include <iostream>
+
 using namespace std;
+
 class A
 {
-    public:
+public:
     A() :m_ptr(new int(0)) {
         cout << "constructor A" << endl;
     }
@@ -291,9 +305,10 @@ class A
         if(m_ptr)
             delete m_ptr;
     }
-    private:
+private:
     int* m_ptr;
 };
+
 // 为了避免返回值优化，此函数故意这样写
 A Get(bool flag)
 {
@@ -305,6 +320,7 @@ A Get(bool flag)
     else
         return b;
 }
+
 int main()
 {
     {
@@ -326,7 +342,7 @@ main finish
 */
 ```
 
-上面的代码中没有了拷贝构造，取而代之的是移动构造（ `Move Construct`）。<mark style="color:red;">从移动构造函数的实现 中可以看到，它的参数是一个右值引用类型的参数</mark> <mark style="color:red;"></mark><mark style="color:red;">`A&&`</mark><mark style="color:red;">，这里没有深拷贝，只有浅拷贝，这样就避免了对临时对象的深拷贝，提高了性能。这里的</mark> <mark style="color:red;"></mark><mark style="color:red;">`A&&`</mark> <mark style="color:red;"></mark><mark style="color:red;">用来根据参数是左值还是右值来建立分支，如果是临时 值，则会选择移动构造函数。移动构造函数只是将临时对象的资源做了浅拷贝，不需要对其进行深拷贝，从而避免了额外的拷贝，提高性能。</mark>这也就是所谓的移动语义（ move 语义），右值引用的一个重要目的是用来支持移动语义的。
+上面的代码中没有了拷贝构造，取而代之的是移动构造（ `Move Construct`）。<mark style="color:red;">从移动构造函数的实现 中可以看到，它的参数是一个右值引用类型的参数</mark> <mark style="color:red;"></mark><mark style="color:red;">`A&&`</mark><mark style="color:red;">，</mark><mark style="color:red;">**这里没有深拷贝，只有浅拷贝，这样就避免了对临时对象的深拷贝，提高了性能。**</mark><mark style="color:red;">这里的</mark><mark style="color:red;">`A&&`</mark> <mark style="color:red;"></mark><mark style="color:red;">用来根据参数是左值还是右值来建立分支，如果是临时 值，则会选择移动构造函数。移动构造函数只是将临时对象的资源做了浅拷贝，不需要对其进行深拷贝，从而避免了额外的拷贝，提高性能。</mark>这也就是所谓的移动语义（ move 语义），右值引用的一个重要目的是用来支持移动语义的。
 
 **移动语义可以将资源（堆、系统对象等）通过浅拷贝方式从一个对象转移到另一个对象，这样能够减少不必要的临时对象的创建、拷贝以及销毁，可以大幅度提高 C++ 应用程序的性能，消除临时对象的维护 （创建和销毁）对性能的影响。**
 
@@ -338,9 +354,11 @@ main finish
 #include <cstdio>
 #include <cstdlib>
 #include <string.h>
+
 using namespace std;
+
 class MyString {
-    private:
+private:
     char* m_data;
     size_t m_len;
     void copy_data(const char *s) {
@@ -348,7 +366,7 @@ class MyString {
         memcpy(m_data, s, m_len);
         m_data[m_len] = '\0';
     }
-    public:
+public:
     MyString() {
         m_data = NULL;
         m_len = 0;
@@ -376,12 +394,14 @@ class MyString {
         if (m_data) free(m_data);
     }
 };
+
 void test() {
     MyString a;
     a = MyString("Hello");
     std::vector<MyString> vec;
     vec.push_back(MyString("World"));
 }
+
 int main()
 {
     test();
@@ -389,7 +409,7 @@ int main()
 }
 ```
 
-实现了调用拷贝构造函数的操作和拷贝赋值操作符的操作。<mark style="color:red;">`MyString(“Hello”)`</mark> <mark style="color:red;"></mark><mark style="color:red;">和</mark> <mark style="color:red;"></mark><mark style="color:red;">`MyString(“World”)`</mark> <mark style="color:red;"></mark><mark style="color:red;">都是临时对象，也就是右值。虽然它们是临时的，但程序仍然调用了拷贝构造和拷贝赋值，造成了没有意 义的资源申请和释放的操作。如果能够直接使用临时对象已经申请的资源，既能节省资源，有能节省资 源申请和释放的时间。这正是定义转移语义的目的。</mark>
+实现了调用拷贝构造函数的操作和拷贝赋值操作符的操作。<mark style="color:red;">`MyString(“Hello”)`</mark> <mark style="color:red;"></mark><mark style="color:red;">和</mark> <mark style="color:red;"></mark><mark style="color:red;">`MyString(“World”)`</mark> <mark style="color:red;"></mark><mark style="color:red;">都是临时对象，也就是右值。虽然它们是临时的，但程序仍然调用了拷贝构造和拷贝赋值，造成了没有意义的资源申请和释放的操作。如果能够直接使用临时对象已经申请的资源，既能节省资源，又能节省资源申请和释放的时间，这正是定义转移语义的目的。</mark>
 
 用c++11的右值引用来定义这两个函数
 
@@ -403,6 +423,7 @@ MyString(MyString&& str) {
     str.m_len = 0;
     str.m_data = NULL;
 }
+
 MyString& operator=(MyString&& str) {
     std::cout << "Move Assignment is called! source: " << str.m_data <<
         std::endl;
@@ -420,7 +441,7 @@ MyString& operator=(MyString&& str) {
 
 ### 移动(move )语义
 
-我们知道移动语义是通过右值引用来匹配临时值的，<mark style="color:red;">那么，普通的左值是否也能借助移动语义来优化性 能呢？C++11为了解决这个问题，提供了std::move()方法来将左值转换为右值，从而方便应用移动语义。move是将对象的状态或者所有权从一个对象转移到另一个对象，只是转义，没有内存拷贝。</mark>
+我们知道移动语义是通过右值引用来匹配临时值的，<mark style="color:red;">**那么，普通的左值是否也能借助移动语义来优化性 能呢？C++11为了解决这个问题，提供了**</mark><mark style="color:red;">**`std::move()`**</mark><mark style="color:red;">**方法来将左值转换为右值，从而方便应用移动语义。**</mark><mark style="color:red;">**`std::move`**</mark><mark style="color:red;">**是将对象的状态或者所有权从一个对象转移到另一个对象，只是转义，没有内存拷贝。**</mark>
 
 ![](https://pic.superbed.cc/item/65a2401b792284bad676c2ed.jpg)
 
@@ -430,9 +451,11 @@ MyString& operator=(MyString&& str) {
 #include <cstdio>
 #include <cstdlib>
 #include <string.h>
+
 using namespace std;
+
 class MyString {
-    private:
+private:
     char* m_data;
     size_t m_len;
     void copy_data(const char *s) {
@@ -440,7 +463,7 @@ class MyString {
         memcpy(m_data, s, m_len);
         m_data[m_len] = '\0';
     }
-    public:
+public:
     MyString() {
         m_data = NULL;
         m_len = 0;
@@ -488,6 +511,7 @@ class MyString {
         if (m_data) free(m_data);
     }
 };
+
 int main()
 {
     MyString a;
@@ -501,7 +525,7 @@ int main()
 
 ### forward 完美转发
 
-<mark style="color:red;">右值引用类型是独立于值的，一个右值引用作为函数参数的形参时，在函数内部转发该参数给内部其他函数时，它就变成一个左值，并不是原来的类型了。</mark>如果需要按照参数原来的类型转发到另一个函数，可以使用C++11提供的std::forward()函数，该函数实现的功能称之为完美转发。
+<mark style="color:red;">**右值引用类型是独立于值的，一个右值引用作为函数参数的形参时，在函数内部转发该参数给内部其他函数时，它就变成一个左值，并不是原来的类型了。**</mark>如果需要按照参数原来的类型转发到另一个函数，可以使用C++11提供的`std::forward()`函数，该函数实现的功能称之为完美转发。
 
 ```cpp
 // 函数原型
@@ -515,7 +539,7 @@ std::forward<T>(t);
 * <mark style="color:red;">`当T为左值引用类型时，t将被转换为T类型的左值`</mark>
 * <mark style="color:red;">`当T不是左值引用类型时，t将被转换为T类型的右值`</mark>
 
-下面通过一个例子演示一下关于forward的使用:
+下面通过一个例子演示一下关于`std::forward()`的使用:
 
 ```c
 #include <iostream>
@@ -591,11 +615,11 @@ r-value: 1314
   * `printValue(v);`已命名的右值v，编译器会视为左值处理，实参为`左值`
   * `printValue(move(v));`已命名的右值编译器会视为左值处理，通过move又将其转换为右值，实参为`右值`
   * `printValue(forward<T>(v));`forward的模板参数为右值引用，最终得到一个右值，实参为`右值`
-* `testForward(forward<int&>(num));`forward的模板类型为int&，最终会得到一个左值，函数的形参为未定引用类型`T&&`被左值初始化后得到一个左值引用类型
+* `testForward(forward<int&>(num));`forward的模板类型为`int&`，最终会得到一个左值，函数的形参为未定引用类型`T&&`被左值初始化后得到一个左值引用类型
   * `printValue(v);`实参为`左值`
   * `printValue(move(v));`通过move将左值转换为右值，实参为`右值`
   * `printValue(forward<T>(v));`forward的模板参数为左值引用，最终得到一个左值，实参为`左值`
-* `testForward(forward<int&&>(num));`forward的模板类型为int&&，最终会得到一个右值，函数的形参为未定引用类型`T&&`被右值初始化后得到一个右值引用类型
+* `testForward(forward<int&&>(num));`forward的模板类型为`int&&`，最终会得到一个右值，函数的形参为未定引用类型`T&&`被右值初始化后得到一个右值引用类型
   * `printValue(v);`已命名的右值v，编译器会视为左值处理，实参为`左值`
   * `printValue(move(v));`已命名的右值编译器会视为左值处理，通过move又将其转换为右值，实参为`右值`
   * `printValue(forward<T>(v));`forward的模板参数为右值引用，最终得到一个右值，实参为`右值`
@@ -607,9 +631,10 @@ r-value: 1314
 #include <iostream>
 #include<vector>
 using namespace std;
+
 class A
 {
-    public:
+public:
     A() :m_ptr(NULL), m_nSize(0){}
     A(int *ptr, int nSize)
     {
@@ -620,6 +645,7 @@ class A
             memcpy(m_ptr, ptr, sizeof(sizeof(int) * nSize));
         }
     }
+    
     A(const A& other) // 拷贝构造函数实现深拷贝
     {
         m_nSize = other.m_nSize;
@@ -635,6 +661,7 @@ class A
         }
         cout << "A(const int &i)" << endl;
     }
+    
     // 右值应用构造函数
     A(A &&other)
     {
@@ -646,6 +673,7 @@ class A
             other.m_ptr = NULL;
         }
     }
+    
     ~A()
     {
         if (m_ptr)
@@ -654,6 +682,7 @@ class A
             m_ptr = NULL;
         }
     }
+    
     void deleteptr()
     {
         if (m_ptr)
@@ -665,6 +694,7 @@ class A
     int *m_ptr;
     int m_nSize;
 };
+
 void main()
 {
     int arr[] = { 1, 2, 3 };
@@ -684,246 +714,6 @@ void main()
 }
 
 ```
-
-### `emplace_back` 减少内存拷贝和移动
-
-对于STL容器，C++11后引入了emplace\_back接口。 emplace\_back是就地构造，不用构造后再次复制到容器中。因此效率更高。 考虑这样的语句：
-
-```cpp
-vector<string> testVec;
-testVec.push_back(string(16, 'a'));
-```
-
-上述语句足够简单易懂，将一个string对象添加到testVec中。底层实现：
-
-* 首先，string(16, ‘a’)会创建一个string类型的临时对象，这涉及到一次string构造过程。
-* 其次，vector内会创建一个新的string对象，这是第二次构造。
-* 最后在push\_back结束时，最开始的临时对象会被析构。加在一起，这两行代码会涉及到两次 string构造和一次析构。
-
-`c++11`可以用`emplace_back`代替`push_back`，`emplace_back`可以直接在`vector`中构建一个对象，而非创建一个临时对象，再放进`vector`，再销毁。`emplace_back`可以省略一次构建和一次析构，从而达到优化的目的.
-
-```cpp
-//time_interval.h
-#ifndef TIME_INTERVAL_H
-#define TIME_INTERVAL_H
-#include <iostream>
-#include <memory>
-#include <string>
-#ifdef GCC
-#include <sys/time.h>
-#else
-#include <ctime>
-#endif // GCC
-class TimeInterval
-{
-    public:
-    TimeInterval(const std::string& d) : detail(d)
-    {
-        init();
-    }
-    TimeInterval()
-    {
-        init();
-    }
-    ~TimeInterval()
-    {
-        #ifdef GCC
-        gettimeofday(&end, NULL);
-        std::cout << detail
-            << 1000 * (end.tv_sec - start.tv_sec) + (end.tv_usec -
-                                                     start.tv_usec) / 1000
-            << " ms" << endl;
-        #else
-        end = clock();
-        std::cout << detail
-            << (double)(end - start) << " ms" << std::endl;
-        #endif // GCC
-    }
-    protected:
-    void init() {
-        #ifdef GCC
-        gettimeofday(&start, NULL);
-        #else
-        start = clock();
-        #endif // GCC
-    }
-    private:
-    std::string detail;
-    #ifdef GCC
-    timeval start, end;
-    #else
-    clock_t start, end;
-    #endif // GCC
-};
-#define TIME_INTERVAL_SCOPE(d) std::shared_ptr<TimeInterval> time_interval_scope_begin = std::make_shared<TimeInterval>(d)
-#endif // TIME_INTERVAL_H
-```
-
-{% hint style="info" %}
-一个十分有用的计时类
-{% endhint %}
-
-```cpp
-#include <vector>
-#include <string>
-#include "time_interval.h"
-int main() {
-    std::vector<std::string> v;
-    int count = 10000000;
-    v.reserve(count); //预分配十万大小，排除掉分配内存的时间
-    {
-        TIME_INTERVAL_SCOPE("push_back string:");
-        for (int i = 0; i < count; i++)
-        {
-            std::string temp("ceshi");
-            v.push_back(temp);// push_back(const string&)，参数是左值引用
-        }
-    }
-    v.clear();
-    {
-        TIME_INTERVAL_SCOPE("push_back move(string):");
-        for (int i = 0; i < count; i++)
-        {
-            std::string temp("ceshi");
-            v.push_back(std::move(temp));// push_back(string &&), 参数是右值引用
-        }
-    }
-    v.clear();
-    {
-        TIME_INTERVAL_SCOPE("push_back(string):");
-        for (int i = 0; i < count; i++)
-        {
-            v.push_back(std::string("ceshi"));// push_back(string &&), 参数是右值引
-            用
-        }
-    }
-    v.clear();
-    {
-        TIME_INTERVAL_SCOPE("push_back(c string):");
-        for (int i = 0; i < count; i++)
-        {
-            v.push_back("ceshi");// push_back(string &&), 参数是右值引用
-        }
-    }
-    v.clear();
-    {
-        TIME_INTERVAL_SCOPE("emplace_back(c string):");
-        for (int i = 0; i < count; i++)
-        {
-            v.emplace_back("ceshi");// 只有一次构造函数，不调用拷贝构造函数，速度最快
-        }
-    }
-}
-/*
-push_back string:335 ms
-push_back move(string):307 ms
-push_back(string):285 ms
-push_back(c string):295 ms
-emplace_back(c string):234 ms
-*/
-```
-
-第1中方法耗时最长，原因显而易见，将调用左值引用的`push_back`，且将会调用一次string的拷贝构造 函数，比较耗时，这里的string还算很短的，如果很长的话，差异会更大
-
-第2、3、4中方法耗时基本一样，参数为右值，将调用右值引用的push\_back，故调用string的移动构造 函数，移动构造函数耗时比拷贝构造函数少，因为不需要重新分配内存空间。
-
-第5中方法耗时最少，因为`emplace_back`只调用构造函数，没有移动构造函数，也没有拷贝构造函数。 为了证实上述论断，我们自定义一个类，并在普通构造函数、拷贝构造函数、移动构造函数中打印相应 描述：
-
-```cpp
-#include <vector>
-#include <string>
-#include "time_interval.h"
-using namespace std;
-class Foo {
-    public:
-    Foo(std::string str) : name(str) {
-        std::cout << "constructor" << std::endl;
-    }
-    Foo(const Foo& f) : name(f.name) {
-        std::cout << "copy constructor" << std::endl;
-    }
-    Foo(Foo&& f) : name(std::move(f.name)){
-        std::cout << "move constructor" << std::endl;
-    }
-    private:
-    std::string name;
-};
-int main() {
-    std::vector<Foo> v;
-    int count = 10000000;
-    v.reserve(count); //预分配十万大小，排除掉分配内存的时间
-    {
-        TIME_INTERVAL_SCOPE("push_back T:");
-        Foo temp("test");
-        v.push_back(temp);// push_back(const T&)，参数是左值引用
-        //打印结果：
-        //constructor
-        //copy constructor
-    }
-    cout << " ---------------------\n" << endl;
-    v.clear();
-    {
-        TIME_INTERVAL_SCOPE("push_back move(T):");
-        Foo temp("test");
-        v.push_back(std::move(temp));// push_back(T &&), 参数是右值引用
-        //打印结果：
-        //constructor
-        //move constructor
-    }
-    cout << " ---------------------\n" << endl;
-    v.clear();
-    {
-        TIME_INTERVAL_SCOPE("push_back(T&&):");
-        v.push_back(Foo("test"));// push_back(T &&), 参数是右值引用
-        //打印结果：
-        //constructor
-        //move constructor
-    }
-    cout << " ---------------------\n" << endl;
-    v.clear();
-    {
-        std::string temp = "test";
-        TIME_INTERVAL_SCOPE("push_back(string):");
-        v.push_back(temp);// push_back(T &&), 参数是右值引用
-        //打印结果：
-        //constructor
-        //move constructor
-    }
-    cout << " ---------------------\n" << endl;
-    v.clear();
-    {
-        std::string temp = "test";
-        TIME_INTERVAL_SCOPE("emplace_back(string):");
-        v.emplace_back(temp);// 只有一次构造函数，不调用拷贝构造函数，速度最快
-        //打印结果：
-        //constructor
-    }
-}
-/*
-constructor
-copy constructor
-push_back T:2 ms
-constructor
-move constructor
-push_back move(T):0 ms
-constructor
-move constructor
-push_back(T&&):0 ms
-constructor
-move constructor
-push_back(string):0 ms
-constructor
-emplace_back(string):0 ms
-*/
-```
-
-### 小结
-
-C++11 在性能上做了很大的改进，最大程度减少了内存移动和复制，通过右值引用、 forward、 emplace 和一些无序容器我们可以大幅度改进程序性能。
-
-* 右值引用仅仅是通过改变资源的所有者来避免内存的拷贝，能大幅度提高性能。
-* forward 能根据参数的实际类型转发给正确的函数。
-* emplace 系列函数通过直接构造对象的方式避免了内存的拷贝和移动。
 
 ### reference
 
