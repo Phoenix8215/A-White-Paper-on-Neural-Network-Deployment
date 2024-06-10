@@ -1,7 +1,6 @@
 # ❤️‍🔥 A White Paper on Neural Network Deployment
 
-| ![](<.gitbook/assets/DALL·E 2024-05-22 00.53.33 - Generate an isometric 3D icon of an Nvidia logo in the style of UI UX design. The logo should have transparent glass material, with a purple and white.webp>) | ![Top Langs](https://readme-typing-svg.demolab.com/?font=Reenie+Beanie\&size=36\&pause=3000\&color=F7116E\&background=FFFFFFFB\&center=true\&vCenter=true\&random=false\&width=435\&lines=No+performce%2C+No+algorithms!) |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+<figure><img src="https://readme-typing-svg.demolab.com/?font=Reenie+Beanie&#x26;size=36&#x26;pause=3000&#x26;color=F7116E&#x26;background=FFFFFFFB&#x26;center=true&#x26;vCenter=true&#x26;random=false&#x26;width=435&#x26;lines=No+performce%2C+No+algorithms!" alt="" width="563"><figcaption></figcaption></figure>
 
 ### 🤖写在前面的话
 

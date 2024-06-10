@@ -14,7 +14,7 @@
 
 2. 分析DRAM以及PCIe带宽的使用率 ，可以从中分析到哪些带宽没有被充分利 用，从而进行优化
 
-<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 3. 分析SM中warp的占用率，可以从中知道一个SM中资源是否被用满
 

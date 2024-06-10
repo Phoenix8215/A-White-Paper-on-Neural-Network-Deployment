@@ -263,7 +263,7 @@ for (int i = 0; i < n_stream; i++)
 
 当我们执行内核函数时，需要将数据从主机传输到 GPU。 然后，再将结果从 GPU 传输回主机。下图显示了在主机和内核之间传输数据的过程：
 
-<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 然而，内核执行基本上是异步的，主机和 GPU 可以同时运行。如果主机和 GPU 之间的数据传输具有相同的特性，我们就可以重叠执行。
 

@@ -65,6 +65,8 @@
   * [🥬 多线程|互斥锁|条件变量|C++11](whitepaper/cpp/thread.md)
   * [🥒 原子变量|CAS|异步操作|C++11](whitepaper/cpp/atomic.md)
   * [🌶️ std::variant|C++17](whitepaper/cpp/std\_variant.md)
+  * [🍏 对象生存期和资源管理|RAII设计思想](whitepaper/cpp/dui-xiang-sheng-cun-qi-he-zi-yuan-guan-li-raii-she-ji-si-xiang.md)
+  * [🍎 Pimpl设计模式|编译防火墙](whitepaper/cpp/pimpl-she-ji-mo-shi-bian-yi-fang-huo-qiang.md)
 * [🩷 部署实战](whitepaper/action/README.md)
   * [❤️ yolov8Multitask](whitepaper/action/yolov8multitask.md)
   * [💚 yolov5](whitepaper/action/yolov5.md)

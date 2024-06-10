@@ -31,7 +31,7 @@ description: >-
 
 下图展示了非对齐和未合并的内存访问。在这种情况下，可能需要3个128 字节的内存事务来从设备内存中读取数据：<mark style="color:red;">一个在偏移量为0的地方开始，读取连续地址 之后的数据；一个在偏移量为256的地方开始，读取连续地址之前的数据；</mark>另一个在偏移 量为128的地方开始读取大量的数据。Note that most of the bytes fetched by the lower and upper memory transactions will not be used, leading to wasted bandwidth.
 
-<figure><img src="../../.gitbook/assets/图片 (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 <mark style="color:red;">一般来说，需要优化内存事务效率：用最少的事务次数满足最多的内存请求。事务数 量和吞吐量的需求随设备的计算能力变化。</mark>
 

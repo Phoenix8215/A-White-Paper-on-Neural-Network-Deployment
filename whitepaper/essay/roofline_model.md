@@ -336,7 +336,7 @@ ncu --set roofline -o profile_roofline --target-processes all xxx\python.exe xxx
 
 选择展示Details页面，选择某一个kernel，然后展开GPU Speed Of Light Throughput选项，就可以看到该kernel的详细统计信息（下图中的Double Precision、Half Precision 和Tensor Core Roofline中没有achived value小圆点是因为实际跑的算法模型数据值是单精度的，所以主要使用的是GPU中的FP32 Core，而FP64 Core、Tensor Core就没有使用到）。
 
-<figure><img src="../../.gitbook/assets/图片 (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 从summary中对所有kernel的统计概览来看（下图），各个kernel的计算量和内存使用率之间差别较大。
 

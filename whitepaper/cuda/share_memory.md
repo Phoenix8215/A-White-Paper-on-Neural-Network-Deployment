@@ -20,11 +20,11 @@
  }
 ```
 
-<figure><img src="../../.gitbook/assets/图片.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1).png" alt=""><figcaption></figcaption></figure>
 
 在这个函数中有两个用一维数组存储的矩阵：输入矩阵in和转置矩阵out。矩阵维度被 定义为nx行ny列。可以用一个一维数组执行转置操作:
 
-<figure><img src="../../.gitbook/assets/图片 (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/图片 (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 观察输入和输出布局，你会注意到：
 
