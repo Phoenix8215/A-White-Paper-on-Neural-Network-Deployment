@@ -622,7 +622,7 @@ share\_ptr虽然已经很好用了，但是有一点share\_ptr智能指针还是
 
 weak\_ptr <mark style="color:red;">是一种不控制对象生命周期的智能指针</mark>, 它指向一个 shared\_ptr 管理的对象. 进行该对象的内 存管理的是那个强引用的shared\_ptr， weak\_ptr只是提供了对管理对象的一个访问手段。weak\_ptr 设 计的目的是为配合 shared\_ptr 而引入的一种智能指针来协助 shared\_ptr 工作, 它只可以从一个 shared\_ptr 或另一个 weak\_ptr 对象构造, 它的构造和析构不会引起引用记数的增加或减少。weak\_ptr 是用来解决shared\_ptr相互引用时的死锁问题，如果说两个shared\_ptr相互引用，那么这两个指针的引 用计数永远不可能下降为0，资源永远不会释放。<mark style="color:red;">它是对对象的一种弱引用，不会增加对象的引用计数， 和shared\_ptr之间可以相互转化，shared\_ptr可以直接赋值给它，它可以通过调用lock函数来获得 shared\_ptr。</mark>
 
-weak\_ptr没有重载操作符`*`和`->`，因为它不共享指针，不能操作资源，主要是为了通过shared\_ptr获得 资源的监测权，它的构造不会增加引用计数，它的析构也不会减少引用计数，纯粹只是作为一个旁观者 来监视shared\_ptr中管理的资源是否存在。weak\_ptr还可以返回this指针和解决循环引用的问题。
+<mark style="color:red;">weak\_ptr没有重载操作符</mark><mark style="color:red;">`*`</mark><mark style="color:red;">和</mark><mark style="color:red;">`->`</mark><mark style="color:red;">，因为它不共享指针，不能操作资源，主要是为了通过shared\_ptr获得 资源的监测权，它的构造不会增加引用计数，它的析构也不会减少引用计数，纯粹只是作为一个旁观者 来监视shared\_ptr中管理的资源是否存在。weak\_ptr还可以返回this指针和解决循环引用的问题。</mark>
 
 #### weak\_ptr的基本用法
 
