@@ -1,4 +1,4 @@
-# 🥬 多线程|互斥锁|条件变量
+# 🥬 多线程|互斥锁|条件变量|C++11
 
 ## 线程thread
 
@@ -254,7 +254,7 @@ void ZERO_Thread::threadEntry(ZERO_Thread *pThread)
 using namespace std;
 class A: public ZERO_Thread
 {
-    public:
+public:
     void run()
     {
         while (_running)
@@ -265,9 +265,10 @@ class A: public ZERO_Thread
         cout << "----- leave A " << endl;
     }
 };
+
 class B: public ZERO_Thread
 {
-    public:
+public:
     void run()
     {
         while (_running)
@@ -339,9 +340,9 @@ int main()
 
 #### sleep\_for() <a href="#id-2-sleep-for" id="id-2-sleep-for"></a>
 
-同样地线程被创建后也有这五种状态：`创建态`，`就绪态`，`运行态`，`阻塞态(挂起态)`，`退出态(终止态)` ，关于状态之间的转换是一样的，请参考进程，在此不再过多的赘述。
+同样地线程被创建后也有这五种状态：<mark style="color:red;">`创建态`</mark><mark style="color:red;">，</mark><mark style="color:red;">`就绪态`</mark><mark style="color:red;">，</mark><mark style="color:red;">`运行态`</mark><mark style="color:red;">，</mark><mark style="color:red;">`阻塞态(挂起态)`</mark><mark style="color:red;">，</mark><mark style="color:red;">`退出态(终止态)`</mark> ，关于状态之间的转换是一样的，请参考进程，在此不再过多的赘述。
 
-线程和进程的执行有很多相似之处，在计算机中启动的多个线程都需要占用CPU资源，但是CPU的个数是有限的并且每个CPU在同一时间点不能同时处理多个任务。`为了能够实现并发处理，多个线程都是分时复用CPU时间片，快速的交替处理各个线程中的任务。因此多个线程之间需要争抢CPU时间片，抢到了就执行，抢不到则无法执行`（因为默认所有的线程优先级都相同，内核也会从中调度，不会出现某个线程永远抢不到CPU时间片的情况）。
+线程和进程的执行有很多相似之处，在计算机中启动的多个线程都需要占用CPU资源，但是CPU的个数是有限的并且每个CPU在同一时间点不能同时处理多个任务。<mark style="color:red;">`为了能够实现并发处理，多个线程都是分时复用CPU时间片，快速的交替处理各个线程中的任务。因此多个线程之间需要争抢CPU时间片，抢到了就执行，抢不到则无法执行`</mark><mark style="color:red;">（因为默认所有的线程优先级都相同，内核也会从中调度，不会出现某个线程永远抢不到CPU时间片的情况）。</mark>
 
 命名空间`this_thread`中提供了一个休眠函数`sleep_for()`，调用这个函数的线程会马上从`运行态`变成`阻塞态`并在这种状态下休眠一定的时长，因为阻塞态的线程已经让出了CPU资源，代码也不会被执行，所以线程休眠过程中对CPU来说没有任何负担。
 
@@ -672,7 +673,7 @@ int main ()
 
 ```
 
-这里的lock\_guard换成unique\_lock是一样的。 unique\_lock,lock\_guard的区别
+这里的lock\_guard换成unique\_lock是一样的。 **unique\_lock,lock\_guard的区别**
 
 * <mark style="color:red;">unique\_lock与lock\_guard都能实现自动加锁和解锁，但是前者更加灵活，能实现更多的功能。</mark>
 * <mark style="color:red;">unique\_lock可以进行临时解锁和再上锁，如在构造对象之后使用lck.unlock()就可以进行解锁， lck.lock()进行上锁，而不必等到析构时自动解锁。</mark>
@@ -723,7 +724,7 @@ int main() {
 
 **那么为什么必须使用unique\_lock呢?**
 
-> 原因: 条件变量在wait时会进行unlock再进入休眠, lock\_guard并无该操作接口
+> 原因: 条件变量在wait时会进行unlock再进入休眠, lock\_guard并无该操作的接口
 
 * wait: 如果线程被唤醒或者超时那么会先进行lock获取锁, 再判断条件(传入的参数)是否成立, 如果成立则 wait函数返回否则释放锁继续休眠
 * notify: 进行notify动作并不需要获取锁
@@ -737,7 +738,7 @@ int main() {
 
 **std::unique\_lock**
 
-1. unique\_lock 是通用互斥包装器，允许延迟锁定、锁定的有时限尝试、递归锁定、所有权转移和与 条件变量一同使用。
+1. unique\_lock 是通用互斥包装器，允许延迟锁定、锁定的有时限尝试、递归锁定、所有权转移和<mark style="color:red;">与条件变量一同使用。</mark>
 2. unique\_lock比lock\_guard使用更加灵活，功能更加强大。
 3. 使用unique\_lock需要付出更多的时间、性能成本。
 
@@ -751,8 +752,8 @@ int main() {
 2. 循环检查某个条件，如果条件不满足则阻塞直到条件满足；如果条件满足则向下执行；
 3. 某个线程满足条件执行完之后调用notify\_one或notify\_all唤醒一个或者所有等待线程。 条件变量提供了两类操作：wait和notify。这两类操作构成了多线程同步的基础。
 
-> * 条件变量存放了被阻塞线程的线程ID
-> * condition\_variable：需要配合std::unique\_lock\<std::mutex>进行wait操作，也就是阻塞线程的操作。
+> * <mark style="color:red;">条件变量存放了被阻塞线程的线程ID</mark>
+> * <mark style="color:red;">condition\_variable：需要配合std::unique\_lock\<std::mutex>进行wait操作，也就是阻塞线程的操作。</mark>
 > * &#x20;condition\_variable\_any：可以和任意带有lock()、unlock()语义的mutex搭配使用，也就是说有四种：&#x20;
 >   * std::mutex：独占的非递归互斥锁&#x20;
 >   * std::timed\_mutex：带超时的独占非递归互斥锁&#x20;
@@ -1074,7 +1075,7 @@ int main(void)
 
 ### call\_once和once\_flag使用
 
-具体：https://www.apiref.com/cpp-zh/cpp/thread/call\_once.html 在多线程中，有一种场景是某个任务只需要执行一次，可以用C++11中的`std::call_once`函数配合 `std::once_flag`来实现。多个线程同时调用某个函数，`std::call_once`可以保证多个线程对该函数只调用一 次。
+具体：https://www.apiref.com/cpp-zh/cpp/thread/call\_once.html 在多线程中，有一种场景是某个任务只需要执行一次，<mark style="color:red;">可以用C++11中的</mark><mark style="color:red;">`std::call_once`</mark><mark style="color:red;">函数配合</mark> <mark style="color:red;"></mark><mark style="color:red;">`std::once_flag`</mark><mark style="color:red;">来实现。</mark>多个线程同时调用某个函数，`std::call_once`可以保证多个线程对该函数只调用一 次。
 
 ```cpp
 #include <iostream>
