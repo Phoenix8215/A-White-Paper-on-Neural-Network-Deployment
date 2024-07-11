@@ -65,7 +65,7 @@
   * [🫑 emplace\_back 减少内存拷贝和移动|C++11](whitepaper/cpp/emplace\_back.md)
   * [🥬 多线程|互斥锁|条件变量|C++11](whitepaper/cpp/thread.md)
   * [🥒 异步操作|C++11](whitepaper/cpp/atomic.md)
-  * [🍆 原子变量|CAS|memory\_order](whitepaper/cpp/yuan-zi-bian-liang-casmemoryorder.md)
+  * [🍆 原子变量|CAS操作|内存顺序|C++11](whitepaper/cpp/yuan-zi-bian-liang-cas-cao-zuo-nei-cun-shun-xu-c++11.md)
   * [🌶️ std::variant|C++17](whitepaper/cpp/std\_variant.md)
   * [🍏 对象生存期和资源管理|RAII设计思想](whitepaper/cpp/raii.md)
   * [🍎 Pimpl设计模式|编译防火墙](whitepaper/cpp/pimpl.md)
