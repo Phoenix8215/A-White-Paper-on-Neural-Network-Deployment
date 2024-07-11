@@ -493,47 +493,103 @@ int main() {
 
 上面的代码正确的解决了多线程之间数据竞争的问题，但是如果我替换 `ready.store(true);` 为 `ready.store(true, std::memory_order_relaxed);` 并替换 `while (!ready.load())` 为 `while (!ready.load(std::memory_order_relaxed))` ，会发现数据竞争又产生了。what f\*\*K!
 
-**主要问题在于两个线程中的操作不再有顺序了，编译器或 CPU 可以自由地对两个线程中的指令进行重新排序。**大概的样子如下图所示：
+**主要问题在于两个线程中的操作不再有顺序了，编译器或 CPU 可以自由地对两个线程中的指令进行重新排序。**一旦进程 2 确定该标志已设置为 true，它就会尝试读取 的 `data` 值。但是，此时的 `data` 值可能压根并没有修改。大概的样子如下图所示：
 
 <figure><img src="../../.gitbook/assets/memory-relaxed-1.jpeg" alt=""><figcaption></figcaption></figure>
 
+上面的示例我们可以看出，在 `memory_order_relaxed` 模式下，两个线程无法就共享变量的操作顺序达成一致。从线程 1 的角度来看，它执行的操作如下：
 
+```c
+write(data, 100)
+store(ready, true)
+```
 
+但是，从线程 2 的角度来看，它看到线程 1 执行的操作顺序是：
 
+```c
+store(ready, true)
+write(data, 100)
+```
 
+如果不就操作共享变量的顺序达成一致，则跨线程对这些变量进行更改是不安全的。
 
+现在我们将`ready.store(true, std::memory_order_relaxed);` 替换为 `ready.store(true, std::memory_order_seq_cst);` 并替换 `while (!ready.load(std::memory_order_relaxed))为` `while (!ready.load(std::memory_order_seq_cst))` .
 
+再次编译会发现，数据竞争被成功解决了，那这背后的原理是什么呢？——Memory Barrier 内存屏障
 
+```bash
+Thread 1                  Memory                  Thread 2
+---------                 -------                 ---------
+  |                          |                          |
+  |   write(data, 100)       |                          |
+  | -----------------------> |                          |
+  |                          |                          |
+  |  ================Memory Barrier===================  |
+  |   store(ready, true)     |                          |
+  | -----------------------> |                          |
+  |                          |   load(ready) == true    |                   
+  |                          | <----------------------  |
+  |  ================Memory Barrier===================  |
+  |                          |                          |
+  |                          |       read(data)         |
+  |                          | <----------------------  |
+  |                          |                          |
+```
 
+* 线程 1 中 `write(data, 100)` 之后的内存屏障保证了对 `data` 的写操作发生在对 `ready` 的存储之前。
+* 线程 2 中 `read(data)` 之前的内存屏障确保了对 `data` 的读取发生在从 `ready` 的加载之后。
 
+#### 内存顺序的类型 <a href="#types-of-memory-order" id="types-of-memory-order"></a>
 
-#### `memory_order_release`
+C++ 提供了不同级别的内存顺序，按如下顺序从最严格到最不严格排列。
 
-`memory_order_release` 用于写操作，确保在此写操作之前的所有写操作都在当前写操作之前完成，即先发生关系。它保证所有之前的写入操作对其他线程可见，防止重排序到此操作之后。
+<figure><img src="../../.gitbook/assets/1_8eLS9RSk59NfMy5PZh_r3Q.webp" alt=""><figcaption></figcaption></figure>
 
-#### `memory_order_acquire`
+* `memory_order_relaxed`， 这是最宽松的规则，它对编译器和CPU不做任何限制，可以乱序
+* `memory_order_release` 释放，设定内存屏障(Memory barrier)，保证它之前的操作永远在它之前，但是它后面的操作可能被重排到它前面
+* `memory_order_acquire` 获取, 设定内存屏障，保证在它之后的访问永远在它之后，但是它之前的操作却有可能被重排到它后面，往往和Release在不同线程中联合使用
+* `memory_order_acq_rel`，它是Acquire 和 Release 的结合，同时拥有它们俩提供的保证。比如你要对一个 atomic 自增 1，同时希望该操作之前和之后的读取或写入操作不会被重新排序&#x20;
+* `memory_order_seq_cst` 顺序一致性， memory\_order\_seq\_cst 就像是memory\_order\_acq\_rel的加强版，它不管原子操作是属于读取还是写入的操作，只要某个线程有用到memory\_order\_seq\_cst 的原子操作，线程中该memory\_order\_seq\_cst 操作前的数据操作绝对不会被重新排在该memory\_order\_seq\_cst 操作之后，且该memory\_order\_seq\_cst 操作后的数据操作也绝对不会被重新排在memory\_order\_seq\_cst 操作前。
 
-`memory_order_acquire` 用于读操作，确保在此读操作之后的所有读写操作都在当前读操作之后完成，即先发生关系。它保证在当前读操作之后的所有操作不会被重排序到此操作之前。
+```c
+#include <atomic>
+#include <cassert>
+#include <iostream>
+#include <thread>
 
+int data = 0;
+std::atomic<bool> ready(false);
 
+void producer() {
+  data = 100;
+  ready.store(true, std::memory_order_release);  // Set flag
+}
 
+void consumer() {
+  while (!ready.load(std::memory_order_acquire))
+    ;
+  assert(data == 100);
+}
 
+int main() {
+  std::thread t1(producer);
+  std::thread t2(consumer);
+  t1.join();
+  t2.join();
+  return 0;
+}
 
+```
 
+上述例子与之前的例子相同，只是这里使用了 `std::memory_order_release` 来处理 `ready.store()`，并且使用了 `memory_order_acquire` 来处理 `ready.load()`。
 
+然而，不同之处在于，这次的内存屏障是在 `ready.store()` 和 `ready.load()` 这一对操作上形成的，<mark style="color:red;">并且这种内存屏障只有在跨线程使用相同的原子变量时才有效。</mark>
 
+假设你有一个变量 `x`，在两个线程中进行修改，你可以在线程 1 中使用 `x.store(std::memory_order_release)`，而在线程 2 中使用 `x.load(std::memory_order_acquire)`，这样你就可以在这个变量上形成两个线程之间的同步点。
 
+顺序一致性模型和释放-获取模型之间的主要区别在于，顺序一致性模型在所有线程之间强制执行全局操作顺序，而释放-获取模型仅在释放和获取操作对之间强制执行操作顺序。
 
-
-
-
-
-
-
-
-
-
-
+现在，我们可以回顾一下为什么 一开始在没有指定内存顺序时没有报数据竞争的错误。这是因为在 C++ 中，<mark style="color:red;">当没有指定内存顺序时，默认假设使用的是</mark> <mark style="color:red;"></mark><mark style="color:red;">`std::memory_order_seq_cst`</mark><mark style="color:red;">。</mark>由于这是最强的内存模式，因此不会存在数据竞争。
 
 ### 原子变量和`std::mutex`之间的效率对比
 
@@ -615,3 +671,9 @@ Mutex counter final value: 8000000
 Mutex duration: 2.82929 seconds
 ```
 
+### refernce
+
+* [https://subingwen.cn/cpp/atomic/](https://subingwen.cn/cpp/atomic/)
+* [https://www.cnblogs.com/chengyuanchun/p/5394843.html](https://www.cnblogs.com/chengyuanchun/p/5394843.html)
+* [https://ryonaldteofilo.medium.com/atomics-in-c-compare-and-swap-and-memory-order-part-2-64e127847e00](https://ryonaldteofilo.medium.com/atomics-in-c-compare-and-swap-and-memory-order-part-2-64e127847e00)
+* [https://www.freecodecamp.org/news/atomics-and-concurrency-in-cpp/](https://www.freecodecamp.org/news/atomics-and-concurrency-in-cpp/)
