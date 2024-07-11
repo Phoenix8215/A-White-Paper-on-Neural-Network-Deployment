@@ -493,9 +493,9 @@ int main() {
 
 上面的代码正确的解决了多线程之间数据竞争的问题，但是如果我替换 `ready.store(true);` 为 `ready.store(true, std::memory_order_relaxed);` 并替换 `while (!ready.load())` 为 `while (!ready.load(std::memory_order_relaxed))` ，会发现数据竞争又产生了。what f\*\*K!
 
-**主要问题在于两个线程中的操作不再有顺序了，**![](broken-reference)**编译器或 CPU 可以自由地对两个线程中的指令进行重新排序。**大概的样子如下图所示：
+**主要问题在于两个线程中的操作不再有顺序了，编译器或 CPU 可以自由地对两个线程中的指令进行重新排序。**大概的样子如下图所示：
 
-
+<figure><img src="../../.gitbook/assets/memory-relaxed-1.jpeg" alt=""><figcaption></figcaption></figure>
 
 
 
