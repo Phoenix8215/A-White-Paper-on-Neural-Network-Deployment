@@ -4,6 +4,8 @@
 
 如果你用过 C 语言，你肯定用过 union。在 C 编程语言中，union 是一种复合数据类型，允许在同一内存位置存储不同类型的数据。<mark style="color:red;">与结构体一样，union 可以有多个成员，但与结构体不同的是，union 分配的内存只够容纳其最大的成员。这就意味着，union 的所有成员共享同一个内存空间。</mark>
 
+> <mark style="color:red;">**`std::variant`**</mark><mark style="color:red;">**适用于之前使用**</mark><mark style="color:red;">**`union`**</mark><mark style="color:red;">**的场景。**</mark>
+
 让我们看看下面的 C 代码：
 
 ```c
@@ -514,6 +516,28 @@ std::for_each(data.begin(), data.end(), [](auto& item) {
 });
 ```
 
+### _总结_
+
+`std::variant<T, U, ...>`代表一个多类型的容器，容器中的值是制定类型的一种，是通用的 Sum Type，对应 Rust 的`enum`。是一种类型安全的`union`，所以也叫做`tagged union`。与`union`相比有两点优势：
+
+1. 可以存储复杂类型，而 union 只能直接存储基础的 POD 类型，对于如`std::vector`和`std::string`就等复杂类型则需要用户手动管理内存。
+2. 类型安全，variant 存储了内部的类型信息，所以可以进行安全的类型转换，c++17 之前往往通过`union`+`enum`来实现相同功能。
+
+通过使用`std::variant<T, Err>`，用户可以实现类似 Rust 的`std::result`，即在函数执行成功时返回结果，在失败时返回错误信息，上文的例子则可以改成:
+
+```
+std::variant<ReturnType, Err> func(const string& in) {
+    ReturnType ret;
+    if (in.size() == 0)
+        return Err{"input is empty"};
+    // ...
+    return {ret};
+}
+```
+
+需要注意的是，c++17 只提供了一个库级别的 variant 实现，没有对应的模式匹配(Pattern Matching)机制，而最接近的`std::visit`又缺少编译器的优化支持，所以在 c++17 中`std::variant`并不好用，跟 Rust 和函数式语言中出神入化的 Sum Type 还相去甚远，但是已经有许多围绕`std::variant`的提案被提交给 c++委员会探讨，包括模式匹配，`std::expected`等等。
+
 ### reference
 
 * [https://cengizhanvarli.medium.com/std-variant-in-c-c2fc83d34efe](https://cengizhanvarli.medium.com/std-variant-in-c-c2fc83d34efe)
+* [https://mp.weixin.qq.com/s/jlM1NWRNpoOvW2qrBtxflQ](https://mp.weixin.qq.com/s/jlM1NWRNpoOvW2qrBtxflQ)

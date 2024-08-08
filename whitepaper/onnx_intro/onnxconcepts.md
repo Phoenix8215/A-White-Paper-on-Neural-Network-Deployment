@@ -10,7 +10,7 @@ def onnx_linear_regressor(X):
 
 这个例子与在 Python 中编写代码非常相似。因此，使用 ONNX 实现的机器学习模型通常被誉为 ONNX 计算图(ONNX Graph)。
 
-<figure><img src="../../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ONNX 旨在提供一种通用语言，任何机器学习框架都可以用它来描述自己的模型。使得生产中部署机器学习模型变得更容易。ONNX解释器（或**runtime**）可以在部署环境中专门针对某一任务进行部署和优化。有了 ONNX，我们就可以建立一个独特的流程，将模型部署到生产环境中，并且独立于各种机器学习框架。ONNX实现了一个 python `runtime`，可用于评估 ONNX 模型和 ONNX 操作。
 
