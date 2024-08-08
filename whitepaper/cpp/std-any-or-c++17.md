@@ -4,7 +4,7 @@
 
 `std::any` 是 C++ 标准库在 C++17 中引入的一项功能。它属于 C++ 标准库中的类型安全容器类，提供了一种可以类型安全地存储和操作任意类型值的方法。这在需要处理异构对象集合或在编译时未知对象类型的情况下尤其有用。
 
-`std::any` 是一个包装类，是 `void*` 的一个理想替代品。在 C++17 标准之前编写的代码中，`any` 类可以替代许多使用 `void*` 类型的地方。众所周知，类型为 `void*` 的指针可以保存任何类型对象的地址。但类型为 `void*` 的指针并不知道它所持有对象的类型，也无法控制其生命周期。C++17 引入了 <mark style="color:red;">`std::any`</mark><mark style="color:red;">，作为</mark> <mark style="color:red;"></mark><mark style="color:red;">`void*`</mark> <mark style="color:red;"></mark><mark style="color:red;">的理想替代品。与</mark> <mark style="color:red;"></mark><mark style="color:red;">`void*`</mark> <mark style="color:red;"></mark><mark style="color:red;">不同，</mark><mark style="color:red;">`std::any`</mark> <mark style="color:red;"></mark><mark style="color:red;">可以控制其所持有对象的生命周期，并且始终知道其所持有对象的类型。</mark>
+`std::any` 是一个包装类，是 `void*` 的一个理想替代品。在 C++17 标准之前编写的代码中，`any` 类可以替代许多使用 `void*` 类型的地方。众所周知，类型为 `void*` 的指针可以保存任何类型对象的地址。但类型为 `void*` 的指针并不知道它所持有对象的类型，也无法控制其生命周期。<mark style="color:red;">**C++17 引入了**</mark><mark style="color:red;">** **</mark><mark style="color:red;">**`std::any`**</mark><mark style="color:red;">**，作为**</mark><mark style="color:red;">** **</mark><mark style="color:red;">**`void*`**</mark><mark style="color:red;">** **</mark><mark style="color:red;">**的理想替代品。**</mark><mark style="color:red;">与</mark> <mark style="color:red;"></mark><mark style="color:red;">`void*`</mark> <mark style="color:red;"></mark><mark style="color:red;">不同，</mark><mark style="color:red;">`std::any`</mark> <mark style="color:red;"></mark><mark style="color:red;">可以控制其所持有对象的生命周期，并且始终知道其所持有对象的类型。</mark>
 
 **那么，`std::any` 在哪些地方使用呢？任何使用 `void*` 的地方都可以使用 `std::any`。**
 
