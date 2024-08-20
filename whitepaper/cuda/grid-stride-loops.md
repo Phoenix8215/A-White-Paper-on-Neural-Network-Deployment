@@ -97,5 +97,3 @@ hemi::cudaLaunch(saxpy, 1<<20, 2.0, x, y);
 ```
 
 网格步长循环是让你的 CUDA 内核更具灵活性、可扩展性、易调试性，甚至可移植性的极佳方式。尽管本文中的例子都使用了 CUDA C/C++，但同样的概念也适用于其他 CUDA 语言，如 CUDA Fortran。
-
-实战代码：[https://github.com/Phoenix8215/learnCUDAGridStrideLoop?tab=readme-ov-file](https://github.com/Phoenix8215/learnCUDAGridStrideLoop?tab=readme-ov-file)
