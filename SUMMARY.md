@@ -13,7 +13,7 @@
   * [🫢 Share Memory|共享内存|Bank Conflicts](whitepaper/cuda/share\_memory.md)
   * [😷 CUDA流和事件](whitepaper/cuda/stream\_event.md)
   * [🫡 Nsight system和Nsight compute](whitepaper/cuda/nsight.md)
-  * [Grid-Stride Loops](whitepaper/cuda/grid-stride-loops.md)
+  * [🤫 Grid-Stride Loops](whitepaper/cuda/grid-stride-loops.md)
 * [😄 ONNX](whitepaper/onnx\_intro/README.md)
   * [😉 ONNX中的各类Proto](whitepaper/onnx\_intro/protobuffer.md)
   * [🤔 onnx->torch](whitepaper/onnx\_intro/onnx2torch.md)

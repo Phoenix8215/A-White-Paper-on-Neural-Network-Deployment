@@ -3,7 +3,7 @@ description: >-
   翻译自:https://developer.nvidia.com/blog/cuda-pro-tip-write-flexible-kernels-grid-stride-loops/
 ---
 
-# Grid-Stride Loops
+# 🤫 Grid-Stride Loops
 
 在 CUDA 编程中，最常见的任务之一就是使用内核将循环并行化。以我们熟悉的 SAXPY(`Single-Precision A·X Plus Y`) 为例，以下是一个使用 `for` 循环的基本顺序实现。为了有效地并行化这个过程，我们需要启动足够多的线程来充分利用 GPU。
 
