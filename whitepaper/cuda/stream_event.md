@@ -511,7 +511,7 @@ vecAdd_kernel(float *c, const float* a, const float* b)
 
 在内核函数执行之间，我们可以发现，虽然它们属于不同的 CUDA 流，但是存在征用窗口期。这是因为 GPU 调度器首先为第一个请求提供服务。不过，当任务完成后，流式多处理器就为另一个 CUDA 流中的内核提供服务。
 
-在所有的 CUDA 流操作结束后，我们需要同步主机和 GPU设备，以确认 GPU 上的所有 CUDA 操作都已完成。为此，我们在循环之后使用了 `cudaDeviceSynchronize()`。该函数可以在函数调用处同步所有的 GPU 操作。
+在所有的 CUDA 流操作结束后，我们需要同步主机和 GPU设备，以确认 GPU 上的所有 CUDA 操作都已完成。<mark style="color:red;">**为此，我们在循环之后使用了**</mark><mark style="color:red;">** **</mark><mark style="color:red;">**`cudaDeviceSynchronize()`**</mark><mark style="color:red;">**。该函数可以在函数调用处同步所有的 GPU 操作。**</mark>
 
 <mark style="color:red;">对于同步任务，我们可以用下面的代码替换</mark> <mark style="color:red;"></mark><mark style="color:red;">`cudaDeviceSynchronize()`</mark><mark style="color:red;">函数。为此，我们还必须将私有成员</mark> <mark style="color:red;"></mark><mark style="color:red;">`_stream`</mark> <mark style="color:red;"></mark><mark style="color:red;">改为公有</mark>：
 
@@ -556,7 +556,7 @@ void Operator::async_operation(float *h_c, const float *h_a, const float *h_b,
 
 <mark style="color:red;">CUDA 回调函数是由 GPU 上下文执行的可调用主机函数。利用它，程序员可以在 GPU 操作结束之后调用所需的主机操作。</mark>
 
-CUDA 回调函数有一个名为 `CUDART_CB` 的特殊数据类型。使用这种类型，程序员可以指定由哪个 CUDA 流启动该函数、传递 GPU 错误状态并提供用户数据。
+<mark style="color:red;">CUDA 回调函数有一个名为</mark> <mark style="color:red;"></mark><mark style="color:red;">`CUDART_CB`</mark> <mark style="color:red;"></mark><mark style="color:red;">的特殊数据类型。使用这种类型，程序员可以指定由哪个 CUDA 流启动该函数、传递 GPU 错误状态并提供用户数据。</mark>
 
 为注册回调函数，CUDA 提供了 `cudaStreamAddCallback()`。该函数接受 CUDA 流、CUDA 回调函数及其参数，这样就可以从指定的 CUDA 流调用指定的 CUDA 回调函数，获取用户数据。该函数有四个输入参数，但最后一个是保留参数。因此，我们不使用该参数，其值为 0。
 
@@ -681,7 +681,7 @@ int main(int argc, char* argv[])
     cudaMallocHost((void**)&h_c, bufsize);
 
     // initialize host values
-    srand(2019);
+    srand(8215);
     init_buffer(h_a, size);
     init_buffer(h_b, size);
     init_buffer(h_c, size);
@@ -890,7 +890,7 @@ int main(int argc, char* argv[])
     cudaMallocHost((void**)&h_c, bufsize);
 
     // initialize host values
-    srand(2019);
+    srand(8215);
     init_buffer(h_a, size);
     init_buffer(h_b, size);
     init_buffer(h_c, size);
@@ -998,15 +998,15 @@ Time= 29.730 msec, bandwidth= 27.087332 GB/s
 
 可以看到，优先级最高的 CUDA 流（流 21）抢占了第二个 CUDA 流（本例中为流 19）的位置，因此流 21 可以在流 19 执行完毕前完成工作。<mark style="color:red;">请注意，数据传输顺序不会因优先级而改变。</mark>
 
+> 假设你有两个流，流 19 和流 21，流 21 的优先级更高。假如在流 19 中你首先启动了一个 `cudaMemcpy` 操作，然后在流 21 中也启动了一个 `cudaMemcpy` 操作，即使流 21 的优先级更高，它的 `cudaMemcpy` 操作也不会抢先执行，而是会等流 19 的数据传输完成后再执行。
+
 ### 使用事件估计核函数执行的时间
 
 之前的 GPU 运行时间估算有一个局限性，那就是无法测量内核的执行时间。这是因为我们在主机端使用了定时 API。因此，我们需要主机和 GPU 同步才能测量内核执行时间，考虑到时间开销和对程序性能的影响，这种做法在实际工作中是不现实的。
 
 这可以使用 CUDA 事件来解决。CUDA 事件与 CUDA 数据流一起记录 GPU 端事件。CUDA 事件可以是基于 GPU 状态的事件，并记录相关时间。利用这一点，我们可以估算内核执行时间
 
-CUDA 事件由 `cudaEvent_t` 句柄管理。我们可以使用 `cudaEventCreate()`创建一个 CUDA 事件句柄，并使用 `cudaEventDestroy()` 终止它。要记录事件时间，可以使用 `cudaEventRecord()`。然后，CUDA 事件句柄会记录 GPU 的事件时间。该函数还接受 CUDA 流，这样我们就能枚举出特定 CUDA 流的事件时间。获得内核执行的开始和结束事件后，就可以使用<mark style="color:red;">以毫秒为单位</mark>的 `cudaEventElapsedTime()`来获得经过时间。
-
-### 使用CUDA事件
+<mark style="color:red;">CUDA 事件由</mark> <mark style="color:red;"></mark><mark style="color:red;">`cudaEvent_t`</mark> <mark style="color:red;"></mark><mark style="color:red;">句柄管理。我们可以使用</mark> <mark style="color:red;"></mark><mark style="color:red;">`cudaEventCreate()`</mark><mark style="color:red;">创建一个 CUDA 事件句柄，并使用</mark> <mark style="color:red;"></mark><mark style="color:red;">`cudaEventDestroy()`</mark> <mark style="color:red;"></mark><mark style="color:red;">终止它。</mark>要记录事件时间，可以使用 `cudaEventRecord()`。然后，CUDA 事件句柄会记录 GPU 的事件时间。该函数还接受 CUDA 流，这样我们就能枚举出特定 CUDA 流的事件时间。获得内核执行的开始和结束事件后，就可以使用<mark style="color:red;">以毫秒为单位</mark>的 `cudaEventElapsedTime()`来获得经过时间。
 
 修改之前的代码：
 
@@ -1032,7 +1032,7 @@ int main(int argc, char* argv[])
     cudaMallocHost((void**)&h_c, bufsize);
 
     // initialize host values
-    srand(2019);
+    srand(8215);
     init_buffer(h_a, size);
     init_buffer(h_b, size);
     init_buffer(h_c, size);
@@ -1278,7 +1278,7 @@ int main(int argc, char* argv[])
     cudaMallocHost((void**)&h_c, bufsize);
 
     // initialize host values
-    srand(2019);
+    srand(8215);
     init_buffer(h_a, size);
     init_buffer(h_b, size);
     init_buffer(h_c, size);
@@ -1392,7 +1392,7 @@ Time= 35.993 msec, bandwidth= 22.373972 GB/s
 ```
 
 {% hint style="info" %}
-如果在代码中包含了`cudaEventSynchronize(stop);`，那么在该语句处会发生同步操作，即等待与`stop`事件相关联的CUDA流中的所有操作完成。这意味着在主机端的代码将会等待直到与`stop`事件相关联的CUDA流中的所有操作都完成后才会继续执行。因此，在此处包含`cudaEventSynchronize(stop);`将会导致主机端的代码在确认与CUDA流相关联的所有操作都已完成后才会继续执行，而不会提前继续执行。
+如果在代码中包含了`cudaEventSynchronize(stop);`，那么在该语句处会发生同步操作，即等待与`stop`事件相关联的CUDA流中的所有操作完成。这意味着在主机端的代码将会等待直到与`stop`事件相关联的CUDA流中的所有操作都完成后才会继续执行。因此，在此处包含`cudaEventSynchronize(stop);`将会导致主机端的代码在确认与CUDA流相关联的所有操作都已完成后才会继续执行。
 {% endhint %}
 
 ### 使用OpenMP的调度操作
@@ -1400,16 +1400,18 @@ Time= 35.993 msec, bandwidth= 22.373972 GB/s
 在使用OpenMP的同时使用CUDA，不仅可以提高便携性和生产效率，而且还可以提 高主机代码的性能。在之前的例子中，我们使用了一个循环调度操作，与此不同， 我们使用了OpenMP线程调度操作到不同的流中，具体方法如下所示：
 
 ```c
+#include <omp.h>
+
 omp_set_num_threads(num_operator);
-    #pragma omp parallel
-    {
-        int i = omp_get_thread_num();
-        int offset = i * size / num_operator;
-        ls_operator[i].set_index(i);
-        ls_operator[i].async_operation(&h_c[offset], &h_a[offset], &h_b[offset],
-                                    &d_c[offset], &d_a[offset], &d_b[offset],
-                                    size / num_operator, bufsize / num_operator);
-    }
+#pragma omp parallel
+{
+    int i = omp_get_thread_num();
+    int offset = i * size / num_operator;
+    ls_operator[i].set_index(i);
+    ls_operator[i].async_operation(&h_c[offset], &h_a[offset], &h_b[offset],
+                                &d_c[offset], &d_a[offset], &d_b[offset],
+                                size / num_operator, bufsize / num_operator);
+}
 ```
 
 程序输出结果如下：
