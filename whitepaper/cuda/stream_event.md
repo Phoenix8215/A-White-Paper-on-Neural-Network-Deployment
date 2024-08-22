@@ -51,7 +51,7 @@ cudaMemcpy(..., cudaMemcpyDeviceToHost);
 cudaError_t cudaMemcpyAsync(void* dst, constvoid* src, size_t count, cudaMemcpyKind kind, cudaStream t stream =0)
 ```
 
-请注意附加的流标识符作为第五个参数。默认情况下，流标识符被设置为默认流。这 个函数与主机是异步的，所以调用后，控制权将立即返回到主机。将数据传输操作和非空流进行关联是很容易的，但是首先需要使用如下代码创建一个非空流：
+请注意附加的流标识符作为第五个参数。默认情况下，流标识符被设置为默认流。<mark style="color:red;">这个函数与主机是异步的，所以调用后，控制权将立即返回到主机。</mark>将数据传输操作和非空流进行关联是很容易的，但是首先需要使用如下代码创建一个非空流：
 
 ```c
 cudaError_t cudaStreamCreate(cudaStream_t* pStream)
@@ -77,7 +77,7 @@ cudaError_t cudaHostAlloc(void **pHost, size_t ssize, unsigned int flags);
 在非默认流中启动内核，必须在内核执行配置中提供一个流标识符作为第四个参数：
 
 ```c
-kernel name<<<grid, block, sharedMemSize, stream>>>(argument list);
+kernel_name<<<grid, block, sharedMemSize, stream>>>(argument list);
 ```
 
 一个非默认流声明如下：
@@ -183,7 +183,7 @@ int main()
 
 ### 流同步
 
-CUDA 流通过 cudaStreamSynchronize() 函数提供流级同步。使用该函数可强制主机等待某个流操作的结束。下面的代码展示了在内核执行结束时使用流同步的示例：
+<mark style="color:red;">CUDA 流通过 cudaStreamSynchronize() 函数提供流级同步。</mark>使用该函数可强制主机等待某个流操作的结束。下面的代码展示了在内核执行结束时使用流同步的示例：
 
 ```c
 #include <cstdio>
@@ -234,7 +234,7 @@ int main()
 
 要同时运行多个流，我们应该使用显式创建的流，因为_<mark style="color:red;">**所有流操作都与默认流同步**</mark>_：
 
-> In general, when an operation is issued to the NULL stream, the CUDA context waits on all operations previously issued to all blocking streams before starting that operation. Also, any operations issued to blocking streams will wait on preceding operations in the NULL stream to complete before executing.
+如果你在默认流（NULL stream）中提交了一个操作，CUDA 系统会先等那些已经提交到其他流中的操作全部完成之后，才会开始执行你在默认流中提交的这个新操作。另外一点：当你在其他流中提交一个操作时，这个操作不会立即开始执行。它会先检查默认流中是否还有未完成的操作。如果有，那么它会等待这些操作完成后再开始执行。
 
 <figure><img src="../../.gitbook/assets/图片 (4) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
@@ -244,14 +244,17 @@ int main()
 //....省略
 // execute kernels with the CUDA stream each
 for (int i = 0; i < n_stream; i++)
-    if (i == 3)
+{
+    if (i == 3) {
         foo_kernel<<< 1, 1, 0, 0 >>>(i);
-    else
+    } else {
         foo_kernel<<< 1, 1, 0, ls_stream[i] >>>(i);
+    }
+}
 //....省略
 ```
 
-因此，我们可以看到，最后一次操作不能与之前的内核执行重叠，而必须等到第四次内核执行结束。
+因此，我们可以看到，最后一次操作不能与之前的默认流中的核函数执行重叠，而必须等到默认流执行结束。
 
 ### GPU流水线执行
 
@@ -275,11 +278,11 @@ for (int i = 0; i < n_stream; i++)
 
 <figure><img src="../../.gitbook/assets/图片 (87).png" alt="" width="563"><figcaption></figcaption></figure>
 
-<mark style="color:red;">要实现这种流水线操作，有三个条件：</mark>
+<mark style="color:red;">**要实现这种流水线操作，有三个条件：**</mark>
 
-1. 主机内存应被分配为`pinned memory`(cudaMallocHost() 函数和 cudaFreeHost() 函数)。
-2. 在主机和 GPU 之间传输数据而不阻塞主机进程(cudaMemcpyAsync() 函数)。
-3. 将每个操作放到不同的 CUDA 流中管理，以实现并发操作。
+1. <mark style="color:red;">主机内存应被分配为</mark><mark style="color:red;">`pinned memory`</mark><mark style="color:red;">(cudaMallocHost() 函数和 cudaFreeHost() 函数)。</mark>
+2. <mark style="color:red;">在主机和 GPU 之间传输数据而不阻塞主机进程(cudaMemcpyAsync() 函数)。</mark>
+3. <mark style="color:red;">将每个操作放到不同的 CUDA 流中管理，以实现并发操作。</mark>
 
 #### 构建流水线执行
 
