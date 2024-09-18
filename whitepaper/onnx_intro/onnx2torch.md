@@ -1,17 +1,12 @@
----
-description: >-
-  source from
-  https://github.com/open-mmlab/mmdeploy/blob/main/docs/zh_cn/tutorial/,thanks
-  open-mmlab for their contribution to AI education.
----
-
 # 🤔 onnx->torch
+
+⚠️This post is based on the official [MMDeploy tutorial](https://github.com/open-mmlab/mmdeploy/blob/main/docs/zh\_cn/tutorial/), with some minor modifications for clarity and context.
 
 ### **计算图导出方法**
 
 TorchScript 是一种序列化和优化 PyTorch 模型的格式，在优化过程中，一个torch.nn.Module 模型会被转换成 TorchScript 的 torch.jit.ScriptModule 模型。现在， TorchScript 也被常当成一种中间表示使用。
 
-torch.onnx.export 中需要的模型实际上是一个 torch.jit.ScriptModule。<mark style="color:red;">而要把普通 PyTorch 模型转一个这样的 TorchScript 模型，有跟踪（trace）和记录（script）两种导出计算图的方法。</mark>如果给 torch.onnx.export 传入了一个普通 PyTorch 模型（torch.nn.Module)，那么这个模型会默认使用跟踪的方法导出。这一过程如下图所示：
+torch.onnx.export 中需要的模型实际上是一个 torch.jit.ScriptModule。<mark style="color:red;">而要把普通 PyTorch 模型转一个这样的 TorchScript 模型，有</mark><mark style="color:red;">**跟踪（trace）和记录（script）**</mark><mark style="color:red;">两种导出计算图的方法。</mark>如果给 torch.onnx.export 传入了一个普通 PyTorch 模型（torch.nn.Module)，那么这个模型会默认使用跟踪的方法导出。这一过程如下图所示：
 
 <figure><img src="../../.gitbook/assets/图片 (94).png" alt=""><figcaption></figcaption></figure>
 
@@ -62,6 +57,12 @@ for model, model_name in zip(models, model_names):
 <mark style="color:red;">而用记录法的话，最终的 ONNX 模型用 Loop 节点来表示循环。这样哪怕对于不同的 n，ONNX 模型也有同样的结构。</mark>
 
 <mark style="color:red;">由于推理引擎对静态图的支持更好，通常我们在模型部署时不需要显式地把 PyTorch 模型转成 TorchScript 模型，直接把 PyTorch 模型用</mark> <mark style="color:red;"></mark><mark style="color:red;">`torch.onnx.export`</mark> <mark style="color:red;"></mark><mark style="color:red;">跟踪导出即可。</mark>了解这部分的知识主要是为了在模型转换报错时能够更好地定位问题是否发生在 PyTorch 转 TorchScript 阶段。
+
+### <mark style="color:red;">跟踪法（Tracing）和记录法（Scripting）小结</mark>
+
+跟踪法是通过给模型输入一个具体的**示例输入（dummy input）**，然后记录模型在这个输入上的前向传播路径，得到模型的计算图。这种方法非常适用于那些具有固定执行路径的模型，即模型的操作顺序仅仅依赖于输入**张量的大小和形状，而与控制流无关**（如`for`循环或`if`条件等控制结构）。**如果模型中包含基于输入数据内容的控制流，比如`if-else`语句或`for`循环，跟踪法无法记录到这些动态变化**，只会记录下某一次执行的具体路径。因此，如果模型的行为依赖于输入值的不同（而不是输入形状），跟踪法可能会产生错误的结果。
+
+记录法通过直接将模型转化为TorchScript，这个过程会解析模型代码，理解并记录控制流和计算逻辑。与跟踪法不同，记录法不仅仅基于一次前向传播的执行路径，而是会解析整个模型的代码逻辑。因此，记录法可以处理包含动态控制流（如条件分支或循环）的模型。记录法要求模型的所有部分都是可编译为TorchScript的。某些Python特性（如动态类型的列表或字典）可能无法直接被TorchScript支持，因此需要对代码进行一些修改。
 
 ### **参数讲解**
 
@@ -258,7 +259,9 @@ dummy_input = torch.rand(10)
 torch.onnx.export(model, dummy_input, 'a.onnx')
 ```
 
-如果你尝试去导出这个模型，会得到一大堆 warning，告诉你转换出来的模型可能不正确。这也难怪，我们在这个模型里使用了 .item() 把 torch 中的张量转换成了普通的 Python 变量，还尝试遍历 torch 张量，并用一个列表新建一个 torch 张量。<mark style="color:red;">这些涉及张量与普通变量转换的逻辑都会导致最终的 ONNX 模型不太正确。</mark>
+如果你尝试去导出这个模型，会得到一大堆 warning，告诉你转换出来的模型可能不正确。跟踪法通过给定的输入张量，记录模型的执行路径，从而生成ONNX模型。然而，这种方式并不总是准确的，特别是在模型中有一些**将张量转换为Python变量**的操作时，跟踪法可能会失败或产生错误的结果。
+
+<mark style="color:red;">**跟踪法只能跟踪PyTorch张量之间的操作，无法处理张量转换为Python标量的情况。**</mark>
 
 **使用张量为输入（PyTorch版本 < 1.9.0）**
 
