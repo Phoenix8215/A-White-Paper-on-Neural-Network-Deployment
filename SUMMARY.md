@@ -19,6 +19,7 @@
   * [🤔 onnx->torch](whitepaper/onnx\_intro/onnx2torch.md)
   * [🥳 0x00自定义算子](whitepaper/onnx\_intro/0x00.md)
   * [😕 0x01自定义算子](whitepaper/onnx\_intro/0x01.md)
+  * [🥴 ONNX 模型的修改与调试](whitepaper/onnx\_intro/onnx-mo-xing-de-xiu-gai-yu-tiao-shi.md)
   * [😆 ONNX中的一些概念](whitepaper/onnx\_intro/onnxconcepts.md)
   * [😍 用python操作ONNX](whitepaper/onnx\_intro/yong-python-cao-zuo-onnx.md)
   * [🥹 ONNX中的广播机制](whitepaper/onnx\_intro/onnxbroadcast.md)
